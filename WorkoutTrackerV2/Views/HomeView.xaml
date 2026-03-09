@@ -28,17 +28,6 @@
         <ScrollView Grid.Row="1">
             <StackLayout Padding="20,24" Spacing="20">
 
-                <!-- Create New Workout Button -->
-                <Button Text="+ Create Workout"
-                        Command="{Binding StartWorkoutCommand}"
-                        BackgroundColor="#1F77F0"
-                        TextColor="#FFFFFF"
-                        FontAttributes="Bold"
-                        FontSize="14"
-                        Padding="0,14"
-                        CornerRadius="10"
-                        BorderWidth="0"/>
-
                 <!-- Welcome Card with Motivational Message - Soft Blue -->
                 <StackLayout Padding="20,24" 
                              BackgroundColor="#F0F7FF"
@@ -52,6 +41,17 @@
                            FontSize="13"
                            TextColor="#64B5F6"/>
                 </StackLayout>
+
+                <!-- Create New Workout Button -->
+                <Button Text="+ Create Workout"
+                        Command="{Binding StartWorkoutCommand}"
+                        BackgroundColor="#1F77F0"
+                        TextColor="#FFFFFF"
+                        FontAttributes="Bold"
+                        FontSize="14"
+                        Padding="0,14"
+                        CornerRadius="10"
+                        BorderWidth="0"/>
 
                 <!-- Streak Card - Prominent -->
                 <StackLayout Padding="24,32" 
