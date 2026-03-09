@@ -1,5 +1,4 @@
 ﻿using CommunityToolkit.Mvvm.Input;
-using WorkoutTrackerV2.Views;
 
 namespace WorkoutTrackerV2.ViewModels
 {
@@ -11,6 +10,11 @@ namespace WorkoutTrackerV2.ViewModels
             await Shell.Current.GoToAsync(Routes.Workout);
         }
 
+        [RelayCommand]
+        private async Task ViewHistory()
+        {
+            await Shell.Current.GoToAsync(Routes.History);
+        }
 
 
     }
