@@ -9,20 +9,20 @@
     <TabBar>
         <ShellContent
             Title="🏠 Home"
-            Route="home"
+            Route="Home"
             ContentTemplate="{DataTemplate views:HomeView}" />
         <ShellContent
             Title="🏋️ Workout"
             ContentTemplate="{DataTemplate views:AddWorkoutView}"
-            Route="addworkout" />
+            Route="Workout" />
         <ShellContent
             Title="📋 History"
             ContentTemplate="{DataTemplate views:WorkoutHistoryView}"
-            Route="history" />
+            Route="History" />
         <ShellContent
             Title="📊 Analytics"
             ContentTemplate="{DataTemplate views:AnalyticsView}"
-            Route="analytics" />
+            Route="Analytics" />
     </TabBar>
 
 

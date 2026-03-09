@@ -8,7 +8,7 @@ namespace WorkoutTrackerV2.ViewModels
         [RelayCommand]
         private async Task StartWorkout()
         {
-            await Shell.Current.GoToAsync(nameof(AddWorkoutView));
+            await Shell.Current.GoToAsync(Routes.Workout);
         }
 
 
