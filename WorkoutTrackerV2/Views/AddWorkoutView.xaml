@@ -6,10 +6,6 @@
              Title="Log Workout"
              BackgroundColor="#FAFAFA">
 
-    <ContentPage.BindingContext>
-        <vm:AddWorkoutViewModel />
-    </ContentPage.BindingContext>
-
     <Grid RowDefinitions="*,Auto" RowSpacing="0">
 
         <!-- Content -->

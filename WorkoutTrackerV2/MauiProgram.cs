@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using WorkoutTrackerV2.Services;
 using WorkoutTrackerV2.ViewModels;
 using WorkoutTrackerV2.Views;
 
@@ -29,6 +30,8 @@ namespace WorkoutTrackerV2
             builder.Services.AddSingleton<WorkoutHistoryView>();
             builder.Services.AddSingleton<AnalyticsViewModel>();
             builder.Services.AddSingleton<AnalyticsView>();
+            builder.Services.AddSingleton<IWorkoutService, WorkoutService>();
+            builder.Services.AddSingleton<AppShell>();
 
             return builder.Build();
         }

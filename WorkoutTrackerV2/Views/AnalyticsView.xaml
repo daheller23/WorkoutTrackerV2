@@ -6,10 +6,6 @@
              Title="Analytics"
              BackgroundColor="#FAFAFA">
 
-    <ContentPage.BindingContext>
-        <vm:AnalyticsViewModel />
-    </ContentPage.BindingContext>
-
     <Grid RowDefinitions="Auto,*" RowSpacing="0">
 
         <!-- Header -->

@@ -6,10 +6,6 @@
              Title="Fitness Dashboard"
              BackgroundColor="#FAFAFA">
 
-    <ContentPage.BindingContext>
-        <vm:HomeViewModel />
-    </ContentPage.BindingContext>
-
     <Grid RowDefinitions="Auto,*" RowSpacing="0">
 
         <!-- Header with Gradient Effect -->

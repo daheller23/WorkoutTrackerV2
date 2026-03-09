@@ -6,10 +6,6 @@
              Title="Workout History"
              BackgroundColor="#FAFAFA">
 
-    <ContentPage.BindingContext>
-        <vm:WorkoutHistoryViewModel />
-    </ContentPage.BindingContext>
-
     <Grid RowDefinitions="Auto,Auto,*" RowSpacing="0">
 
         <!-- Header -->
