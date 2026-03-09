@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Shell
+    x:Class="WorkoutTrackerV2.AppShell"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:views="clr-namespace:WorkoutTrackerV2.Views"
+    Title="WorkoutTrackerV2">
+
+    <TabBar>
+        <ShellContent
+            Title="🏠 Home"
+            Route="home"
+            ContentTemplate="{DataTemplate views:HomeView}" />
+        <ShellContent
+            Title="🏋️ Workout"
+            ContentTemplate="{DataTemplate views:AddWorkoutView}"
+            Route="addworkout" />
+        <ShellContent
+            Title="📋 History"
+            ContentTemplate="{DataTemplate views:WorkoutHistoryView}"
+            Route="history" />
+        <ShellContent
+            Title="📊 Analytics"
+            ContentTemplate="{DataTemplate views:AnalyticsView}"
+            Route="analytics" />
+    </TabBar>
+
+
+</Shell>
