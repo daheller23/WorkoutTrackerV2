@@ -1,4 +1,5 @@
 ﻿
+using CommunityToolkit.Mvvm.ComponentModel;
 using SQLite;
 using WorkoutTrackerV2.Models;
 
@@ -9,7 +10,7 @@ namespace WorkoutTrackerV2.Services
         private SQLiteAsyncConnection? _database;
         private string _dbPath;
         private const string DbFileName = "workout_tracker.db3";
-        
+
         public WorkoutService()
         {
             _dbPath = Path.Combine(FileSystem.AppDataDirectory, DbFileName);
@@ -72,6 +73,12 @@ namespace WorkoutTrackerV2.Services
         {
             await InitializeAsync();
             return await _database.Table<Exercise>().ToListAsync();
+        }
+
+        public async Task<Exercise> GetExerciseAsync(int id)
+        {
+            await InitializeAsync();
+            return await _database.GetAsync<Exercise>(id);
         }
 
 

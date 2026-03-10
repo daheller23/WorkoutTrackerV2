@@ -7,5 +7,6 @@ namespace WorkoutTrackerV2.Services
     {
         Task InitializeAsync();
         Task<List<Exercise>> GetAllExercisesAsync();
+        Task<Exercise> GetExerciseAsync(int id);
     }
 }
