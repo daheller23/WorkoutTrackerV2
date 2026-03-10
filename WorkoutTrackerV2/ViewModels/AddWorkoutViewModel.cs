@@ -14,16 +14,31 @@ namespace WorkoutTrackerV2.ViewModels
         private ObservableCollection<Exercise> allExercises = [];
 
         [ObservableProperty]
-        private Exercise _selectedExercise;
+        private int _currentReps = 0;
 
         [ObservableProperty]
         private int _currentSetNumber = 1;
 
         [ObservableProperty]
-        private int _currentReps = 0;
+        private double _currentWeight = 0;
 
         [ObservableProperty]
-        private double _currentWeight = 0;
+        private string _dayName = string.Empty;
+
+        [ObservableProperty]
+        private TimeSpan _endTime;
+
+        [ObservableProperty]
+        private string _notes = string.Empty;
+
+        [ObservableProperty]
+        private DateTime _selectedDate = DateTime.Today;
+
+        [ObservableProperty]
+        private Exercise _selectedExercise;
+
+        [ObservableProperty]
+        private TimeSpan _startTime;
 
         [ObservableProperty]
         private string _weightUnit = "lbs";
@@ -96,6 +111,59 @@ namespace WorkoutTrackerV2.ViewModels
                 WorkoutExercises[i].SetNumber = i + 1;
             }
             CurrentSetNumber = WorkoutExercises.Count + 1;
+        }
+
+        [RelayCommand]
+        private async Task SaveWorkout()
+        {
+            try
+            {
+                if (WorkoutExercises.Count == 0)
+                {
+                    ErrorMessage = "Please add at least one set";
+                    return;
+                }
+                IsLoading = true;
+                var duration = EndTime.Subtract(StartTime);
+                if (duration.TotalSeconds <= 0)
+                    duration = TimeSpan.FromMinutes(60);
+                var session = new WorkoutSession
+                {
+                    Date = SelectedDate,
+                    DayName = DayName,
+                    Notes = Notes,
+                    Duration = duration,
+                    TotalExercises = WorkoutExercises.Select(w => w.Exercise.Id).Distinct().Count()
+                };
+                int sessionId = await _workoutService.SaveSessionAsync(session);
+                foreach (var workoutSet in WorkoutExercises)
+                {
+                    var set = new WorkoutSet
+                    {
+                        ExerciseId = workoutSet.Exercise.Id,
+                        WorkoutSessionId = sessionId,
+                        SetNumber = workoutSet.SetNumber,
+                        Reps = workoutSet.Reps,
+                        Weight = workoutSet.Weight,
+                        WeightUnit = workoutSet.WeightUnit,
+                        CreatedDate = SelectedDate
+                    };
+                    await _workoutService.SaveSetAsync(set);
+                }
+                await Shell.Current.GoToAsync(Routes.Home);
+            }
+            catch (Exception ex)
+            {
+                ErrorMessage = ex.Message;
+                await Shell.Current.DisplayAlertAsync(
+                "SaveWorkout Error",
+                ex.Message,
+                "OK");
+            }
+            finally
+            {
+                IsLoading = false;
+            }
         }
 
     }
