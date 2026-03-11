@@ -7,27 +7,24 @@ using WorkoutTrackerV2.Services;
 namespace WorkoutTrackerV2.ViewModels
 {
     [QueryProperty(nameof(Session), "Session")]
-    public partial class WorkoutDetailViewModel : BaseViewModel
+    public partial class WorkoutDetailViewModel(IWorkoutService workoutService) : BaseViewModel
     {
-        private readonly IWorkoutService _workoutService;
-
+        #region "OBSERVABLE PROPERTIES"
         [ObservableProperty]
         private WorkoutSession _session;
-
-        [ObservableProperty]
-        private ObservableCollection<WorkoutSet> _sets = [];
-
-        public WorkoutDetailViewModel(IWorkoutService workoutService)
-        {
-            _workoutService = workoutService;
-        }
-
         partial void OnSessionChanged(WorkoutSession value)
         {
             if (value != null)
+            {
                 LoadSetsCommand.Execute(null);
+            }
         }
 
+        [ObservableProperty]
+        private ObservableCollection<WorkoutSet> _sets = [];
+        #endregion
+
+        #region "LOAD SETS"
         [RelayCommand]
         private async Task LoadSets()
         {
@@ -35,28 +32,31 @@ namespace WorkoutTrackerV2.ViewModels
             {
                 IsLoading = true;
                 Sets.Clear();
-                var sets = await _workoutService.GetSetsForSessionAsync(Session.Id);
+                var sets = await workoutService.GetSetsForSessionAsync(Session.Id);
                 foreach (var set in sets)
                 {
-                    set.Exercise = await _workoutService.GetExerciseAsync(set.ExerciseId);
+                    set.Exercise = await workoutService.GetExerciseAsync(set.ExerciseId);
                     Sets.Add(set);
                 }
             }
             catch (Exception ex)
             {
-                ErrorMessage = ex.Message;
+                await Shell.Current.DisplayAlertAsync("LoadSets Error", ex.Message, "OK");
             }
             finally
             {
                 IsLoading = false;
             }
         }
+        #endregion
 
+        #region "GO BACK"
         [RelayCommand]
         private async Task GoBack()
         {
-            await Shell.Current.GoToAsync("..");
+            await Shell.Current.GoToAsync(Routes.Back);
         }
+        #endregion
 
         //[RelayCommand]
         //private async Task EditWorkout()
