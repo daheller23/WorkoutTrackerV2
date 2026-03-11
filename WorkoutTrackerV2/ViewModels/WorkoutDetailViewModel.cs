@@ -34,8 +34,8 @@ namespace WorkoutTrackerV2.ViewModels
             try
             {
                 IsLoading = true;
-                var sets = await _workoutService.GetSetsForSessionAsync(Session.Id);
                 Sets.Clear();
+                var sets = await _workoutService.GetSetsForSessionAsync(Session.Id);
                 foreach (var set in sets)
                 {
                     set.Exercise = await _workoutService.GetExerciseAsync(set.ExerciseId);
