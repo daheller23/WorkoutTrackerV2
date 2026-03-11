@@ -6,45 +6,38 @@ using WorkoutTrackerV2.Services;
 
 namespace WorkoutTrackerV2.ViewModels
 {
-    public partial class HomeViewModel : BaseViewModel
+    public partial class HomeViewModel(IWorkoutService workoutService, IAnalyticsService analyticsService) : BaseViewModel
     {
-        private readonly IWorkoutService _workoutService;
-        private readonly IAnalyticsService _analyticsService;
+        #region "OBSERVABLE PROPERTIES"
+        [ObservableProperty]
+        private double _averageDuration = 0;
 
         [ObservableProperty]
-        private double _averageDuration;
+        private int _currentStreak = 0;
 
         [ObservableProperty]
-        private int _currentStreak;
+        private DateTime? _lastWorkoutDate = DateTime.Today;
 
         [ObservableProperty]
-        private DateTime? _lastWorkoutDate;
+        private ObservableCollection<WorkoutSession> _recentSessions = [];
 
         [ObservableProperty]
-        private ObservableCollection<WorkoutSession> _recentSessions;
+        private int _totalWorkouts = 0;
+        #endregion
 
-        [ObservableProperty]
-        private int _totalWorkouts;
-
-        public HomeViewModel(IWorkoutService workoutService, IAnalyticsService analyticsService)
-        {
-            _workoutService = workoutService;
-            _analyticsService = analyticsService;
-            RecentSessions = new();
-        }
-
+        #region "LOAD DATA"
         [RelayCommand]
         private async Task LoadData()
         {
             try
             {
                 IsLoading = true;
-                TotalWorkouts = await _workoutService.GetTotalWorkoutCountAsync();
-                CurrentStreak = await _analyticsService.GetCurrentStreak();
-                LastWorkoutDate = await _workoutService.GetLastWorkoutDateAsync();
-                AverageDuration = await _analyticsService.GetAverageWorkoutDurationAsync();
+                TotalWorkouts = await workoutService.GetTotalWorkoutCountAsync();
+                CurrentStreak = await analyticsService.GetCurrentStreak();
+                LastWorkoutDate = await workoutService.GetLastWorkoutDateAsync();
+                AverageDuration = await analyticsService.GetAverageWorkoutDurationAsync();
 
-                var allSessions = await _workoutService.GetAllSessionsAsync();
+                var allSessions = await workoutService.GetAllSessionsAsync();
                 var recent = allSessions.Take(5).ToList();
 
                 RecentSessions.Clear();
@@ -55,32 +48,40 @@ namespace WorkoutTrackerV2.ViewModels
             }
             catch (Exception ex)
             {
-                ErrorMessage = ex.Message;
+                await Shell.Current.DisplayAlertAsync("LoadData Error", ex.Message, "OK");
             }
             finally
             {
                 IsLoading = false;
             }
         }
+        #endregion
 
+        #region "START WORKOUT"
         [RelayCommand]
         private async Task StartWorkout()
         {
             await Shell.Current.GoToAsync(Routes.Workout);
         }
+        #endregion
 
+        #region "VIEW HISTORY"
         [RelayCommand]
         private async Task ViewHistory()
         {
             await Shell.Current.GoToAsync(Routes.History);
         }
+        #endregion
 
+        #region "VIEW ANALYTICS"
         [RelayCommand]
         private async void ViewAnalytics()
         {
             await Shell.Current.GoToAsync(Routes.Analytics);
         }
+        #endregion
 
+        #region "VIEW WORKOUT
         [RelayCommand]
         private async Task ViewWorkout(WorkoutSession session)
         {
@@ -89,6 +90,7 @@ namespace WorkoutTrackerV2.ViewModels
                 { "Session", session }
             });
         }
+        #endregion
 
     }
 }
