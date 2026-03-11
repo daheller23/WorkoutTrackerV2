@@ -6,10 +6,9 @@ using WorkoutTrackerV2.Services;
 
 namespace WorkoutTrackerV2.ViewModels
 {
-    public partial class AddWorkoutViewModel : BaseViewModel
+    public partial class AddWorkoutViewModel(IWorkoutService workoutService) : BaseViewModel
     {
-        private readonly IWorkoutService _workoutService;
-
+        #region "OBSERVABLE PROPERTY"
         [ObservableProperty]
         private ObservableCollection<Exercise> allExercises = [];
 
@@ -48,21 +47,18 @@ namespace WorkoutTrackerV2.ViewModels
 
         [ObservableProperty]
         private ObservableCollection<WorkoutSet> _workoutExercises = [];
+        #endregion
 
-        public AddWorkoutViewModel(IWorkoutService workoutService)
-        {
-            _workoutService = workoutService;
-        }
-
+        #region "LOAD EXERCISES"
         [RelayCommand]
         private async Task LoadExercises()
         {
             try
             {
                 IsLoading = true;
-                var exercises = await _workoutService.GetAllExercisesAsync();
-
                 AllExercises.Clear();
+
+                var exercises = await workoutService.GetAllExercisesAsync();       
                 foreach (var exercise in exercises)
                 {
                     AllExercises.Add(exercise);
@@ -70,26 +66,30 @@ namespace WorkoutTrackerV2.ViewModels
             }
             catch (Exception ex)
             {
-                ErrorMessage = ex.Message;
+                await Shell.Current.DisplayAlertAsync("LoadExercises Error", ex.Message, "OK");
             }
             finally
             {
                 IsLoading = false;
             }
         }
+        #endregion
 
+        #region "CANCEL"
         [RelayCommand]
-        private async Task Cancel()
+        private static async Task Cancel()
         {
             await Shell.Current.GoToAsync(Routes.Home);
         }
+        #endregion
 
+        #region "ADD SET"
         [RelayCommand]
-        private void AddSet()
+        private async Task AddSet()
         {
             if (SelectedExercise == null)
             {
-                ErrorMessage = "Please select an exercise first";
+                await Shell.Current.DisplayAlertAsync("AddSet Error", "Please select an exercise first", "OK");
                 return;
             }
 
@@ -104,7 +104,9 @@ namespace WorkoutTrackerV2.ViewModels
             });
             CurrentSetNumber++;
         }
+        #endregion
 
+        #region "REMOVE SET"
         [RelayCommand]
         private void RemoveSet(WorkoutSet set)
         {
@@ -115,7 +117,9 @@ namespace WorkoutTrackerV2.ViewModels
             }
             CurrentSetNumber = WorkoutExercises.Count + 1;
         }
+        #endregion
 
+        #region "SAVE WORKOUT"
         [RelayCommand]
         private async Task SaveWorkout()
         {
@@ -123,13 +127,18 @@ namespace WorkoutTrackerV2.ViewModels
             {
                 if (WorkoutExercises.Count == 0)
                 {
-                    ErrorMessage = "Please add at least one set";
+                    await Shell.Current.DisplayAlertAsync("SaveWorkout Error", "Please add at least one set", "OK");
                     return;
                 }
+
                 IsLoading = true;
+
                 var duration = EndTime.Subtract(StartTime);
                 if (duration.TotalSeconds <= 0)
+                {
                     duration = TimeSpan.FromMinutes(60);
+                }
+                
                 var session = new WorkoutSession
                 {
                     Date = SelectedDate,
@@ -138,7 +147,8 @@ namespace WorkoutTrackerV2.ViewModels
                     Duration = duration,
                     TotalExercises = WorkoutExercises.Select(w => w.Exercise.Id).Distinct().Count()
                 };
-                int sessionId = await _workoutService.SaveSessionAsync(session);
+
+                int sessionId = await workoutService.SaveSessionAsync(session);
                 foreach (var workoutSet in WorkoutExercises)
                 {
                     var set = new WorkoutSet
@@ -151,23 +161,21 @@ namespace WorkoutTrackerV2.ViewModels
                         WeightUnit = workoutSet.WeightUnit,
                         CreatedDate = SelectedDate
                     };
-                    await _workoutService.SaveSetAsync(set);
+                    await workoutService.SaveSetAsync(set);
                 }
                 await Shell.Current.GoToAsync(Routes.Home);
             }
             catch (Exception ex)
             {
                 ErrorMessage = ex.Message;
-                await Shell.Current.DisplayAlertAsync(
-                "SaveWorkout Error",
-                ex.Message,
-                "OK");
+                await Shell.Current.DisplayAlertAsync("SaveWorkout Error", ex.Message, "OK");
             }
             finally
             {
                 IsLoading = false;
             }
         }
+        #endregion
 
     }
 }
