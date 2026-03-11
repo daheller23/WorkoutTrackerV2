@@ -8,10 +8,11 @@ namespace WorkoutTrackerV2
         {
             InitializeComponent();
 
-            Routing.RegisterRoute(nameof(HomeView), typeof(HomeView));
-            Routing.RegisterRoute(nameof(AddWorkoutView), typeof(AddWorkoutView));
-            Routing.RegisterRoute(nameof(WorkoutHistoryView), typeof(WorkoutHistoryView));
-            Routing.RegisterRoute(nameof(AnalyticsView), typeof(AnalyticsView));
+            Routing.RegisterRoute(Routes.Home, typeof(HomeView));
+            Routing.RegisterRoute(Routes.Workout, typeof(AddWorkoutView));
+            Routing.RegisterRoute(Routes.History, typeof(WorkoutHistoryView));
+            Routing.RegisterRoute(Routes.Analytics, typeof(AnalyticsView));
+            Routing.RegisterRoute(Routes.WorkoutDetail, typeof(WorkoutDetailView));
         }
     }
 }

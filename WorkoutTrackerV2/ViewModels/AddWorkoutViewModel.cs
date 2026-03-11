@@ -44,6 +44,9 @@ namespace WorkoutTrackerV2.ViewModels
         private string _weightUnit = "lbs";
 
         [ObservableProperty]
+        private string _workoutName = "";
+
+        [ObservableProperty]
         private ObservableCollection<WorkoutSet> _workoutExercises = [];
 
         public AddWorkoutViewModel(IWorkoutService workoutService)
@@ -130,7 +133,7 @@ namespace WorkoutTrackerV2.ViewModels
                 var session = new WorkoutSession
                 {
                     Date = SelectedDate,
-                    DayName = DayName,
+                    DayName = string.IsNullOrWhiteSpace(WorkoutName) ? DayName : WorkoutName,
                     Notes = Notes,
                     Duration = duration,
                     TotalExercises = WorkoutExercises.Select(w => w.Exercise.Id).Distinct().Count()

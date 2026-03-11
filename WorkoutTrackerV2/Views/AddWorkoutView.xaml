@@ -24,6 +24,21 @@
                            TextColor="#999999"/>
                 </StackLayout>
 
+                <!-- Workout Name -->
+                <StackLayout Spacing="12" BackgroundColor="#FFFFFF" Padding="16">
+                    <Label Text="Workout Name"
+                       FontSize="12"
+                       TextColor="#999999"
+                       FontAttributes="Bold"
+                       CharacterSpacing="0.3"/>
+                    <Entry Text="{Binding WorkoutName}"
+                        BackgroundColor="#F5F5F5"
+                        TextColor="#000000"
+                        Placeholder="e.g. Push Day, Leg Day..."
+                        PlaceholderColor="#D0D0D0"
+                        FontSize="14"/>
+                </StackLayout>
+
                 <!-- Date & Day Selection -->
                 <StackLayout Spacing="12" BackgroundColor="#FFFFFF" Padding="16">
                     <Label Text="Workout Date"

@@ -85,9 +85,15 @@ namespace WorkoutTrackerV2.Services
         {
             await InitializeAsync();
             if (session.Id == 0)
-                return await _database.InsertAsync(session);
+            {
+                await _database.InsertAsync(session);
+                return session.Id;
+            }
             else
-                return await _database.UpdateAsync(session);
+            {
+                await _database.UpdateAsync(session);
+                return session.Id;
+            }
         }
 
         public async Task<int> SaveSetAsync(WorkoutSet set)

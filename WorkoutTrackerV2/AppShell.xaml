@@ -4,7 +4,14 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:views="clr-namespace:WorkoutTrackerV2.Views"
-    Title="WorkoutTrackerV2">
+    Title="WorkoutTrackerV2"
+    Shell.BackgroundColor="#FFFFFF"
+    Shell.ForegroundColor="#1F77F0"
+    Shell.TitleColor="#1F77F0"
+    Shell.TabBarBackgroundColor="#FFFFFF"
+    Shell.TabBarForegroundColor="#1F77F0"
+    Shell.TabBarTitleColor="#1F77F0"
+    Shell.TabBarUnselectedColor="#999999">
 
     <TabBar>
         <ShellContent

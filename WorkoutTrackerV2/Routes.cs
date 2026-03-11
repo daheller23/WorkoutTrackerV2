@@ -7,5 +7,6 @@ namespace WorkoutTrackerV2
         public const string Workout = "//Workout";
         public const string Analytics = "//Analytics";
         public const string History = "//History";
+        public const string WorkoutDetail = "//Details";
     }
 }

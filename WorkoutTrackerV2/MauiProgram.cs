@@ -32,6 +32,8 @@ namespace WorkoutTrackerV2
             builder.Services.AddSingleton<AnalyticsView>();
             builder.Services.AddSingleton<IWorkoutService, WorkoutService>();
             builder.Services.AddSingleton<IAnalyticsService, AnalyticsService>();
+            builder.Services.AddTransient<WorkoutDetailView>();
+            builder.Services.AddTransient<WorkoutDetailViewModel>();
             builder.Services.AddSingleton<AppShell>();
 
             return builder.Build();

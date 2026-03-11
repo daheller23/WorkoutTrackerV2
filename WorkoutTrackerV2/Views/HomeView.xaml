@@ -159,6 +159,13 @@
                                              Margin="0,0,0,10"
                                              BackgroundColor="#FFFFFF"
                                              Spacing="0">
+                                    <!-- ↓ ADDED TAP GESTURE HERE -->
+                                    <StackLayout.GestureRecognizers>
+                                        <TapGestureRecognizer
+                                            Command="{Binding Source={RelativeSource AncestorType={x:Type vm:HomeViewModel}}, Path=ViewWorkoutCommand}"
+                                            CommandParameter="{Binding .}"/>
+                                    </StackLayout.GestureRecognizers>
+
                                     <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="16" RowSpacing="0" Padding="0">
                                         <!-- Exercise Icon -->
                                         <Label Grid.Column="0"

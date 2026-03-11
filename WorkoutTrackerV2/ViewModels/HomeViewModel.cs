@@ -75,6 +75,20 @@ namespace WorkoutTrackerV2.ViewModels
             await Shell.Current.GoToAsync(Routes.History);
         }
 
+        [RelayCommand]
+        private async void ViewAnalytics()
+        {
+            await Shell.Current.GoToAsync(Routes.Analytics);
+        }
+
+        [RelayCommand]
+        private async Task ViewWorkout(WorkoutSession session)
+        {
+            await Shell.Current.GoToAsync(Routes.WorkoutDetail, new Dictionary<string, object>
+            {
+                { "Session", session }
+            });
+        }
 
     }
 }
