@@ -7,9 +7,13 @@ namespace WorkoutTrackerV2.ViewModels
 {
     public class BaseViewModel : ObservableObject
     {
+        #region "PRIVATE VARIABLES"
         private bool isLoading;
         private string errorMessage;
+        #endregion
 
+        #region "PUBLIC PROPERTIES"
+        public event PropertyChangedEventHandler? PropertyChanged;
         public bool IsLoading
         {
             get => isLoading;
@@ -21,9 +25,9 @@ namespace WorkoutTrackerV2.ViewModels
             get => errorMessage;
             set => SetProperty(ref errorMessage, value);
         }
+        #endregion
 
-        public event PropertyChangedEventHandler? PropertyChanged;
-
+        #region "SET PROPERTY"
         protected bool SetProperty<T>(ref T backingStore, T value,
             [CallerMemberName] string propertyName = "",
             Action onChanged = null)
@@ -36,8 +40,11 @@ namespace WorkoutTrackerV2.ViewModels
             OnPropertyChanged(propertyName);
             return true;
         }
+        #endregion
 
+        #region "ON PROPERTY CHANGED"
         public void OnPropertyChanged([CallerMemberName] string name = "") =>
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+        #endregion
     }
 }
