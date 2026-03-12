@@ -74,9 +74,36 @@ namespace WorkoutTrackerV2.ViewModels
         }
         #endregion
 
-
-
+        #region "DELETE SESSION"
+        [RelayCommand]
+        private async Task DeleteSession(WorkoutSessionDetail detail)
+        {
+            if (detail?.Session == null)
+            {
+                return;
+            }
+                
+            bool confirmed = await Shell.Current.DisplayAlertAsync("Delete Workout", $"Are you sure you want to delete the {detail.Session.DayName} workout?", "Yes", "No");
+            if (confirmed)
+            {
+                try
+                {
+                    foreach (var set in detail.Sets)
+                    {
+                        await workoutService.DeleteSetAsync(set);
+                    }
+                    await workoutService.DeleteSessionAsync(detail.Session);
+                    await LoadSessions();
+                }
+                catch (Exception ex)
+                {
+                    await Shell.Current.DisplayAlertAsync("DeleteSession Error", ex.Message, "OK");
+                }
+            }
+        }
+        #endregion
 
     }
 }
+
 
