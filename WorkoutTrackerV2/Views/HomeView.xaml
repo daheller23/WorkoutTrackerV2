@@ -3,9 +3,10 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="WorkoutTrackerV2.Views.HomeView"
              xmlns:vm="clr-namespace:WorkoutTrackerV2.ViewModels"
-             Title="Fitness Dashboard"
              BackgroundColor="#FAFAFA">
 
+    <Shell.NavBarIsVisible>False</Shell.NavBarIsVisible>
+    
     <Grid RowDefinitions="Auto,*" RowSpacing="0">
 
         <!-- Header with Gradient Effect -->

@@ -6,6 +6,8 @@
              Title="Analytics"
              BackgroundColor="#FAFAFA">
 
+    <Shell.NavBarIsVisible>False</Shell.NavBarIsVisible>
+
     <Grid RowDefinitions="Auto,*" RowSpacing="0">
 
         <!-- Header -->
