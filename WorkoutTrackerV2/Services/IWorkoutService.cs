@@ -18,5 +18,6 @@ namespace WorkoutTrackerV2.Services
         Task<List<WorkoutSet>> GetExerciseHistoryAsync(int exerciseId, int days = 30);
         Task<int> DeleteSetAsync(WorkoutSet set);
         Task<int> DeleteSessionAsync(WorkoutSession session);
+        Task DeleteSetAsync(int id);
     }
 }

@@ -13,6 +13,7 @@ namespace WorkoutTrackerV2
             Routing.RegisterRoute(Routes.History, typeof(WorkoutHistoryView));
             Routing.RegisterRoute(Routes.Analytics, typeof(AnalyticsView));
             Routing.RegisterRoute(Routes.WorkoutDetail, typeof(WorkoutDetailView));
+            Routing.RegisterRoute(Routes.EditWorkout, typeof(EditWorkoutView));
         }
     }
 }

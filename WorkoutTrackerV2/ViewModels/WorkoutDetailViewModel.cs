@@ -58,13 +58,15 @@ namespace WorkoutTrackerV2.ViewModels
         }
         #endregion
 
-        //[RelayCommand]
-        //private async Task EditWorkout()
-        //{
-        //    await Shell.Current.GoToAsync(Routes.EditWorkout, new Dictionary<string, object>
-        //    {
-        //        { "Session", Session }
-        //    });
-        //}
+        #region "EDIT WORKOUT"
+        [RelayCommand]
+        private async Task EditWorkout()
+        {
+            await Shell.Current.GoToAsync(Routes.EditWorkout, new Dictionary<string, object>
+            {
+                { "Session", Session }
+            });
+        }
+        #endregion
     }
 }

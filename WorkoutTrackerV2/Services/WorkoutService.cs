@@ -190,6 +190,14 @@ namespace WorkoutTrackerV2.Services
         }
         #endregion
 
+        #region "DELETE SET ASYNC"
+        public async Task DeleteSetAsync(int id)
+        {
+            await InitializeAsync();
+            await _database.DeleteAsync<WorkoutSet>(id);
+        }
+        #endregion
+
         #region "DELETE SESSION ASYNC"
         public async Task<int> DeleteSessionAsync(WorkoutSession session)
         {

@@ -1,0 +1,284 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="WorkoutTrackerV2.Views.EditWorkoutView"
+             xmlns:vm="clr-namespace:WorkoutTrackerV2.ViewModels"
+             xmlns:models="clr-namespace:WorkoutTrackerV2.Models"
+             x:DataType="vm:EditWorkoutViewModel"
+             BackgroundColor="#FAFAFA">
+
+    <Shell.BackButtonBehavior>
+        <BackButtonBehavior IsVisible="False" IsEnabled="False"/>
+    </Shell.BackButtonBehavior>
+
+    <Grid RowDefinitions="*,Auto" RowSpacing="0">
+
+        <ScrollView Grid.Row="0">
+            <StackLayout Padding="20,24" Spacing="24">
+
+                <!-- Header -->
+                <StackLayout Spacing="4">
+                    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+                        <Button Grid.Column="0"
+                                Text="← Back"
+                                Command="{Binding GoBackCommand}"
+                                BackgroundColor="Transparent"
+                                TextColor="#1F77F0"
+                                FontSize="14"
+                                Padding="0"/>
+                    </Grid>
+                    <Label Text="Edit Workout"
+                           FontSize="32"
+                           FontAttributes="Bold"
+                           TextColor="#1F77F0"
+                           CharacterSpacing="0.5"/>
+                    <Label Text="Update your sets and details"
+                           FontSize="13"
+                           TextColor="#999999"/>
+                </StackLayout>
+
+                <!-- Workout Name -->
+                <StackLayout Spacing="12" BackgroundColor="#FFFFFF" Padding="16">
+                    <Label Text="Workout Name"
+                           FontSize="12"
+                           TextColor="#999999"
+                           FontAttributes="Bold"
+                           CharacterSpacing="0.3"/>
+                    <Entry Text="{Binding WorkoutName}"
+                           BackgroundColor="#F5F5F5"
+                           TextColor="#000000"
+                           Placeholder="e.g. Push Day, Leg Day..."
+                           PlaceholderColor="#D0D0D0"
+                           FontSize="14"/>
+                </StackLayout>
+
+                <!-- Date & Day Selection -->
+                <StackLayout Spacing="12" BackgroundColor="#FFFFFF" Padding="16">
+                    <Label Text="Workout Date"
+                           FontSize="12"
+                           TextColor="#999999"
+                           FontAttributes="Bold"
+                           CharacterSpacing="0.3"/>
+                    <DatePicker Date="{Binding SelectedDate}"
+                                BackgroundColor="#F5F5F5"
+                                TextColor="#000000"
+                                Format="MMM dd, yyyy"/>
+                    <Label Text="{Binding DayName}"
+                           FontSize="18"
+                           FontAttributes="Bold"
+                           TextColor="#1F77F0"
+                           HorizontalOptions="Center"
+                           Margin="0,8,0,0"/>
+                </StackLayout>
+
+                <!-- Notes -->
+                <StackLayout Spacing="12" BackgroundColor="#FFFFFF" Padding="16">
+                    <Label Text="Workout Notes"
+                           FontSize="12"
+                           TextColor="#999999"
+                           FontAttributes="Bold"
+                           CharacterSpacing="0.3"/>
+                    <Label Text="How did you feel? Add any notes about this session"
+                           FontSize="11"
+                           TextColor="#D0D0D0"/>
+                    <Editor Text="{Binding Notes}"
+                            BackgroundColor="#F5F5F5"
+                            TextColor="#000000"
+                            HeightRequest="80"/>
+                </StackLayout>
+
+                <!-- Add Exercise Section -->
+                <StackLayout Spacing="12">
+                    <Label Text="Add Exercises"
+                           FontSize="16"
+                           FontAttributes="Bold"
+                           TextColor="#000000"
+                           CharacterSpacing="0.3"/>
+
+                    <!-- Exercise Picker -->
+                    <StackLayout Spacing="12" BackgroundColor="#FFFFFF" Padding="16">
+                        <Label Text="Select Exercise"
+                               FontSize="12"
+                               TextColor="#999999"
+                               FontAttributes="Bold"
+                               CharacterSpacing="0.3"/>
+                        <Picker ItemsSource="{Binding AllExercises}"
+                                ItemDisplayBinding="{Binding Name}"
+                                SelectedItem="{Binding SelectedExercise}"
+                                BackgroundColor="#F5F5F5"
+                                TextColor="#000000"
+                                TitleColor="#999999"/>
+                    </StackLayout>
+
+                    <!-- Set Input Fields -->
+                    <StackLayout Spacing="12" BackgroundColor="#FFFFFF" Padding="16">
+                        <Grid ColumnDefinitions="*,*,*" ColumnSpacing="12" RowSpacing="0">
+                            <!-- Reps -->
+                            <StackLayout Grid.Column="0" Spacing="8">
+                                <Label Text="Reps"
+                                       FontSize="12"
+                                       TextColor="#999999"
+                                       FontAttributes="Bold"/>
+                                <Entry Text="{Binding CurrentReps}"
+                                       Keyboard="Numeric"
+                                       BackgroundColor="#F5F5F5"
+                                       TextColor="#1F77F0"
+                                       Placeholder="10"
+                                       PlaceholderColor="#D0D0D0"/>
+                            </StackLayout>
+
+                            <!-- Weight -->
+                            <StackLayout Grid.Column="1" Spacing="8">
+                                <Label Text="Weight"
+                                       FontSize="12"
+                                       TextColor="#999999"
+                                       FontAttributes="Bold"/>
+                                <Entry Text="{Binding CurrentWeight}"
+                                       Keyboard="Numeric"
+                                       BackgroundColor="#F5F5F5"
+                                       TextColor="#1F77F0"
+                                       Placeholder="185"
+                                       PlaceholderColor="#D0D0D0"/>
+                            </StackLayout>
+
+                            <!-- Unit -->
+                            <StackLayout Grid.Column="2" Spacing="8">
+                                <Label Text="Unit"
+                                       FontSize="12"
+                                       TextColor="#999999"
+                                       FontAttributes="Bold"/>
+                                <Picker SelectedItem="{Binding WeightUnit}"
+                                        BackgroundColor="#F5F5F5"
+                                        TextColor="#1F77F0">
+                                    <Picker.ItemsSource>
+                                        <x:Array Type="{x:Type x:String}">
+                                            <x:String>lbs</x:String>
+                                            <x:String>kg</x:String>
+                                        </x:Array>
+                                    </Picker.ItemsSource>
+                                </Picker>
+                            </StackLayout>
+                        </Grid>
+
+                        <!-- Add Set Button -->
+                        <Button Text="+ Add Set"
+                                Command="{Binding AddSetCommand}"
+                                BackgroundColor="#1F77F0"
+                                TextColor="#FFFFFF"
+                                FontAttributes="Bold"
+                                FontSize="14"
+                                Padding="0,14"
+                                CornerRadius="10"
+                                BorderWidth="0"
+                                Margin="0,12,0,0"/>
+                    </StackLayout>
+                </StackLayout>
+
+                <!-- Sets List -->
+                <StackLayout Spacing="12">
+                    <Label Text="Your Sets"
+                           FontSize="16"
+                           FontAttributes="Bold"
+                           TextColor="#000000"
+                           CharacterSpacing="0.3"/>
+
+                    <CollectionView ItemsSource="{Binding WorkoutExercises}"
+                                    SelectionMode="None">
+                        <CollectionView.EmptyView>
+                            <Label Text="No sets added yet"
+                                   FontSize="12"
+                                   TextColor="#D0D0D0"
+                                   HorizontalOptions="Center"
+                                   Margin="20,40"/>
+                        </CollectionView.EmptyView>
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate x:DataType="models:WorkoutSet">
+                                <StackLayout Padding="16"
+                                             Margin="0,0,0,12"
+                                             BackgroundColor="#FFFFFF"
+                                             Spacing="0">
+                                    <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="12" RowSpacing="0">
+                                        <!-- Exercise Info -->
+                                        <StackLayout Grid.Column="0" Spacing="6" VerticalOptions="Center">
+                                            <Label Text="{Binding Exercise.Name}"
+                                                   FontSize="14"
+                                                   FontAttributes="Bold"
+                                                   TextColor="#000000"/>
+                                            <Label Text="{Binding Exercise.MuscleGroup}"
+                                                   FontSize="12"
+                                                   TextColor="#999999"/>
+                                        </StackLayout>
+
+                                        <!-- Set Stats -->
+                                        <StackLayout Grid.Column="1" Spacing="4" HorizontalOptions="End" VerticalOptions="Center">
+                                            <Label Text="{Binding Reps, StringFormat='{0} reps'}"
+                                                   FontSize="12"
+                                                   FontAttributes="Bold"
+                                                   TextColor="#1F77F0"
+                                                   HorizontalOptions="End"/>
+                                            <Label FontSize="12"
+                                                   TextColor="#1F77F0"
+                                                   HorizontalOptions="End">
+                                                <Label.Text>
+                                                    <MultiBinding StringFormat="{}{0} {1}">
+                                                        <Binding Path="Weight"/>
+                                                        <Binding Path="WeightUnit"/>
+                                                    </MultiBinding>
+                                                </Label.Text>
+                                            </Label>
+                                        </StackLayout>
+
+                                        <!-- Delete Button -->
+                                        <Button Grid.Column="2"
+                                                Text="✕"
+                                                Command="{Binding Source={RelativeSource AncestorType={x:Type vm:EditWorkoutViewModel}}, Path=RemoveSetCommand}"
+                                                CommandParameter="{Binding .}"
+                                                BackgroundColor="#FF6B6B"
+                                                TextColor="#FFFFFF"
+                                                Padding="8"
+                                                CornerRadius="6"
+                                                BorderWidth="0"
+                                                FontSize="16"
+                                                WidthRequest="40"
+                                                HeightRequest="40"
+                                                VerticalOptions="Center"/>
+                                    </Grid>
+
+                                    <!-- Divider -->
+                                    <BoxView HeightRequest="0.5" Color="#F0F0F0" Margin="0,12,0,0"/>
+                                </StackLayout>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                </StackLayout>
+
+            </StackLayout>
+        </ScrollView>
+
+        <!-- Action Buttons -->
+        <Grid Grid.Row="1" ColumnDefinitions="*,*" ColumnSpacing="16" Padding="20" RowSpacing="0" BackgroundColor="#FFFFFF">
+            <Button Grid.Column="0"
+                    Text="Cancel"
+                    Command="{Binding GoBackCommand}"
+                    BackgroundColor="Transparent"
+                    TextColor="#FF6B6B"
+                    FontAttributes="Bold"
+                    FontSize="14"
+                    Padding="0,14"
+                    CornerRadius="10"
+                    BorderWidth="1"
+                    BorderColor="#FF6B6B"/>
+            <Button Grid.Column="1"
+                    Text="Save Changes"
+                    Command="{Binding SaveWorkoutCommand}"
+                    BackgroundColor="#1F77F0"
+                    TextColor="#FFFFFF"
+                    FontAttributes="Bold"
+                    FontSize="14"
+                    Padding="0,14"
+                    CornerRadius="10"
+                    BorderWidth="0"/>
+        </Grid>
+
+    </Grid>
+</ContentPage>
