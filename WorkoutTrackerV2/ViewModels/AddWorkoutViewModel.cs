@@ -25,7 +25,7 @@ namespace WorkoutTrackerV2.ViewModels
         private string _dayName = string.Empty;
 
         [ObservableProperty]
-        private TimeSpan _endTime;
+        private TimeSpan _endTime = TimeSpan.Zero;
 
         [ObservableProperty]
         private string _notes = string.Empty;
@@ -34,10 +34,10 @@ namespace WorkoutTrackerV2.ViewModels
         private DateTime _selectedDate = DateTime.Today;
 
         [ObservableProperty]
-        private Exercise _selectedExercise;
+        private Exercise _selectedExercise = null;
 
         [ObservableProperty]
-        private TimeSpan _startTime;
+        private TimeSpan _startTime = TimeSpan.Zero;
 
         [ObservableProperty]
         private string _weightUnit = "lbs";
@@ -163,6 +163,7 @@ namespace WorkoutTrackerV2.ViewModels
                     };
                     await workoutService.SaveSetAsync(set);
                 }
+                ResetForm();
                 await Shell.Current.GoToAsync(Routes.Home);
             }
             catch (Exception ex)
@@ -174,6 +175,23 @@ namespace WorkoutTrackerV2.ViewModels
             {
                 IsLoading = false;
             }
+        }
+        #endregion
+
+        #region "RESET FORM"
+        private void ResetForm()
+        {
+            WorkoutName = "";
+            Notes = "";
+            SelectedExercise = null;
+            CurrentReps = 0;
+            CurrentWeight = 0;
+            CurrentSetNumber = 1;
+            WeightUnit = "lbs";
+            SelectedDate = DateTime.Today;
+            StartTime = TimeSpan.Zero;
+            EndTime = TimeSpan.Zero;
+            WorkoutExercises.Clear();
         }
         #endregion
 
