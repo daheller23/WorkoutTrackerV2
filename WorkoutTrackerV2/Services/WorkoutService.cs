@@ -91,6 +91,30 @@ namespace WorkoutTrackerV2.Services
         }
         #endregion
 
+        #region "DELETE SET ASYNC WITH ID"
+        public async Task DeleteSetAsync(int id)
+        {
+            await InitializeAsync();
+            await _database.DeleteAsync<WorkoutSet>(id);
+        }
+        #endregion
+
+        #region "DELETE SESSION ASYNC WITH WORKOUT SESSION"
+        public async Task<int> DeleteSessionAsync(WorkoutSession session)
+        {
+            await InitializeAsync();
+            return await _database.DeleteAsync(session);
+        }
+        #endregion
+
+        #region "DELETE SET ASYNC WITH WORKOUT SET"
+        public async Task<int> DeleteSetAsync(WorkoutSet set)
+        {
+            await InitializeAsync();
+            return await _database.DeleteAsync(set);
+        }
+        #endregion
+
         #region "GET ALL EXERCISES ASYNC"
         public async Task<List<Exercise>> GetAllExercisesAsync()
         {
@@ -99,11 +123,72 @@ namespace WorkoutTrackerV2.Services
         }
         #endregion
 
+        #region "GET ALL SESSION ASYNC"
+        public async Task<List<WorkoutSession>> GetAllSessionsAsync()
+        {
+            await InitializeAsync();
+            return await _database.Table<WorkoutSession>().OrderByDescending(x => x.Date).ToListAsync();
+        }
+        #endregion
+
         #region "GET EXERCISE ASYNC BY ID"
         public async Task<Exercise> GetExerciseAsync(int id)
         {
             await InitializeAsync();
             return await _database.GetAsync<Exercise>(id);
+        }
+        #endregion
+
+        #region "GET EXERCISE HISTORY ASYNC"
+        public async Task<List<WorkoutSet>> GetExerciseHistoryAsync(int exerciseId, int days = 30)
+        {
+            await InitializeAsync();
+            var startDate = DateTime.Now.AddDays(-days);
+            return await _database.Table<WorkoutSet>()
+                .Where(x => x.ExerciseId == exerciseId && x.CreatedDate >= startDate)
+                .OrderBy(x => x.CreatedDate)
+                .ToListAsync();
+        }
+        #endregion
+
+        #region "GET LAST WORKOUT DATE ASYNC"
+        public async Task<DateTime?> GetLastWorkoutDateAsync()
+        {
+            await InitializeAsync();
+            var lastSession = await _database.Table<WorkoutSession>()
+                .OrderByDescending(x => x.Date)
+                .FirstOrDefaultAsync();
+            return lastSession?.Date;
+        }
+        #endregion
+
+        #region "GET SESSIONS ASYNC"
+        public async Task<List<WorkoutSession>> GetSessionsAsync(DateTime startDate, DateTime endDate)
+        {
+            await InitializeAsync();
+            return await _database.Table<WorkoutSession>()
+                .Where(x => x.Date >= startDate && x.Date <= endDate)
+                .OrderByDescending(x => x.Date)
+                .ToListAsync();
+        }
+        #endregion
+
+        #region "GET SETS FOR SESSION ASYNC"
+        public async Task<List<WorkoutSet>> GetSetsForSessionAsync(int sessionId)
+        {
+            await InitializeAsync();
+            return await _database.Table<WorkoutSet>()
+                .Where(x => x.WorkoutSessionId == sessionId)
+                .OrderBy(x => x.SetNumber)
+                .ToListAsync();
+        }
+        #endregion
+
+        #region "GET TOTAL WORKOUT COUNT ASYNC"
+        public async Task<int> GetTotalWorkoutCountAsync()
+        {
+            await InitializeAsync();
+            return await _database.Table<WorkoutSession>().CountAsync();
         }
         #endregion
 
@@ -130,91 +215,6 @@ namespace WorkoutTrackerV2.Services
                 return await _database.InsertAsync(set);
             }
             return await _database.UpdateAsync(set);
-        }
-        #endregion
-
-        #region "GET TOTAL WORKOUT COUNT ASYNC"
-        public async Task<int> GetTotalWorkoutCountAsync()
-        {
-            await InitializeAsync();
-            return await _database.Table<WorkoutSession>().CountAsync();
-        }
-        #endregion
-
-        #region "GET LAST WORKOUT DATE ASYNC"
-        public async Task<DateTime?> GetLastWorkoutDateAsync()
-        {
-            await InitializeAsync();
-            var lastSession = await _database.Table<WorkoutSession>()
-                .OrderByDescending(x => x.Date)
-                .FirstOrDefaultAsync();
-            return lastSession?.Date;
-        }
-        #endregion
-
-        #region "GET ALL SESSION ASYNC"
-        public async Task<List<WorkoutSession>> GetAllSessionsAsync()
-        {
-            await InitializeAsync();
-            return await _database.Table<WorkoutSession>().OrderByDescending(x => x.Date).ToListAsync();
-        }
-        #endregion
-
-        #region "GET SESSIONS ASYNC"
-        public async Task<List<WorkoutSession>> GetSessionsAsync(DateTime startDate, DateTime endDate)
-        {
-            await InitializeAsync();
-            return await _database.Table<WorkoutSession>()
-                .Where(x => x.Date >= startDate && x.Date <= endDate)
-                .OrderByDescending(x => x.Date)
-                .ToListAsync();
-        }
-        #endregion
-
-        #region "GET SETS FOR SESSION ASYNC"
-        public async Task<List<WorkoutSet>> GetSetsForSessionAsync(int sessionId)
-        {
-            await InitializeAsync();
-            return await _database.Table<WorkoutSet>()
-                .Where(x => x.WorkoutSessionId == sessionId)
-                .OrderBy(x => x.SetNumber)
-                .ToListAsync();
-        }
-        #endregion
-
-        #region "GET EXERCISE HISTORY ASYNC"
-        public async Task<List<WorkoutSet>> GetExerciseHistoryAsync(int exerciseId, int days = 30)
-        {
-            await InitializeAsync();
-            var startDate = DateTime.Now.AddDays(-days);
-            return await _database.Table<WorkoutSet>()
-                .Where(x => x.ExerciseId == exerciseId && x.CreatedDate >= startDate)
-                .OrderBy(x => x.CreatedDate)
-                .ToListAsync();
-        }
-        #endregion
-
-        #region "DELETE SET ASYNC"
-        public async Task<int> DeleteSetAsync(WorkoutSet set)
-        {
-            await InitializeAsync();
-            return await _database.DeleteAsync(set);
-        }
-        #endregion
-
-        #region "DELETE SET ASYNC"
-        public async Task DeleteSetAsync(int id)
-        {
-            await InitializeAsync();
-            await _database.DeleteAsync<WorkoutSet>(id);
-        }
-        #endregion
-
-        #region "DELETE SESSION ASYNC"
-        public async Task<int> DeleteSessionAsync(WorkoutSession session)
-        {
-            await InitializeAsync();
-            return await _database.DeleteAsync(session);
         }
         #endregion
 

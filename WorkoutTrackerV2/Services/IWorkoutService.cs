@@ -5,19 +5,19 @@ namespace WorkoutTrackerV2.Services
 {
     public interface IWorkoutService
     {
-        Task InitializeAsync();
+        Task<int> DeleteSessionAsync(WorkoutSession session);
+        Task<int> DeleteSetAsync(WorkoutSet set);
+        Task DeleteSetAsync(int id);
+        Task<List<WorkoutSet>> GetExerciseHistoryAsync(int exerciseId, int days = 30);
         Task<List<Exercise>> GetAllExercisesAsync();
-        Task<Exercise> GetExerciseAsync(int id);
-        Task<int> SaveSessionAsync(WorkoutSession session);
-        Task<int> SaveSetAsync(WorkoutSet set);
-        Task<int> GetTotalWorkoutCountAsync();
-        Task<DateTime?> GetLastWorkoutDateAsync();
         Task<List<WorkoutSession>> GetAllSessionsAsync();
+        Task<Exercise> GetExerciseAsync(int id);
         Task<List<WorkoutSession>> GetSessionsAsync(DateTime startDate, DateTime endDate);
         Task<List<WorkoutSet>> GetSetsForSessionAsync(int sessionId);
-        Task<List<WorkoutSet>> GetExerciseHistoryAsync(int exerciseId, int days = 30);
-        Task<int> DeleteSetAsync(WorkoutSet set);
-        Task<int> DeleteSessionAsync(WorkoutSession session);
-        Task DeleteSetAsync(int id);
+        Task<int> GetTotalWorkoutCountAsync();
+        Task<DateTime?> GetLastWorkoutDateAsync();
+        Task InitializeAsync();
+        Task<int> SaveSessionAsync(WorkoutSession session);
+        Task<int> SaveSetAsync(WorkoutSet set);
     }
 }
