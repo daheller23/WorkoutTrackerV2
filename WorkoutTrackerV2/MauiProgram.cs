@@ -36,6 +36,8 @@ namespace WorkoutTrackerV2
             builder.Services.AddTransient<WorkoutDetailViewModel>();
             builder.Services.AddTransient<EditWorkoutView>();
             builder.Services.AddTransient<EditWorkoutViewModel>();
+            builder.Services.AddTransient<SettingsView>();
+            builder.Services.AddTransient<SettingsViewModel>();
             builder.Services.AddSingleton<AppShell>();
 
             return builder.Build();

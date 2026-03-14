@@ -10,16 +10,26 @@
     <Grid RowDefinitions="Auto,*" RowSpacing="0">
 
         <!-- Header with Gradient Effect -->
-        <StackLayout BackgroundColor="#FFFFFF" Padding="24,16,24,24" Spacing="8">
-            <Label Text="💪 Workouts" 
+        <Grid BackgroundColor="#FFFFFF" Padding="24,16,24,24" ColumnDefinitions="*,Auto">
+            <StackLayout Grid.Column="0" Spacing="8">
+                <Label Text="💪 Workouts" 
                    FontSize="36" 
                    FontAttributes="Bold"
                    TextColor="#1F77F0"
                    CharacterSpacing="0.5"/>
-            <Label Text="Track your progress"
+                <Label Text="Track your progress"
                    FontSize="13"
                    TextColor="#999999"/>
-        </StackLayout>
+            </StackLayout>
+            <Button Grid.Column="1"
+                Text="⚙️"
+                Command="{Binding ViewSettingsCommand}"
+                BackgroundColor="Transparent"
+                TextColor="#1F77F0"
+                FontSize="22"
+                Padding="0"
+                VerticalOptions="Start"/>
+        </Grid>
 
         <!-- Content -->
         <ScrollView Grid.Row="1">

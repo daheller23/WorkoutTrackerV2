@@ -83,5 +83,12 @@ namespace WorkoutTrackerV2.ViewModels
         }
         #endregion
 
+        #region "VIEW SETTINGS"
+        [RelayCommand]
+        private static async Task ViewSettings()
+        {
+            await Shell.Current.GoToAsync(Routes.Settings);
+        }
+        #endregion
     }
 }

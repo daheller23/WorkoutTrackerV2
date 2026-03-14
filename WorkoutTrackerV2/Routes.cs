@@ -9,6 +9,7 @@ namespace WorkoutTrackerV2
         public const string History = "//History";
         public const string WorkoutDetail = "//Details";
         public const string EditWorkout = "//Edit";
+        public const string Settings = "//Settings";
         public const string Back = "..";
     }
 }
