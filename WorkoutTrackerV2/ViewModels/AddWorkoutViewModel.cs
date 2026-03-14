@@ -8,45 +8,48 @@ namespace WorkoutTrackerV2.ViewModels
 {
     public partial class AddWorkoutViewModel(IWorkoutService workoutService) : BaseViewModel
     {
-        #region "OBSERVABLE PROPERTY"
-        [ObservableProperty]
-        private ObservableCollection<Exercise> allExercises = [];
+        #region "OBSERVABLE PROPERTIES"
+        [ObservableProperty] private ObservableCollection<Exercise> _allExercises = [];
+        [ObservableProperty] private int _currentReps;
+        [ObservableProperty] private int _currentSetNumber = 1;
+        [ObservableProperty] private double _currentWeight;
+        [ObservableProperty] private string _dayName = string.Empty;
+        [ObservableProperty] private TimeSpan _endTime;
+        [ObservableProperty] private string _notes = string.Empty;
+        [ObservableProperty] private DateTime _selectedDate = DateTime.Today;
+        [ObservableProperty] private Exercise? _selectedExercise;
+        [ObservableProperty] private TimeSpan _startTime;
+        [ObservableProperty] private string _weightUnit = "lbs";
+        [ObservableProperty] private string _workoutName = string.Empty;
+        [ObservableProperty] private ObservableCollection<WorkoutSet> _workoutExercises = [];
+        #endregion
 
-        [ObservableProperty]
-        private int _currentReps = 0;
+        #region "ADD SET"
+        [RelayCommand]
+        private async Task AddSet()
+        {
+            if (SelectedExercise is null)
+            {
+                await Shell.Current.DisplayAlertAsync("Error", "Please select an exercise first", "OK");
+                return;
+            }
 
-        [ObservableProperty]
-        private int _currentSetNumber = 1;
+            WorkoutExercises.Add(new WorkoutSet
+            {
+                Exercise = SelectedExercise,
+                ExerciseId = SelectedExercise.Id,
+                SetNumber = CurrentSetNumber,
+                Reps = CurrentReps,
+                Weight = CurrentWeight,
+                WeightUnit = WeightUnit
+            });
+            CurrentSetNumber++;
+        }
+        #endregion
 
-        [ObservableProperty]
-        private double _currentWeight = 0;
-
-        [ObservableProperty]
-        private string _dayName = string.Empty;
-
-        [ObservableProperty]
-        private TimeSpan _endTime = TimeSpan.Zero;
-
-        [ObservableProperty]
-        private string _notes = string.Empty;
-
-        [ObservableProperty]
-        private DateTime _selectedDate = DateTime.Today;
-
-        [ObservableProperty]
-        private Exercise _selectedExercise = null;
-
-        [ObservableProperty]
-        private TimeSpan _startTime = TimeSpan.Zero;
-
-        [ObservableProperty]
-        private string _weightUnit = "lbs";
-
-        [ObservableProperty]
-        private string _workoutName = "";
-
-        [ObservableProperty]
-        private ObservableCollection<WorkoutSet> _workoutExercises = [];
+        #region "CANCEL"
+        [RelayCommand]
+        private static Task Cancel() => Shell.Current.GoToAsync(Routes.Home);
         #endregion
 
         #region "LOAD EXERCISES"
@@ -56,53 +59,17 @@ namespace WorkoutTrackerV2.ViewModels
             try
             {
                 IsLoading = true;
-                AllExercises.Clear();
-
-                var exercises = await workoutService.GetAllExercisesAsync();       
-                foreach (var exercise in exercises)
-                {
-                    AllExercises.Add(exercise);
-                }
+                var exercises = await workoutService.GetAllExercisesAsync();
+                AllExercises = new ObservableCollection<Exercise>(exercises);
             }
             catch (Exception ex)
             {
-                await Shell.Current.DisplayAlertAsync("LoadExercises Error", ex.Message, "OK");
+                await Shell.Current.DisplayAlertAsync("Error", ex.Message, "OK");
             }
             finally
             {
                 IsLoading = false;
             }
-        }
-        #endregion
-
-        #region "CANCEL"
-        [RelayCommand]
-        private static async Task Cancel()
-        {
-            await Shell.Current.GoToAsync(Routes.Home);
-        }
-        #endregion
-
-        #region "ADD SET"
-        [RelayCommand]
-        private async Task AddSet()
-        {
-            if (SelectedExercise == null)
-            {
-                await Shell.Current.DisplayAlertAsync("AddSet Error", "Please select an exercise first", "OK");
-                return;
-            }
-
-            WorkoutExercises.Add(new WorkoutSet
-            {
-                Exercise = SelectedExercise,    
-                ExerciseId = SelectedExercise.Id, 
-                SetNumber = CurrentSetNumber,
-                Reps = CurrentReps,
-                Weight = CurrentWeight,
-                WeightUnit = WeightUnit
-            });
-            CurrentSetNumber++;
         }
         #endregion
 
@@ -114,8 +81,25 @@ namespace WorkoutTrackerV2.ViewModels
             for (int i = 0; i < WorkoutExercises.Count; i++)
             {
                 WorkoutExercises[i].SetNumber = i + 1;
-            }
+            }              
             CurrentSetNumber = WorkoutExercises.Count + 1;
+        }
+        #endregion
+
+        #region "RESET FORM"
+        private void ResetForm()
+        {
+            WorkoutName = string.Empty;
+            Notes = string.Empty;
+            SelectedExercise = null;
+            CurrentReps = 0;
+            CurrentWeight = 0;
+            CurrentSetNumber = 1;
+            WeightUnit = "lbs";
+            SelectedDate = DateTime.Today;
+            StartTime = TimeSpan.Zero;
+            EndTime = TimeSpan.Zero;
+            WorkoutExercises.Clear();
         }
         #endregion
 
@@ -123,22 +107,20 @@ namespace WorkoutTrackerV2.ViewModels
         [RelayCommand]
         private async Task SaveWorkout()
         {
+            if (WorkoutExercises.Count == 0)
+            {
+                await Shell.Current.DisplayAlertAsync("Error", "Please add at least one set", "OK");
+                return;
+            }
+
             try
             {
-                if (WorkoutExercises.Count == 0)
-                {
-                    await Shell.Current.DisplayAlertAsync("SaveWorkout Error", "Please add at least one set", "OK");
-                    return;
-                }
-
                 IsLoading = true;
 
-                var duration = EndTime.Subtract(StartTime);
+                var duration = EndTime - StartTime;
                 if (duration.TotalSeconds <= 0)
-                {
                     duration = TimeSpan.FromMinutes(60);
-                }
-                
+
                 var session = new WorkoutSession
                 {
                     Date = SelectedDate,
@@ -149,9 +131,10 @@ namespace WorkoutTrackerV2.ViewModels
                 };
 
                 int sessionId = await workoutService.SaveSessionAsync(session);
+
                 foreach (var workoutSet in WorkoutExercises)
                 {
-                    var set = new WorkoutSet
+                    await workoutService.SaveSetAsync(new WorkoutSet
                     {
                         ExerciseId = workoutSet.Exercise.Id,
                         WorkoutSessionId = sessionId,
@@ -160,8 +143,7 @@ namespace WorkoutTrackerV2.ViewModels
                         Weight = workoutSet.Weight,
                         WeightUnit = workoutSet.WeightUnit,
                         CreatedDate = SelectedDate
-                    };
-                    await workoutService.SaveSetAsync(set);
+                    });
                 }
                 ResetForm();
                 await Shell.Current.GoToAsync(Routes.Home);
@@ -169,29 +151,12 @@ namespace WorkoutTrackerV2.ViewModels
             catch (Exception ex)
             {
                 ErrorMessage = ex.Message;
-                await Shell.Current.DisplayAlertAsync("SaveWorkout Error", ex.Message, "OK");
+                await Shell.Current.DisplayAlertAsync("Error", ex.Message, "OK");
             }
             finally
             {
                 IsLoading = false;
             }
-        }
-        #endregion
-
-        #region "RESET FORM"
-        private void ResetForm()
-        {
-            WorkoutName = "";
-            Notes = "";
-            SelectedExercise = null;
-            CurrentReps = 0;
-            CurrentWeight = 0;
-            CurrentSetNumber = 1;
-            WeightUnit = "lbs";
-            SelectedDate = DateTime.Today;
-            StartTime = TimeSpan.Zero;
-            EndTime = TimeSpan.Zero;
-            WorkoutExercises.Clear();
         }
         #endregion
 
