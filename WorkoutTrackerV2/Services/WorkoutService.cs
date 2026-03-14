@@ -59,29 +59,29 @@ namespace WorkoutTrackerV2.Services
         {
             var defaultExercises = new List<Exercise>
             {
-                new Exercise { Name = "Bench Press", MuscleGroup = "Chest" },
-                new Exercise { Name = "Incline Bench Press", MuscleGroup = "Chest" },
-                new Exercise { Name = "Dumbbell Flyes", MuscleGroup = "Chest" },
-                new Exercise { Name = "Cable Crossover", MuscleGroup = "Chest" },
-                new Exercise { Name = "Deadlifts", MuscleGroup = "Back" },
-                new Exercise { Name = "Barbell Rows", MuscleGroup = "Back" },
-                new Exercise { Name = "Pull-ups", MuscleGroup = "Back" },
-                new Exercise { Name = "Lat Pulldowns", MuscleGroup = "Back" },
-                new Exercise { Name = "Squats", MuscleGroup = "Legs" },
-                new Exercise { Name = "Leg Press", MuscleGroup = "Legs" },
-                new Exercise { Name = "Leg Curls", MuscleGroup = "Legs" },
-                new Exercise { Name = "Leg Extensions", MuscleGroup = "Legs" },
-                new Exercise { Name = "Calf Raises", MuscleGroup = "Legs" },
-                new Exercise { Name = "Shoulder Press", MuscleGroup = "Shoulders" },
-                new Exercise { Name = "Lateral Raises", MuscleGroup = "Shoulders" },
-                new Exercise { Name = "Face Pulls", MuscleGroup = "Shoulders" },
-                new Exercise { Name = "Barbell Curls", MuscleGroup = "Arms" },
-                new Exercise { Name = "Tricep Dips", MuscleGroup = "Arms" },
-                new Exercise { Name = "Dumbbell Curls", MuscleGroup = "Arms" },
-                new Exercise { Name = "Tricep Rope Pushdowns", MuscleGroup = "Arms" },
-                new Exercise { Name = "Planks", MuscleGroup = "Core" },
-                new Exercise { Name = "Ab Wheel", MuscleGroup = "Core" },
-                new Exercise { Name = "Weighted Sit-ups", MuscleGroup = "Core" }
+                new() { Name = "Bench Press", MuscleGroup = "Chest" },
+                new() { Name = "Incline Bench Press", MuscleGroup = "Chest" },
+                new() { Name = "Dumbbell Flyes", MuscleGroup = "Chest" },
+                new() { Name = "Cable Crossover", MuscleGroup = "Chest" },
+                new() { Name = "Deadlifts", MuscleGroup = "Back" },
+                new() { Name = "Barbell Rows", MuscleGroup = "Back" },
+                new() { Name = "Pull-ups", MuscleGroup = "Back" },
+                new() { Name = "Lat Pulldowns", MuscleGroup = "Back" },
+                new() { Name = "Squats", MuscleGroup = "Legs" },
+                new() { Name = "Leg Press", MuscleGroup = "Legs" },
+                new() { Name = "Leg Curls", MuscleGroup = "Legs" },
+                new() { Name = "Leg Extensions", MuscleGroup = "Legs" },
+                new() { Name = "Calf Raises", MuscleGroup = "Legs" },
+                new() { Name = "Shoulder Press", MuscleGroup = "Shoulders" },
+                new() { Name = "Lateral Raises", MuscleGroup = "Shoulders" },
+                new() { Name = "Face Pulls", MuscleGroup = "Shoulders" },
+                new() { Name = "Barbell Curls", MuscleGroup = "Arms" },
+                new() { Name = "Tricep Dips", MuscleGroup = "Arms" },
+                new() { Name = "Dumbbell Curls", MuscleGroup = "Arms" },
+                new() { Name = "Tricep Rope Pushdowns", MuscleGroup = "Arms" },
+                new() { Name = "Planks", MuscleGroup = "Core" },
+                new() { Name = "Ab Wheel", MuscleGroup = "Core" },
+                new() { Name = "Weighted Sit-ups", MuscleGroup = "Core" }
             };
 
             foreach (var exercise in defaultExercises)
@@ -91,7 +91,7 @@ namespace WorkoutTrackerV2.Services
         }
         #endregion
 
-        #region "GET ALL EXERCISES ASYNC
+        #region "GET ALL EXERCISES ASYNC"
         public async Task<List<Exercise>> GetAllExercisesAsync()
         {
             await InitializeAsync();
@@ -99,7 +99,7 @@ namespace WorkoutTrackerV2.Services
         }
         #endregion
 
-        #region "GET EXERCISE ASYNC"
+        #region "GET EXERCISE ASYNC BY ID"
         public async Task<Exercise> GetExerciseAsync(int id)
         {
             await InitializeAsync();
