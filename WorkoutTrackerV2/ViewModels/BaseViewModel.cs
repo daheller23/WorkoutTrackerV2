@@ -5,7 +5,7 @@ using System.Runtime.CompilerServices;
 
 namespace WorkoutTrackerV2.ViewModels
 {
-    public class BaseViewModel : ObservableObject
+    public partial class BaseViewModel : ObservableObject
     {
         #region "PRIVATE VARIABLES"
         private bool isLoading;

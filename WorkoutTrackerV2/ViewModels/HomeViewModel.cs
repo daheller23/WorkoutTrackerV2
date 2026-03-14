@@ -9,20 +9,11 @@ namespace WorkoutTrackerV2.ViewModels
     public partial class HomeViewModel(IWorkoutService workoutService, IAnalyticsService analyticsService) : BaseViewModel
     {
         #region "OBSERVABLE PROPERTIES"
-        [ObservableProperty]
-        private double _averageDuration = 0;
-
-        [ObservableProperty]
-        private int _currentStreak = 0;
-
-        [ObservableProperty]
-        private DateTime? _lastWorkoutDate = DateTime.Today;
-
-        [ObservableProperty]
-        private ObservableCollection<WorkoutSession> _recentSessions = [];
-
-        [ObservableProperty]
-        private int _totalWorkouts = 0;
+        [ObservableProperty] private double _averageDuration = 0; 
+        [ObservableProperty] private int _currentStreak = 0;
+        [ObservableProperty] private DateTime? _lastWorkoutDate = DateTime.Today;
+        [ObservableProperty] private ObservableCollection<WorkoutSession> _recentSessions = [];
+        [ObservableProperty] private int _totalWorkouts = 0;
         #endregion
 
         #region "LOAD DATA"
@@ -59,7 +50,7 @@ namespace WorkoutTrackerV2.ViewModels
 
         #region "START WORKOUT"
         [RelayCommand]
-        private async Task StartWorkout()
+        private static async Task StartWorkout()
         {
             await Shell.Current.GoToAsync(Routes.Workout);
         }
@@ -67,7 +58,7 @@ namespace WorkoutTrackerV2.ViewModels
 
         #region "VIEW HISTORY"
         [RelayCommand]
-        private async Task ViewHistory()
+        private static async Task ViewHistory()
         {
             await Shell.Current.GoToAsync(Routes.History);
         }
@@ -75,7 +66,7 @@ namespace WorkoutTrackerV2.ViewModels
 
         #region "VIEW ANALYTICS"
         [RelayCommand]
-        private async void ViewAnalytics()
+        private static async Task ViewAnalytics()
         {
             await Shell.Current.GoToAsync(Routes.Analytics);
         }
@@ -83,7 +74,7 @@ namespace WorkoutTrackerV2.ViewModels
 
         #region "VIEW WORKOUT
         [RelayCommand]
-        private async Task ViewWorkout(WorkoutSession session)
+        private static async Task ViewWorkout(WorkoutSession session)
         {
             await Shell.Current.GoToAsync(Routes.WorkoutDetail, new Dictionary<string, object>
             {
