@@ -4,12 +4,57 @@ namespace WorkoutTrackerV2.Services
 {
     public class AnalyticsService(IWorkoutService workoutService) : IAnalyticsService
     {
+        #region "GET AVERAGE WORKOUT DURATION ASYNC"
+        public async Task<double> GetAverageWorkoutDurationAsync(int days = 30)
+        {
+            var startDate = DateTime.Now.AddDays(-days).Date;
+            var endDate = DateTime.Now.Date;
+            var sessions = await workoutService.GetSessionsAsync(startDate, endDate);
+
+            if (sessions.Count == 0)
+            {
+                return 0;
+            }
+            return sessions.Average(s => s.Duration.TotalMinutes);
+        }
+        #endregion
+
+        #region "GET CURRENT STREAK"
+        public async Task<int> GetCurrentStreak()
+        {
+            var allSessions = await workoutService.GetAllSessionsAsync();
+            if (allSessions.Count == 0)
+            {
+                return 0;
+            }
+
+            int streak = 0;
+            var today = DateTime.Now.Date;
+
+            for (int i = 0; i < 365; i++)
+            {
+                var checkDate = today.AddDays(-i);
+                var hasSessionOnDate = allSessions.Any(s => s.Date.Date == checkDate);
+
+                if (hasSessionOnDate)
+                {
+                    streak++;
+                }
+                else if (i > 0)
+                {
+                    break;
+                }
+            }
+            return streak;
+        }
+        #endregion
+
         #region "GET DAILY STATS ASYNC"
         public async Task<List<DailyStats>> GetDailyStatsAsync(int days = 30)
         {
             var dailyStatsDict = new Dictionary<DateTime, DailyStats>();
             var startDate = DateTime.Now.AddDays(-days).Date;
-            var endDate = DateTime.Now.Date;           
+            var endDate = DateTime.Now.Date;
             var sessions = await workoutService.GetSessionsAsync(startDate, endDate);
             foreach (var session in sessions)
             {
@@ -80,51 +125,6 @@ namespace WorkoutTrackerV2.Services
                 }
             }
             return strengthDict.OrderByDescending(x => x.Value).ToDictionary(x => x.Key, x => x.Value);
-        }
-        #endregion
-
-        #region "GET CURRENT STREAK"
-        public async Task<int> GetCurrentStreak()
-        {
-            var allSessions = await workoutService.GetAllSessionsAsync();
-            if (allSessions.Count == 0)
-            {
-                return 0;
-            }             
-
-            int streak = 0;
-            var today = DateTime.Now.Date;
-
-            for (int i = 0; i < 365; i++)
-            {
-                var checkDate = today.AddDays(-i);
-                var hasSessionOnDate = allSessions.Any(s => s.Date.Date == checkDate);
-
-                if (hasSessionOnDate)
-                {
-                    streak++;
-                }                  
-                else if (i > 0)
-                {
-                    break;
-                }    
-            }
-            return streak;
-        }
-        #endregion
-
-        #region "GET AVERAGE WORKOUT DURATION ASYNC"
-        public async Task<double> GetAverageWorkoutDurationAsync(int days = 30)
-        {
-            var startDate = DateTime.Now.AddDays(-days).Date;
-            var endDate = DateTime.Now.Date;
-            var sessions = await workoutService.GetSessionsAsync(startDate, endDate);
-
-            if (sessions.Count == 0)
-            {
-                return 0;
-            }
-            return sessions.Average(s => s.Duration.TotalMinutes);
         }
         #endregion
 
