@@ -1,25 +1,24 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
-using SQLite;
+﻿using SQLite;
 
 namespace WorkoutTrackerV2.Models
 {
-    public class WorkoutSet : ObservableObject
+    public class WorkoutSet
     {
         [PrimaryKey, AutoIncrement]
-        public int Id { get; set; }
+        public int Id { get; set; } = 0;
 
         [Indexed]
-        public int ExerciseId { get; set; }
+        public int ExerciseId { get; set; } = 0;
 
         [Indexed]
-        public int WorkoutSessionId { get; set; }
+        public int WorkoutSessionId { get; set; } = 0;
 
         [Ignore] // SQLite will ignore this property
-        public Exercise Exercise { get; set; }
+        public Exercise Exercise { get; set; } = new();
 
-        public int SetNumber { get; set; }
-        public int Reps { get; set; }
-        public double Weight { get; set; }
+        public int SetNumber { get; set; } = 0;
+        public int Reps { get; set; } = 0;
+        public double Weight { get; set; } = 0;
         public DateTime CreatedDate { get; set; } = DateTime.Now;
         public string WeightUnit { get; set; } = "lbs";
     }

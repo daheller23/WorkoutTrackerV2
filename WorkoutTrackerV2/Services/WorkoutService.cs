@@ -6,13 +6,12 @@ namespace WorkoutTrackerV2.Services
 {
     public class WorkoutService : IWorkoutService
     {
-        #region "PRIVATE READONLY VARIABLES"
-        private readonly string _dbPath;
-        #endregion
-
         #region "PRIVATE VARIABLES"
-        private SQLiteAsyncConnection? _database;    
+        private readonly string _dbPath;
+        private readonly SemaphoreSlim _initLock = new(1, 1); // To avoid race condition if InitializeAsync is called from multiple threads simultaneuously
+        private SQLiteAsyncConnection _database = null!;
         private const string DbFileName = "workout_tracker.db3";
+        private bool _initialized = false;    
         #endregion
 
         public WorkoutService()
@@ -23,21 +22,34 @@ namespace WorkoutTrackerV2.Services
         #region "INITIALIZE ASYNC"
         public async Task InitializeAsync()
         {
-            if (_database is not null)
+            if (_initialized)
             {
                 return;
             }
-                
-            _database = new SQLiteAsyncConnection(_dbPath);
 
-            await _database.CreateTableAsync<Exercise>();
-            await _database.CreateTableAsync<WorkoutSession>();
-            await _database.CreateTableAsync<WorkoutSet>();
-
-            int exerciseCount = await _database.Table<Exercise>().CountAsync();
-            if (exerciseCount == 0)
+            await _initLock.WaitAsync();
+            try
             {
-                await SeedDefaultExercises();
+                if (_initialized)
+                {
+                    return;
+                }
+
+                _database = new SQLiteAsyncConnection(_dbPath);
+                await _database.CreateTableAsync<Exercise>();
+                await _database.CreateTableAsync<WorkoutSession>();
+                await _database.CreateTableAsync<WorkoutSet>();
+
+                int exerciseCount = await _database.Table<Exercise>().CountAsync();
+                if (exerciseCount == 0)
+                {
+                    await SeedDefaultExercises();
+                }              
+                _initialized = true;
+            }
+            finally
+            {
+                _initLock.Release();
             }
         }
         #endregion
