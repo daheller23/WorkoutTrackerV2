@@ -1,5 +1,4 @@
 using WorkoutTrackerV2.ViewModels;
-
 namespace WorkoutTrackerV2.Views;
 
 public partial class HomeView : ContentPage
@@ -7,11 +6,11 @@ public partial class HomeView : ContentPage
     private readonly HomeViewModel _vm;
 
     public HomeView(HomeViewModel vm)
-	{
-		InitializeComponent();
+    {
+        InitializeComponent();
         _vm = vm;
-		BindingContext = vm;
-	}
+        BindingContext = vm;
+    }
 
     protected override void OnAppearing()
     {

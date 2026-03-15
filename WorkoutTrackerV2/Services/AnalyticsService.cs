@@ -7,15 +7,10 @@ namespace WorkoutTrackerV2.Services
         #region "GET AVERAGE WORKOUT DURATION ASYNC"
         public async Task<double> GetAverageWorkoutDurationAsync(int days = 30)
         {
-            var startDate = DateTime.Now.AddDays(-days).Date;
+            var startDate = days == 0 ? DateTime.MinValue : DateTime.Now.AddDays(-days).Date;
             var endDate = DateTime.Now.Date;
             var sessions = await workoutService.GetSessionsAsync(startDate, endDate);
-
-            if (sessions.Count == 0)
-            {
-                return 0;
-            }
-            return sessions.Average(s => s.Duration.TotalMinutes);
+            return sessions.Count == 0 ? 0 : sessions.Average(s => s.Duration.TotalMinutes);
         }
         #endregion
 
@@ -23,10 +18,10 @@ namespace WorkoutTrackerV2.Services
         public async Task<int> GetCurrentStreak()
         {
             var allSessions = await workoutService.GetAllSessionsAsync();
-            if (allSessions.Count == 0)
-            {
-                return 0;
-            }
+            if (allSessions.Count == 0) return 0;
+
+            // Use a HashSet for O(1) lookup instead of Any() which is O(n)
+            var sessionDates = allSessions.Select(s => s.Date.Date).ToHashSet();
 
             int streak = 0;
             var today = DateTime.Now.Date;
@@ -34,16 +29,10 @@ namespace WorkoutTrackerV2.Services
             for (int i = 0; i < 365; i++)
             {
                 var checkDate = today.AddDays(-i);
-                var hasSessionOnDate = allSessions.Any(s => s.Date.Date == checkDate);
-
-                if (hasSessionOnDate)
-                {
+                if (sessionDates.Contains(checkDate))
                     streak++;
-                }
                 else if (i > 0)
-                {
                     break;
-                }
             }
             return streak;
         }
@@ -52,26 +41,35 @@ namespace WorkoutTrackerV2.Services
         #region "GET DAILY STATS ASYNC"
         public async Task<List<DailyStats>> GetDailyStatsAsync(int days = 30)
         {
-            var dailyStatsDict = new Dictionary<DateTime, DailyStats>();
-            var startDate = DateTime.Now.AddDays(-days).Date;
+            var startDate = days == 0 ? DateTime.MinValue : DateTime.Now.AddDays(-days).Date;
             var endDate = DateTime.Now.Date;
             var sessions = await workoutService.GetSessionsAsync(startDate, endDate);
-            foreach (var session in sessions)
-            {
-                var sessionDate = session.Date.Date;
-                var sets = await workoutService.GetSetsForSessionAsync(session.Id);
 
-                if (!dailyStatsDict.ContainsKey(sessionDate))
+            if (sessions.Count == 0) return [];
+
+            // Fetch all sets in parallel instead of one session at a time
+            var setTasks = sessions.Select(s => workoutService.GetSetsForSessionAsync(s.Id)).ToList();
+            var allSets = await Task.WhenAll(setTasks);
+
+            var dailyStatsDict = new Dictionary<DateTime, DailyStats>();
+            for (int i = 0; i < sessions.Count; i++)
+            {
+                var session = sessions[i];
+                var sets = allSets[i];
+                var sessionDate = session.Date.Date;
+
+                if (!dailyStatsDict.TryGetValue(sessionDate, out var stats))
                 {
-                    dailyStatsDict[sessionDate] = new DailyStats { Date = sessionDate };
+                    stats = new DailyStats { Date = sessionDate };
+                    dailyStatsDict[sessionDate] = stats;
                 }
 
-                var stats = dailyStatsDict[sessionDate];
                 stats.ExercisesCompleted = session.TotalExercises;
                 stats.SetsCompleted += sets.Count;
                 stats.TotalRepsCompleted += sets.Sum(s => s.Reps);
                 stats.TotalWeightLifted += sets.Sum(s => s.Weight * s.Reps);
             }
+
             return dailyStatsDict.Values.OrderBy(x => x.Date).ToList();
         }
         #endregion
@@ -79,8 +77,13 @@ namespace WorkoutTrackerV2.Services
         #region "GET EXERCISE PROGRESS ASYNC"
         public async Task<ExerciseProgress> GetExerciseProgressAsync(int exerciseId, int days = 30)
         {
-            var sets = await workoutService.GetExerciseHistoryAsync(exerciseId, days);
-            var exercise = await workoutService.GetExerciseAsync(exerciseId);
+            // Fetch sets and exercise in parallel
+            var setsTask = workoutService.GetExerciseHistoryAsync(exerciseId, days);
+            var exerciseTask = workoutService.GetExerciseAsync(exerciseId);
+            await Task.WhenAll(setsTask, exerciseTask);
+
+            var sets = setsTask.Result;
+            var exercise = exerciseTask.Result;
 
             var points = sets
                 .GroupBy(s => s.CreatedDate.Date)
@@ -112,60 +115,60 @@ namespace WorkoutTrackerV2.Services
         public async Task<List<MuscleGroupProgress>> GetMuscleGroupProgressAsync(int days = 30)
         {
             var muscleGroups = new[] { "Arms", "Back", "Chest", "Core", "Legs", "Shoulders" };
-            var result = new List<MuscleGroupProgress>();
 
-            foreach (var muscleGroup in muscleGroups)
-            {
-                var exercises = await GetProgressForMuscleGroupAsync(muscleGroup, days);
-                if (exercises.Count == 0) continue;
+            // Fetch all muscle groups in parallel
+            var tasks = muscleGroups.Select(mg => GetProgressForMuscleGroupAsync(mg, days)).ToList();
+            var results = await Task.WhenAll(tasks);
 
-                result.Add(new MuscleGroupProgress
+            return muscleGroups
+                .Zip(results, (mg, exercises) => (mg, exercises))
+                .Where(x => x.exercises.Count > 0)
+                .Select(x => new MuscleGroupProgress
                 {
-                    MuscleGroup = muscleGroup,
-                    Exercises = exercises,
-                    EarliestMaxWeight = exercises.Min(e => e.EarliestMaxWeight),
-                    LatestMaxWeight = exercises.Max(e => e.LatestMaxWeight)
-                });
-            }
-
-            return result;
+                    MuscleGroup = x.mg,
+                    Exercises = x.exercises,
+                    EarliestMaxWeight = x.exercises.Min(e => e.EarliestMaxWeight),
+                    LatestMaxWeight = x.exercises.Max(e => e.LatestMaxWeight)
+                })
+                .ToList();
         }
         #endregion
 
         #region "GET PROGRESS FOR MUSCLE GROUP ASYNC"
         public async Task<List<ExerciseProgress>> GetProgressForMuscleGroupAsync(string muscleGroup, int days = 30)
         {
-            var progressList = new List<ExerciseProgress>();
             var exercises = await workoutService.GetAllExercisesAsync();
-            var muscleExercises = exercises.Where(e => e.MuscleGroup == muscleGroup).ToList();           
-            foreach (var exercise in muscleExercises)
-            {
-                var progress = await GetExerciseProgressAsync(exercise.Id, days);
-                if (progress.Sets.Count > 0)
-                {
-                    progressList.Add(progress);
-                }
-            }
-            return progressList.OrderByDescending(x => x.MaxWeight).ToList();
+            var muscleExercises = exercises.Where(e => e.MuscleGroup == muscleGroup).ToList();
+
+            // Fetch all exercise progress in parallel
+            var progressTasks = muscleExercises
+                .Select(e => GetExerciseProgressAsync(e.Id, days))
+                .ToList();
+            var allProgress = await Task.WhenAll(progressTasks);
+
+            return allProgress
+                .Where(p => p.Sets.Count > 0)
+                .OrderByDescending(p => p.MaxWeight)
+                .ToList();
         }
         #endregion
 
         #region "GET STRENGTH PROGRESS ASYNC"
         public async Task<Dictionary<string, double>> GetStrengthProgressAsync(int days = 30)
-        {  
-            var strengthDict = new Dictionary<string, double>();
+        {
             var exercises = await workoutService.GetAllExercisesAsync();
-            foreach (var exercise in exercises)
-            {
-                var progress = await GetExerciseProgressAsync(exercise.Id, days);
-                if (progress.MaxWeight > 0)
-                {
-                    strengthDict[exercise.Name] = progress.MaxWeight;
-                }
-            }
-            return strengthDict.OrderByDescending(i => i.Value).ToDictionary(i => i.Key, i => i.Value);
+
+            // Fetch all exercise progress in parallel
+            var progressTasks = exercises
+                .Select(e => GetExerciseProgressAsync(e.Id, days))
+                .ToList();
+            var allProgress = await Task.WhenAll(progressTasks);
+
+            return allProgress
+                .Where(p => p.MaxWeight > 0)
+                .OrderByDescending(p => p.MaxWeight)
+                .ToDictionary(p => p.ExerciseName, p => p.MaxWeight);
         }
         #endregion
-
     }
 }

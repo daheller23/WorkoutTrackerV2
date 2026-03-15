@@ -11,7 +11,8 @@ namespace WorkoutTrackerV2.Services
         private readonly SemaphoreSlim _initLock = new(1, 1); // To avoid race condition if InitializeAsync is called from multiple threads simultaneuously
         private SQLiteAsyncConnection _database = null!;
         private const string DbFileName = "workout_tracker.db3";
-        private bool _initialized = false;    
+        private bool _initialized = false;
+        private List<Exercise>? _exerciseCache;
         #endregion
 
         public WorkoutService()
@@ -136,10 +137,7 @@ namespace WorkoutTrackerV2.Services
                 new() { Name = "Shoulder Press", MuscleGroup = "Shoulders" },
             };
 
-            foreach (var exercise in defaultExercises)
-            {
-                await _database.InsertAsync(exercise);
-            }
+            await _database.InsertAllAsync(defaultExercises);
         }
         #endregion
 
@@ -171,7 +169,8 @@ namespace WorkoutTrackerV2.Services
         public async Task<List<Exercise>> GetAllExercisesAsync()
         {
             await InitializeAsync();
-            return await _database.Table<Exercise>().ToListAsync();
+            _exerciseCache ??= await _database.Table<Exercise>().ToListAsync();
+            return _exerciseCache;
         }
         #endregion
 
@@ -195,7 +194,7 @@ namespace WorkoutTrackerV2.Services
         public async Task<List<WorkoutSet>> GetExerciseHistoryAsync(int exerciseId, int days = 30)
         {
             await InitializeAsync();
-            var startDate = DateTime.Now.AddDays(-days);
+            var startDate = days == 0 ? DateTime.MinValue : DateTime.Now.AddDays(-days);
             return await _database.Table<WorkoutSet>()
                 .Where(x => x.ExerciseId == exerciseId && x.CreatedDate >= startDate)
                 .OrderBy(x => x.CreatedDate)

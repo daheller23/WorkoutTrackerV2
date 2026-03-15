@@ -59,6 +59,11 @@ namespace WorkoutTrackerV2.ViewModels
         [RelayCommand]
         private async Task LoadData()
         {
+            if (IsLoading)
+            {
+                return;
+            }
+
             try
             {
                 IsLoading = true;

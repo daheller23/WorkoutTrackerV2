@@ -26,34 +26,40 @@ namespace WorkoutTrackerV2.ViewModels
         [RelayCommand]
         private async Task LoadAnalytics()
         {
+            if (IsLoading) return;
             try
             {
                 IsLoading = true;
 
+                // Run independent calls in parallel
+                var statsTask = analyticsService.GetDailyStatsAsync(SelectedDays);
+                var strengthTask = analyticsService.GetStrengthProgressAsync(SelectedDays);
+                var muscleTask = analyticsService.GetMuscleGroupProgressAsync(SelectedDays);
+                var exercisesTask = workoutService.GetAllExercisesAsync();
+
+                await Task.WhenAll(statsTask, strengthTask, muscleTask, exercisesTask);
+
                 // Summary stats
-                var stats = await analyticsService.GetDailyStatsAsync(SelectedDays);
+                var stats = statsTask.Result;
                 DailyStats = stats;
                 TotalVolumeLifted = stats.Sum(s => s.TotalWeightLifted);
                 AverageVolume = stats.Count > 0 ? TotalVolumeLifted / stats.Count : 0;
                 TotalSets = stats.Sum(s => s.SetsCompleted);
 
-                // Top exercises
-                var strengthProgress = await analyticsService.GetStrengthProgressAsync(SelectedDays);
-                TopExercises.Clear();
-                var exercises = await workoutService.GetAllExercisesAsync();
-                foreach (var kvp in strengthProgress.Take(5))
-                {
-                    var exercise = exercises.FirstOrDefault(e => e.Name == kvp.Key);
-                    if (exercise is not null)
-                    {
-                        var progress = await analyticsService.GetExerciseProgressAsync(exercise.Id, SelectedDays);
-                        TopExercises.Add(progress);
-                    }
-                }
+                // Top exercises — fetch all progress in parallel
+                var exercises = exercisesTask.Result;
+                var topFive = strengthTask.Result.Take(5).ToList();
+                var progressTasks = topFive
+                    .Select(kvp => exercises.FirstOrDefault(e => e.Name == kvp.Key))
+                    .Where(e => e is not null)
+                    .Select(e => analyticsService.GetExerciseProgressAsync(e!.Id, SelectedDays))
+                    .ToList();
+
+                var topExercises = await Task.WhenAll(progressTasks);
+                TopExercises = new ObservableCollection<ExerciseProgress>(topExercises);
 
                 // Muscle group progress
-                var muscleProgress = await analyticsService.GetMuscleGroupProgressAsync(SelectedDays);
-                MuscleGroupProgress = new ObservableCollection<MuscleGroupProgress>(muscleProgress);
+                MuscleGroupProgress = new ObservableCollection<MuscleGroupProgress>(muscleTask.Result);
             }
             catch (Exception ex)
             {
@@ -66,7 +72,7 @@ namespace WorkoutTrackerV2.ViewModels
         }
         #endregion
 
-        #region "COMMANDS"
+        #region "SELECT MUSCLE GROUP PROGRESS"
         [RelayCommand]
         private async Task SelectMuscleGroupProgress(MuscleGroupProgress group)
         {

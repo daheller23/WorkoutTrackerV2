@@ -25,6 +25,18 @@ namespace WorkoutTrackerV2.ViewModels
         [RelayCommand]
         private async Task LoadExercises()
         {
+            if (IsLoading)
+            {
+                return;
+            }
+                
+            // Only reload if list is empty
+            if (_allExercises.Count > 0)
+            {
+                FilterExercises();
+                return;
+            }
+
             try
             {
                 IsLoading = true;
@@ -47,18 +59,21 @@ namespace WorkoutTrackerV2.ViewModels
         private void FilterExercises()
         {
             var filtered = string.IsNullOrWhiteSpace(SearchText)
-                ? _allExercises.Take(50)
+                ? _allExercises.Take(50).ToList()
                 : _allExercises
                     .Where(e =>
                         e.Name.Contains(SearchText, StringComparison.OrdinalIgnoreCase) ||
                         e.MuscleGroup.Contains(SearchText, StringComparison.OrdinalIgnoreCase))
-                    .Take(50);
+                    .Take(50)
+                    .ToList();
 
-            FilteredExercises.Clear();
-            foreach (var exercise in filtered)
+            // Only update if results actually changed
+            if (filtered.SequenceEqual(FilteredExercises))
             {
-                FilteredExercises.Add(exercise);
-            }             
+                return;
+            }
+
+            FilteredExercises = new ObservableCollection<Exercise>(filtered);
         }
         #endregion
 

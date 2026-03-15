@@ -20,22 +20,28 @@ namespace WorkoutTrackerV2.ViewModels
         [RelayCommand]
         private async Task LoadData()
         {
+            if (IsLoading) return;
             try
             {
                 IsLoading = true;
-                TotalWorkouts = await workoutService.GetTotalWorkoutCountAsync();
-                CurrentStreak = await analyticsService.GetCurrentStreak();
-                LastWorkoutDate = await workoutService.GetLastWorkoutDateAsync();
-                AverageDuration = await analyticsService.GetAverageWorkoutDurationAsync();
 
-                var allSessions = await workoutService.GetAllSessionsAsync();
-                var recent = allSessions.Take(5).ToList();
+                var totalWorkoutsTask = workoutService.GetTotalWorkoutCountAsync();
+                var currentStreakTask = analyticsService.GetCurrentStreak();
+                var lastWorkoutDateTask = workoutService.GetLastWorkoutDateAsync();
+                var averageDurationTask = analyticsService.GetAverageWorkoutDurationAsync();
+                var allSessionsTask = workoutService.GetAllSessionsAsync();
 
+                await Task.WhenAll(totalWorkoutsTask, currentStreakTask, lastWorkoutDateTask, averageDurationTask, allSessionsTask);
+
+                TotalWorkouts = totalWorkoutsTask.Result;
+                CurrentStreak = currentStreakTask.Result;
+                LastWorkoutDate = lastWorkoutDateTask.Result;
+                AverageDuration = averageDurationTask.Result;
+
+                var recent = allSessionsTask.Result.Take(5).ToList();
                 RecentSessions.Clear();
                 foreach (var session in recent)
-                {
                     RecentSessions.Add(session);
-                }
             }
             catch (Exception ex)
             {

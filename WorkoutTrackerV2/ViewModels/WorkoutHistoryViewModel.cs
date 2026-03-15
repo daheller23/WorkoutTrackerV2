@@ -39,27 +39,31 @@ namespace WorkoutTrackerV2.ViewModels
         [RelayCommand]
         private async Task LoadSessions()
         {
+            if (IsLoading) return;
             try
             {
                 IsLoading = true;
                 Sessions.Clear();
 
-                var startDate = DateTime.Now.AddDays(-SelectedDays).Date;
+                var startDate = SelectedDays == 0 ? DateTime.MinValue : DateTime.Now.AddDays(-SelectedDays).Date;
                 var endDate = DateTime.Now.Date.AddDays(1);
                 var allSessions = await workoutService.GetSessionsAsync(startDate, endDate);
 
-                foreach (var session in allSessions)
+                // Fetch all sets in parallel instead of one by one
+                var setTasks = allSessions.Select(s => workoutService.GetSetsForSessionAsync(s.Id)).ToList();
+                var allSets = await Task.WhenAll(setTasks);
+
+                for (int i = 0; i < allSessions.Count; i++)
                 {
-                    var sets = await workoutService.GetSetsForSessionAsync(session.Id);
-                    var detail = new WorkoutSessionDetail
+                    var sets = allSets[i];
+                    Sessions.Add(new WorkoutSessionDetail
                     {
-                        Session = session,
+                        Session = allSessions[i],
                         SetCount = sets.Count,
                         TotalReps = sets.Sum(s => s.Reps),
                         TotalWeight = sets.Sum(s => s.Weight * s.Reps),
                         Sets = sets
-                    };
-                    Sessions.Add(detail);
+                    });
                 }
             }
             catch (Exception ex)

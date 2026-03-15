@@ -97,7 +97,7 @@
                             </StackLayout>
                         </CollectionView.EmptyView>
                         <CollectionView.ItemTemplate>
-                            <DataTemplate>
+                            <DataTemplate x:DataType="models:ExerciseProgress">
                                 <Grid ColumnDefinitions="*,Auto,Auto,Auto"
                                       ColumnSpacing="16"
                                       Padding="16,14"
