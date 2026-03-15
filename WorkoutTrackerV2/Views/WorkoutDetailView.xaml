@@ -11,7 +11,7 @@
     <Shell.BackButtonBehavior>
         <BackButtonBehavior IsVisible="False" IsEnabled="False"/>
     </Shell.BackButtonBehavior>
-    
+
     <Grid RowDefinitions="Auto,*" RowSpacing="0">
 
         <!-- Header -->
@@ -50,55 +50,23 @@
 
                 <!-- Stats Row -->
                 <Grid ColumnDefinitions="*,*,*" ColumnSpacing="12">
-                    <!-- Duration -->
                     <StackLayout BackgroundColor="#F0F7FF" Padding="16,20" Spacing="6">
-                        <Label Text="⏱"
-                               FontSize="20"
-                               HorizontalOptions="Center"/>
+                        <Label Text="⏱" FontSize="20" HorizontalOptions="Center"/>
                         <Label Text="{Binding Session.Duration, StringFormat='{0:hh\\:mm}'}"
-                               FontSize="22"
-                               FontAttributes="Bold"
-                               TextColor="#1F77F0"
-                               HorizontalOptions="Center"/>
-                        <Label Text="duration"
-                               FontSize="10"
-                               TextColor="#1F77F0"
-                               HorizontalOptions="Center"
-                               CharacterSpacing="0.3"/>
+                               FontSize="22" FontAttributes="Bold" TextColor="#1F77F0" HorizontalOptions="Center"/>
+                        <Label Text="duration" FontSize="10" TextColor="#1F77F0" HorizontalOptions="Center" CharacterSpacing="0.3"/>
                     </StackLayout>
-
-                    <!-- Total Exercises -->
                     <StackLayout Grid.Column="1" BackgroundColor="#FFF8E1" Padding="16,20" Spacing="6">
-                        <Label Text="🏋️"
-                               FontSize="20"
-                               HorizontalOptions="Center"/>
+                        <Label Text="🏋️" FontSize="20" HorizontalOptions="Center"/>
                         <Label Text="{Binding Session.TotalExercises}"
-                               FontSize="22"
-                               FontAttributes="Bold"
-                               TextColor="#FF9800"
-                               HorizontalOptions="Center"/>
-                        <Label Text="exercises"
-                               FontSize="10"
-                               TextColor="#FF9800"
-                               HorizontalOptions="Center"
-                               CharacterSpacing="0.3"/>
+                               FontSize="22" FontAttributes="Bold" TextColor="#FF9800" HorizontalOptions="Center"/>
+                        <Label Text="exercises" FontSize="10" TextColor="#FF9800" HorizontalOptions="Center" CharacterSpacing="0.3"/>
                     </StackLayout>
-
-                    <!-- Total Sets -->
                     <StackLayout Grid.Column="2" BackgroundColor="#F1F8F1" Padding="16,20" Spacing="6">
-                        <Label Text="💪"
-                               FontSize="20"
-                               HorizontalOptions="Center"/>
-                        <Label Text="{Binding Sets.Count}"
-                               FontSize="22"
-                               FontAttributes="Bold"
-                               TextColor="#4CAF50"
-                               HorizontalOptions="Center"/>
-                        <Label Text="sets"
-                               FontSize="10"
-                               TextColor="#4CAF50"
-                               HorizontalOptions="Center"
-                               CharacterSpacing="0.3"/>
+                        <Label Text="💪" FontSize="20" HorizontalOptions="Center"/>
+                        <Label Text="{Binding ExerciseGroups.Count}"
+                               FontSize="22" FontAttributes="Bold" TextColor="#4CAF50" HorizontalOptions="Center"/>
+                        <Label Text="exercises" FontSize="10" TextColor="#4CAF50" HorizontalOptions="Center" CharacterSpacing="0.3"/>
                     </StackLayout>
                 </Grid>
 
@@ -115,46 +83,31 @@
                            LineBreakMode="WordWrap"/>
                 </StackLayout>
 
-                <!-- Sets List -->
+                <!-- Exercise Groups -->
                 <StackLayout Spacing="12">
-                    <Label Text="📋  SETS"
+                    <Label Text="📋  EXERCISES"
                            FontSize="11"
                            FontAttributes="Bold"
                            TextColor="#999999"
                            CharacterSpacing="1"/>
 
-                    <CollectionView ItemsSource="{Binding Sets}" SelectionMode="None">
+                    <CollectionView ItemsSource="{Binding ExerciseGroups}" SelectionMode="None">
                         <CollectionView.EmptyView>
-                            <Label Text="No sets found"
+                            <Label Text="No exercises found"
                                    FontSize="12"
                                    TextColor="#D0D0D0"
                                    HorizontalOptions="Center"
                                    Margin="20,40"/>
                         </CollectionView.EmptyView>
                         <CollectionView.ItemTemplate>
-                            <DataTemplate x:DataType="models:WorkoutSet">
-                                <StackLayout Margin="0,0,0,10" BackgroundColor="#FFFFFF">
-                                    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12" Padding="16,14">
+                            <DataTemplate x:DataType="models:ExerciseGroup">
+                                <StackLayout Margin="0,0,0,12">
+                                    <StackLayout BackgroundColor="#FFFFFF" Padding="16" Spacing="12">
 
-                                        <!-- Set Number Badge -->
-                                        <StackLayout Grid.Column="0"
-                                                     BackgroundColor="#F0F7FF"
-                                                     WidthRequest="36"
-                                                     HeightRequest="36"
-                                                     HorizontalOptions="Center"
-                                                     VerticalOptions="Center">
-                                            <Label Text="{Binding SetNumber}"
-                                                   FontSize="13"
-                                                   FontAttributes="Bold"
-                                                   TextColor="#1F77F0"
-                                                   HorizontalOptions="Center"
-                                                   VerticalOptions="Center"/>
-                                        </StackLayout>
-
-                                        <!-- Exercise Name + Muscle Group -->
-                                        <StackLayout Grid.Column="1" Spacing="3" VerticalOptions="Center">
+                                        <!-- Exercise Header -->
+                                        <StackLayout Spacing="2">
                                             <Label Text="{Binding Exercise.Name}"
-                                                   FontSize="14"
+                                                   FontSize="15"
                                                    FontAttributes="Bold"
                                                    TextColor="#000000"/>
                                             <Label Text="{Binding Exercise.MuscleGroup}"
@@ -162,27 +115,71 @@
                                                    TextColor="#999999"/>
                                         </StackLayout>
 
-                                        <!-- Reps + Weight -->
-                                        <StackLayout Grid.Column="2" Spacing="3" VerticalOptions="Center" HorizontalOptions="End">
-                                            <Label Text="{Binding Reps, StringFormat='{0} reps'}"
-                                                   FontSize="13"
-                                                   FontAttributes="Bold"
-                                                   TextColor="#1F77F0"
-                                                   HorizontalOptions="End"/>
-                                            <Label FontSize="11"
-                                                   TextColor="#999999"
-                                                   HorizontalOptions="End">
-                                                <Label.Text>
-                                                    <MultiBinding StringFormat="{}{0} {1}">
-                                                        <Binding Path="Weight"/>
-                                                        <Binding Path="WeightUnit"/>
-                                                    </MultiBinding>
-                                                </Label.Text>
-                                            </Label>
+                                        <BoxView HeightRequest="0.5" Color="#F0F0F0"/>
+
+                                        <!-- Table Header -->
+                                        <Grid ColumnDefinitions="30,*,*,80" ColumnSpacing="8">
+                                            <Label Grid.Column="0" Text="Set" FontSize="11" TextColor="#999999" FontAttributes="Bold" HorizontalOptions="Center"/>
+                                            <Label Grid.Column="1" Text="Reps" FontSize="11" TextColor="#999999" FontAttributes="Bold" HorizontalOptions="Center"/>
+                                            <Label Grid.Column="2" Text="Weight" FontSize="11" TextColor="#999999" FontAttributes="Bold" HorizontalOptions="Center"/>
+                                            <Label Grid.Column="3" Text="Unit" FontSize="11" TextColor="#999999" FontAttributes="Bold" HorizontalOptions="Center"/>
+                                        </Grid>
+
+                                        <!-- Sets Rows -->
+                                        <StackLayout BindableLayout.ItemsSource="{Binding Sets}" Spacing="6">
+                                            <BindableLayout.ItemTemplate>
+                                                <DataTemplate x:DataType="models:WorkoutSet">
+                                                    <Grid ColumnDefinitions="30,*,*,80" ColumnSpacing="8">
+
+                                                        <!-- Set Number -->
+                                                        <Border Grid.Column="0"
+                                                                BackgroundColor="#F0F7FF"
+                                                                WidthRequest="28"
+                                                                HeightRequest="28"
+                                                                VerticalOptions="Center"
+                                                                StrokeThickness="0">
+                                                            <Border.StrokeShape>
+                                                                <RoundRectangle CornerRadius="6"/>
+                                                            </Border.StrokeShape>
+                                                            <Label Text="{Binding SetNumber}"
+                                                                   FontSize="12"
+                                                                   FontAttributes="Bold"
+                                                                   TextColor="#1F77F0"
+                                                                   HorizontalOptions="Center"
+                                                                   VerticalOptions="Center"/>
+                                                        </Border>
+
+                                                        <!-- Reps -->
+                                                        <Label Grid.Column="1"
+                                                               Text="{Binding Reps}"
+                                                               FontSize="13"
+                                                               FontAttributes="Bold"
+                                                               TextColor="#1F77F0"
+                                                               HorizontalOptions="Center"
+                                                               VerticalOptions="Center"/>
+
+                                                        <!-- Weight -->
+                                                        <Label Grid.Column="2"
+                                                               Text="{Binding Weight}"
+                                                               FontSize="13"
+                                                               TextColor="#000000"
+                                                               HorizontalOptions="Center"
+                                                               VerticalOptions="Center"/>
+
+                                                        <!-- Unit -->
+                                                        <Label Grid.Column="3"
+                                                               Text="{Binding WeightUnit}"
+                                                               FontSize="13"
+                                                               TextColor="#999999"
+                                                               HorizontalOptions="Center"
+                                                               VerticalOptions="Center"/>
+
+                                                    </Grid>
+                                                </DataTemplate>
+                                            </BindableLayout.ItemTemplate>
                                         </StackLayout>
 
-                                    </Grid>
-                                    <BoxView HeightRequest="1" Color="#F5F5F5"/>
+                                    </StackLayout>
                                 </StackLayout>
                             </DataTemplate>
                         </CollectionView.ItemTemplate>

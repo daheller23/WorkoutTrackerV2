@@ -10,18 +10,18 @@ namespace WorkoutTrackerV2.ViewModels
     public partial class WorkoutDetailViewModel(IWorkoutService workoutService) : BaseViewModel
     {
         #region "OBSERVABLE PROPERTIES"
-        [ObservableProperty]
-        private WorkoutSession _session;
+        [ObservableProperty] private WorkoutSession _session = new();
+        [ObservableProperty] private ObservableCollection<ExerciseGroup> _exerciseGroups = [];
+        #endregion
+
+        #region "ON SESSION CHANGED"
         partial void OnSessionChanged(WorkoutSession value)
         {
-            if (value != null)
+            if (value is not null)
             {
                 LoadSetsCommand.Execute(null);
-            }
+            }             
         }
-
-        [ObservableProperty]
-        private ObservableCollection<WorkoutSet> _sets = [];
         #endregion
 
         #region "LOAD SETS"
@@ -31,12 +31,23 @@ namespace WorkoutTrackerV2.ViewModels
             try
             {
                 IsLoading = true;
-                Sets.Clear();
+                ExerciseGroups.Clear();
+
                 var sets = await workoutService.GetSetsForSessionAsync(Session.Id);
                 foreach (var set in sets)
                 {
                     set.Exercise = await workoutService.GetExerciseAsync(set.ExerciseId);
-                    Sets.Add(set);
+                    var existing = ExerciseGroups.FirstOrDefault(g => g.Exercise.Id == set.ExerciseId);
+                    if (existing is not null)
+                    {
+                        existing.Sets.Add(set);
+                    }
+                    else
+                    {
+                        var group = new ExerciseGroup(set.Exercise);
+                        group.Sets.Add(set);
+                        ExerciseGroups.Add(group);
+                    }
                 }
             }
             catch (Exception ex)
@@ -52,10 +63,7 @@ namespace WorkoutTrackerV2.ViewModels
 
         #region "GO BACK"
         [RelayCommand]
-        private async Task GoBack()
-        {
-            await Shell.Current.GoToAsync(Routes.Back);
-        }
+        private static Task GoBack() => Shell.Current.GoToAsync(Routes.Back);
         #endregion
 
         #region "EDIT WORKOUT"

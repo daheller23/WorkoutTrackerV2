@@ -7,55 +7,52 @@ using WorkoutTrackerV2.Services;
 namespace WorkoutTrackerV2.ViewModels
 {
     [QueryProperty(nameof(Session), "Session")]
+    [QueryProperty(nameof(SelectedExercise), "SelectedExercise")]
     public partial class EditWorkoutViewModel(IWorkoutService workoutService) : BaseViewModel
     {
         #region "OBSERVABLE PROPERTIES"
-        [ObservableProperty]
-        private WorkoutSession _session;
+        [ObservableProperty] private WorkoutSession _session = new();
+        [ObservableProperty] private ObservableCollection<ExerciseGroup> _exerciseGroups = [];
+        [ObservableProperty] private Exercise? _selectedExercise;
+        [ObservableProperty] private string _workoutName = string.Empty;
+        [ObservableProperty] private string _notes = string.Empty;
+        [ObservableProperty] private DateTime _selectedDate = DateTime.Today;
+        [ObservableProperty] private string _dayName = string.Empty;
+        [ObservableProperty] private TimeSpan _startTime;
+        [ObservableProperty] private TimeSpan _endTime;
+        #endregion
+
+        #region "ON SESSION CHANGED"
         partial void OnSessionChanged(WorkoutSession value)
         {
-            if (value != null)
+            if (value is not null)
+            {
                 LoadDataCommand.Execute(null);
+            }         
         }
+        #endregion
 
-        [ObservableProperty]
-        private ObservableCollection<Exercise> _allExercises = [];
-
-        [ObservableProperty]
-        private ObservableCollection<WorkoutSet> _workoutExercises = [];
-
-        [ObservableProperty]
-        private Exercise _selectedExercise = null;
-
-        [ObservableProperty]
-        private int _currentSetNumber = 1;
-
-        [ObservableProperty]
-        private int _currentReps = 0;
-
-        [ObservableProperty]
-        private double _currentWeight = 0;
-
-        [ObservableProperty]
-        private string _weightUnit = "lbs";
-
-        [ObservableProperty]
-        private string _workoutName = "";
-
-        [ObservableProperty]
-        private string _notes = "";
-
-        [ObservableProperty]
-        private DateTime _selectedDate = DateTime.Today;
-
-        [ObservableProperty]
-        private string _dayName = string.Empty;
-
-        [ObservableProperty]
-        private TimeSpan _startTime = TimeSpan.Zero;
-
-        [ObservableProperty]
-        private TimeSpan _endTime = TimeSpan.Zero;
+        #region "ON SELECTED EXERCISE CHANGED"
+        partial void OnSelectedExerciseChanged(Exercise? value)
+        {
+            if (value is null)
+            {
+                return;
+            }
+                
+            var existing = ExerciseGroups.FirstOrDefault(i => i.Exercise.Id == value.Id);
+            if (existing is not null)
+            {
+                existing.AddSet();
+            }          
+            else
+            {
+                var group = new ExerciseGroup(value);
+                group.AddSet();
+                ExerciseGroups.Add(group);
+            }
+            SelectedExercise = null;
+        }
         #endregion
 
         #region "LOAD DATA"
@@ -66,26 +63,32 @@ namespace WorkoutTrackerV2.ViewModels
             {
                 IsLoading = true;
 
-                AllExercises.Clear();
-                var exercises = await workoutService.GetAllExercisesAsync();
-                foreach (var exercise in exercises)
-                {
-                    AllExercises.Add(exercise);
-                }
-                    
                 WorkoutName = Session.DayName;
                 Notes = Session.Notes;
                 SelectedDate = Session.Date;
                 DayName = Session.Date.ToString("dddd");
 
-                WorkoutExercises.Clear();
+                ExerciseGroups.Clear();
                 var sets = await workoutService.GetSetsForSessionAsync(Session.Id);
                 foreach (var set in sets)
                 {
                     set.Exercise = await workoutService.GetExerciseAsync(set.ExerciseId);
-                    WorkoutExercises.Add(set);
+                    var existing = ExerciseGroups.FirstOrDefault(i => i.Exercise.Id == set.ExerciseId);
+                    if (existing is not null)
+                    {
+                        set.ParentGroup = existing;
+                        set.DeleteCommand = new CommunityToolkit.Mvvm.Input.RelayCommand(() => existing.RemoveSet(set));
+                        existing.Sets.Add(set);
+                    }
+                    else
+                    {
+                        var group = new ExerciseGroup(set.Exercise);
+                        set.ParentGroup = group;
+                        set.DeleteCommand = new CommunityToolkit.Mvvm.Input.RelayCommand(() => group.RemoveSet(set));
+                        group.Sets.Add(set);
+                        ExerciseGroups.Add(group);
+                    }
                 }
-                CurrentSetNumber = WorkoutExercises.Count + 1;
             }
             catch (Exception ex)
             {
@@ -98,60 +101,42 @@ namespace WorkoutTrackerV2.ViewModels
         }
         #endregion
 
-        #region "ADD SET"
+        #region "OPEN EXERCISE PICKER"
         [RelayCommand]
-        private async Task AddSet()
+        private static async Task OpenExercisePicker()
         {
-            if (SelectedExercise == null)
-            {
-                await Shell.Current.DisplayAlertAsync("Error", "Please select an exercise first", "OK");
-                return;
-            }
-            WorkoutExercises.Add(new WorkoutSet
-            {
-                Exercise = SelectedExercise,
-                ExerciseId = SelectedExercise.Id,
-                SetNumber = CurrentSetNumber,
-                Reps = CurrentReps,
-                Weight = CurrentWeight,
-                WeightUnit = WeightUnit,
-                WorkoutSessionId = Session.Id
-            });
-            CurrentSetNumber++;
+            await Shell.Current.GoToAsync(Routes.ExercisePicker);
         }
         #endregion
 
-        #region "REMOVE SET"
+        #region "ADD SET"
         [RelayCommand]
-        private void RemoveSet(WorkoutSet set)
-        {
-            WorkoutExercises.Remove(set);
-            for (int i = 0; i < WorkoutExercises.Count; i++)
-            {
-                WorkoutExercises[i].SetNumber = i + 1;
-            }               
-            CurrentSetNumber = WorkoutExercises.Count + 1;
-        }
+        private static void AddSet(ExerciseGroup group) => group.AddSet();
+        #endregion
+
+        #region "REMOVE EXERCISE"
+        [RelayCommand]
+        private void RemoveExercise(ExerciseGroup group) => ExerciseGroups.Remove(group);
         #endregion
 
         #region "SAVE WORKOUT"
         [RelayCommand]
         private async Task SaveWorkout()
         {
+            if (ExerciseGroups.Count == 0)
+            {
+                await Shell.Current.DisplayAlertAsync("Error", "Please add at least one exercise", "OK");
+                return;
+            }
+
             try
             {
-                if (WorkoutExercises.Count == 0)
-                {
-                    await Shell.Current.DisplayAlertAsync("Error", "Please add at least one set", "OK");
-                    return;
-                }
-
                 IsLoading = true;
 
                 Session.DayName = string.IsNullOrWhiteSpace(WorkoutName) ? DayName : WorkoutName;
                 Session.Notes = Notes;
                 Session.Date = SelectedDate;
-                Session.TotalExercises = WorkoutExercises.Select(w => w.Exercise.Id).Distinct().Count();
+                Session.TotalExercises = ExerciseGroups.Count;
 
                 await workoutService.SaveSessionAsync(Session);
 
@@ -161,21 +146,23 @@ namespace WorkoutTrackerV2.ViewModels
                     await workoutService.DeleteSetAsync(old.Id);
                 }
                     
-                foreach (var workoutSet in WorkoutExercises)
+                int setNumber = 1;
+                foreach (var group in ExerciseGroups)
                 {
-                    var set = new WorkoutSet
+                    foreach (var set in group.Sets)
                     {
-                        ExerciseId = workoutSet.Exercise.Id,
-                        WorkoutSessionId = Session.Id,
-                        SetNumber = workoutSet.SetNumber,
-                        Reps = workoutSet.Reps,
-                        Weight = workoutSet.Weight,
-                        WeightUnit = workoutSet.WeightUnit,
-                        CreatedDate = SelectedDate
-                    };
-                    await workoutService.SaveSetAsync(set);
+                        await workoutService.SaveSetAsync(new WorkoutSet
+                        {
+                            ExerciseId = group.Exercise.Id,
+                            WorkoutSessionId = Session.Id,
+                            SetNumber = setNumber++,
+                            Reps = set.Reps,
+                            Weight = set.Weight,
+                            WeightUnit = set.WeightUnit,
+                            CreatedDate = SelectedDate
+                        });
+                    }
                 }
-
                 await Shell.Current.GoToAsync(Routes.Back);
             }
             catch (Exception ex)
@@ -191,10 +178,8 @@ namespace WorkoutTrackerV2.ViewModels
 
         #region "GO BACK"
         [RelayCommand]
-        private async Task GoBack()
-        {
-            await Shell.Current.GoToAsync(Routes.Back);
-        }
+        private static Task GoBack() => Shell.Current.GoToAsync(Routes.Back);
         #endregion
+
     }
 }
