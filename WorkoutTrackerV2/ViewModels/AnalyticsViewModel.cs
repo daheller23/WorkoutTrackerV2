@@ -16,6 +16,9 @@ namespace WorkoutTrackerV2.ViewModels
         [ObservableProperty] private double _totalVolumeLifted;
         [ObservableProperty] private double _averageVolume;
         [ObservableProperty] private int _totalSets;
+        [ObservableProperty] private Dictionary<DateTime, double> _heatmapData = [];
+        [ObservableProperty] private DateTime _heatmapMonth = DateTime.Today;
+        [ObservableProperty] private string _heatmapTitle = DateTime.Today.ToString("MMMM yyyy");
         #endregion
 
         #region "PARTIAL METHODS"
@@ -45,6 +48,15 @@ namespace WorkoutTrackerV2.ViewModels
                 TotalVolumeLifted = stats.Sum(s => s.TotalWeightLifted);
                 AverageVolume = stats.Count > 0 ? TotalVolumeLifted / stats.Count : 0;
                 TotalSets = stats.Sum(s => s.SetsCompleted);
+
+                // Heatmap data
+                var heatmap = new Dictionary<DateTime, double>();
+                foreach (var stat in stats)
+                {
+                    heatmap[stat.Date] = stat.TotalWeightLifted;
+                }                  
+                HeatmapData = heatmap;
+                HeatmapTitle = DateTime.Today.ToString("MMMM yyyy");
 
                 // Top exercises — fetch all progress in parallel
                 var exercises = exercisesTask.Result;

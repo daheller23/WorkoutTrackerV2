@@ -6,6 +6,7 @@
              xmlns:converters="clr-namespace:WorkoutTrackerV2.Converters"
              xmlns:models="clr-namespace:WorkoutTrackerV2.Models"
              x:DataType="vm:AnalyticsViewModel"
+             xmlns:controls="clr-namespace:WorkoutTrackerV2.Controls"
              Title="Analytics"
              BackgroundColor="#FAFAFA">
 
@@ -52,6 +53,47 @@
                             </x:Array>
                         </Picker.ItemsSource>
                     </Picker>
+                </StackLayout>
+
+                <!-- Workout Heatmap -->
+                <StackLayout Spacing="12" BackgroundColor="#FFFFFF" Padding="16">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <Label Grid.Column="0"
+                           Text="WORKOUT FREQUENCY"
+                           FontSize="11"
+                           FontAttributes="Bold"
+                           TextColor="#999999"
+                           CharacterSpacing="1"
+                           VerticalOptions="Center"/>
+                        <Label Grid.Column="1"
+                           Text="{Binding HeatmapTitle}"
+                           FontSize="12"
+                           FontAttributes="Bold"
+                           TextColor="#1F77F0"
+                           VerticalOptions="Center"/>
+                    </Grid>
+                    
+                    <controls:WorkoutHeatmapView
+                        HeatmapData="{Binding HeatmapData}"
+                        Month="{Binding HeatmapMonth}"
+                        HeightRequest="240"/>
+
+                    <!-- Legend -->
+                    <StackLayout Orientation="Horizontal" HorizontalOptions="End" Spacing="6">
+                        <Label Text="Less"
+                           FontSize="10"
+                           TextColor="#999999"
+                           VerticalOptions="Center"/>
+                                    <BoxView Color="#F0F0F0" WidthRequest="14" HeightRequest="14" CornerRadius="3"/>
+                                    <BoxView Color="#C8E6FF" WidthRequest="14" HeightRequest="14" CornerRadius="3"/>
+                                    <BoxView Color="#7EC0F8" WidthRequest="14" HeightRequest="14" CornerRadius="3"/>
+                                    <BoxView Color="#4499F4" WidthRequest="14" HeightRequest="14" CornerRadius="3"/>
+                                    <BoxView Color="#1F77F0" WidthRequest="14" HeightRequest="14" CornerRadius="3"/>
+                                    <Label Text="More"
+                           FontSize="10"
+                           TextColor="#999999"
+                           VerticalOptions="Center"/>
+                    </StackLayout>
                 </StackLayout>
 
                 <!-- Summary Stats -->
