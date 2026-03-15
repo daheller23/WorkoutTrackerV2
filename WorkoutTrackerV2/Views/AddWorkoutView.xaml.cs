@@ -16,6 +16,5 @@ public partial class AddWorkoutView : ContentPage
     protected override void OnAppearing()
     {
         base.OnAppearing();
-        _vm.LoadExercisesCommand.Execute(null);
     }
 }

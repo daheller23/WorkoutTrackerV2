@@ -10,6 +10,7 @@ namespace WorkoutTrackerV2
         public const string WorkoutDetail = "//Details";
         public const string EditWorkout = "//Edit";
         public const string Settings = "//Settings";
+        public const string ExercisePicker = "//ExercisePicker";
         public const string Back = "..";
     }
 }

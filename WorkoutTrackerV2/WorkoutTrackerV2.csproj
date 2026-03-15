@@ -71,6 +71,9 @@
 		<MauiXaml Update="Views\EditWorkoutView.xaml">
 			<Generator>MSBuild:Compile</Generator>
 		</MauiXaml>
+		<MauiXaml Update="Views\ExercisePickerView.xaml">
+		  <Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
 		<MauiXaml Update="Views\HomeView.xaml">
 			<Generator>MSBuild:Compile</Generator>
 		</MauiXaml>

@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="WorkoutTrackerV2.Views.ExercisePickerView"
+             xmlns:vm="clr-namespace:WorkoutTrackerV2.ViewModels"
+             xmlns:models="clr-namespace:WorkoutTrackerV2.Models"
+             x:DataType="vm:ExercisePickerViewModel"
+             BackgroundColor="#FAFAFA">
+
+    <Shell.BackButtonBehavior>
+        <BackButtonBehavior IsVisible="False" IsEnabled="False"/>
+    </Shell.BackButtonBehavior>
+
+    <Grid RowDefinitions="Auto,Auto,*" RowSpacing="0">
+
+        <!-- Header -->
+        <StackLayout Grid.Row="0" BackgroundColor="#FFFFFF" Padding="24,16,24,24" Spacing="4">
+            <Button Text="← Back"
+                Command="{Binding CancelCommand}"
+                BackgroundColor="Transparent"
+                TextColor="#1F77F0"
+                FontSize="14"
+                Padding="0"
+                HorizontalOptions="Start"/>
+            <Label Text="Select Exercise"
+               FontSize="32"
+               FontAttributes="Bold"
+               TextColor="#000000"
+               CharacterSpacing="0.3"/>
+        </StackLayout>
+
+        <!-- Search Bar -->
+        <StackLayout Grid.Row="1" Padding="20,12" BackgroundColor="#FAFAFA">
+            <SearchBar Placeholder="Search by name or muscle group..."
+                       Text="{Binding SearchText}"
+                       BackgroundColor="#FFFFFF"
+                       TextColor="#000000"
+                       PlaceholderColor="#D0D0D0"
+                       CancelButtonColor="#1F77F0"/>
+        </StackLayout>
+
+        <!-- Exercise List -->
+        <CollectionView Grid.Row="2"
+                        ItemsSource="{Binding FilteredExercises}"
+                        SelectionMode="None"
+                        ItemSizingStrategy="MeasureFirstItem">
+            <CollectionView.EmptyView>
+                <Label Text="No exercises found"
+                       FontSize="12"
+                       TextColor="#D0D0D0"
+                       HorizontalOptions="Center"
+                       Margin="20,40"/>
+            </CollectionView.EmptyView>
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="models:Exercise">
+                    <Grid ColumnDefinitions="*,Auto"
+                          Padding="20,10"
+                          BackgroundColor="#FFFFFF"
+                          Margin="0,0,0,1">
+                        <Grid.GestureRecognizers>
+                            <TapGestureRecognizer
+                                Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ExercisePickerViewModel}}, Path=SelectExerciseCommand}"
+                                CommandParameter="{Binding .}"/>
+                        </Grid.GestureRecognizers>
+                        <StackLayout Grid.Column="0" Spacing="3" VerticalOptions="Center">
+                            <Label Text="{Binding Name}"
+                                   FontSize="14"
+                                   FontAttributes="Bold"
+                                   TextColor="#000000"/>
+                            <Label Text="{Binding MuscleGroup}"
+                                   FontSize="12"
+                                   TextColor="#999999"/>
+                        </StackLayout>
+                        <Label Grid.Column="1"
+                               Text="→"
+                               FontSize="18"
+                               TextColor="#1F77F0"
+                               VerticalOptions="Center"/>
+                    </Grid>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+
+    </Grid>
+</ContentPage>
