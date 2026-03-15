@@ -103,6 +103,17 @@ namespace WorkoutTrackerV2.ViewModels
         }
         #endregion
 
+        #region "VIEW WORKOUT"
+        [RelayCommand]
+        private static async Task ViewWorkout(WorkoutSessionDetail detail)
+        {
+            await Shell.Current.GoToAsync(Routes.WorkoutDetail, new Dictionary<string, object>
+            {
+                { "Session", detail.Session }
+            });
+        }
+        #endregion
+
     }
 }
 

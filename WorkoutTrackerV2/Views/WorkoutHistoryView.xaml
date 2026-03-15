@@ -75,6 +75,11 @@
                             <StackLayout Padding="16"
                                          BackgroundColor="#FFFFFF"
                                          Spacing="0">
+                                <StackLayout.GestureRecognizers>
+                                    <TapGestureRecognizer
+                                        Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.ViewWorkoutCommand}"
+                                        CommandParameter="{Binding .}"/>
+                                </StackLayout.GestureRecognizers>
 
                                 <!-- Header Row -->
                                 <Grid ColumnDefinitions="*,Auto"
