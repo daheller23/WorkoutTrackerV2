@@ -2,10 +2,22 @@
 {
     public class ExerciseProgress
     {
+        public int ExerciseId { get; set; }
         public string ExerciseName { get; set; } = string.Empty;
+        public string MuscleGroup { get; set; } = string.Empty;
         public List<WorkoutSet> Sets { get; set; } = [];
-        public double MaxWeight { get; set; } = 0;
-        public double AverageWeight { get; set; } = 0;
-        public int TotalReps { get; set; } = 0;
+        public double MaxWeight { get; set; }
+        public double AverageWeight { get; set; }
+        public int TotalReps { get; set; }
+        public List<ProgressPoint> Points { get; set; } = [];
+        public double EarliestMaxWeight { get; set; }
+        public double LatestMaxWeight { get; set; }
+        public bool IsTrending => LatestMaxWeight >= EarliestMaxWeight;
+    }
+
+    public class ProgressPoint
+    {
+        public DateTime Date { get; set; }
+        public double MaxWeight { get; set; }
     }
 }

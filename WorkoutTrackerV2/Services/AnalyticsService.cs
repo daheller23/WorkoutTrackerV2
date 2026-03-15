@@ -81,15 +81,54 @@ namespace WorkoutTrackerV2.Services
         {
             var sets = await workoutService.GetExerciseHistoryAsync(exerciseId, days);
             var exercise = await workoutService.GetExerciseAsync(exerciseId);
-            var progress = new ExerciseProgress
+
+            var points = sets
+                .GroupBy(s => s.CreatedDate.Date)
+                .Select(g => new ProgressPoint
+                {
+                    Date = g.Key,
+                    MaxWeight = g.Max(s => s.Weight)
+                })
+                .OrderBy(p => p.Date)
+                .ToList();
+
+            return new ExerciseProgress
             {
+                ExerciseId = exerciseId,
                 ExerciseName = exercise.Name,
+                MuscleGroup = exercise.MuscleGroup,
                 Sets = sets,
                 MaxWeight = sets.Count > 0 ? sets.Max(s => s.Weight) : 0,
                 AverageWeight = sets.Count > 0 ? sets.Average(s => s.Weight) : 0,
-                TotalReps = sets.Sum(s => s.Reps)
+                TotalReps = sets.Sum(s => s.Reps),
+                Points = points,
+                EarliestMaxWeight = points.FirstOrDefault()?.MaxWeight ?? 0,
+                LatestMaxWeight = points.LastOrDefault()?.MaxWeight ?? 0
             };
-            return progress;
+        }
+        #endregion
+
+        #region "GET MUSCLE GROUP PROGRESS ASYNC"
+        public async Task<List<MuscleGroupProgress>> GetMuscleGroupProgressAsync(int days = 30)
+        {
+            var muscleGroups = new[] { "Arms", "Back", "Chest", "Core", "Legs", "Shoulders" };
+            var result = new List<MuscleGroupProgress>();
+
+            foreach (var muscleGroup in muscleGroups)
+            {
+                var exercises = await GetProgressForMuscleGroupAsync(muscleGroup, days);
+                if (exercises.Count == 0) continue;
+
+                result.Add(new MuscleGroupProgress
+                {
+                    MuscleGroup = muscleGroup,
+                    Exercises = exercises,
+                    EarliestMaxWeight = exercises.Min(e => e.EarliestMaxWeight),
+                    LatestMaxWeight = exercises.Max(e => e.LatestMaxWeight)
+                });
+            }
+
+            return result;
         }
         #endregion
 
@@ -124,7 +163,7 @@ namespace WorkoutTrackerV2.Services
                     strengthDict[exercise.Name] = progress.MaxWeight;
                 }
             }
-            return strengthDict.OrderByDescending(x => x.Value).ToDictionary(x => x.Key, x => x.Value);
+            return strengthDict.OrderByDescending(i => i.Value).ToDictionary(i => i.Key, i => i.Value);
         }
         #endregion
 

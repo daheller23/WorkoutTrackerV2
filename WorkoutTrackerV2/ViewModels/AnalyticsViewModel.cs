@@ -9,29 +9,17 @@ namespace WorkoutTrackerV2.ViewModels
     public partial class AnalyticsViewModel(IWorkoutService workoutService, IAnalyticsService analyticsService) : BaseViewModel
     {
         #region "OBSERVABLE PROPERTIES"
-        [ObservableProperty]
-        private List<DailyStats> _dailyStats = [];
+        [ObservableProperty] private List<DailyStats> _dailyStats = [];
+        [ObservableProperty] private ObservableCollection<ExerciseProgress> _topExercises = [];
+        [ObservableProperty] private ObservableCollection<MuscleGroupProgress> _muscleGroupProgress = [];
+        [ObservableProperty] private int _selectedDays = 30;
+        [ObservableProperty] private double _totalVolumeLifted;
+        [ObservableProperty] private double _averageVolume;
+        [ObservableProperty] private int _totalSets;
+        #endregion
 
-        [ObservableProperty]
-        private ObservableCollection<ExerciseProgress> _topExercises = [];
-
-        [ObservableProperty]
-        private ObservableCollection<string> _muscleGroups = ["Chest", "Back", "Legs", "Shoulders", "Arms", "Core"];
-
-        [ObservableProperty]
-        private string _selectedMuscleGroup = string.Empty;
-
-        [ObservableProperty]
-        private int _selectedDays = 0;
-
-        [ObservableProperty]
-        private double _totalVolumeLifted = 0;
-
-        [ObservableProperty]
-        private double _averageVolume = 0;
-
-        [ObservableProperty]
-        private int _totalSets = 0;
+        #region "PARTIAL METHODS"
+        partial void OnSelectedDaysChanged(int value) => LoadAnalyticsCommand.Execute(null);
         #endregion
 
         #region "LOAD ANALYTICS"
@@ -42,35 +30,34 @@ namespace WorkoutTrackerV2.ViewModels
             {
                 IsLoading = true;
 
+                // Summary stats
                 var stats = await analyticsService.GetDailyStatsAsync(SelectedDays);
                 DailyStats = stats;
-
                 TotalVolumeLifted = stats.Sum(s => s.TotalWeightLifted);
                 AverageVolume = stats.Count > 0 ? TotalVolumeLifted / stats.Count : 0;
                 TotalSets = stats.Sum(s => s.SetsCompleted);
 
+                // Top exercises
                 var strengthProgress = await analyticsService.GetStrengthProgressAsync(SelectedDays);
                 TopExercises.Clear();
-
+                var exercises = await workoutService.GetAllExercisesAsync();
                 foreach (var kvp in strengthProgress.Take(5))
                 {
-                    var exercises = await workoutService.GetAllExercisesAsync();
                     var exercise = exercises.FirstOrDefault(e => e.Name == kvp.Key);
-                    if (exercise != null)
+                    if (exercise is not null)
                     {
                         var progress = await analyticsService.GetExerciseProgressAsync(exercise.Id, SelectedDays);
                         TopExercises.Add(progress);
                     }
                 }
 
-                if (!string.IsNullOrEmpty(SelectedMuscleGroup))
-                {
-                    await LoadMuscleGroupAnalytics();
-                }
+                // Muscle group progress
+                var muscleProgress = await analyticsService.GetMuscleGroupProgressAsync(SelectedDays);
+                MuscleGroupProgress = new ObservableCollection<MuscleGroupProgress>(muscleProgress);
             }
             catch (Exception ex)
             {
-                await Shell.Current.DisplayAlertAsync("LoadAnalytics Error", ex.Message, "OK");
+                await Shell.Current.DisplayAlertAsync("Error", ex.Message, "OK");
             }
             finally
             {
@@ -79,30 +66,15 @@ namespace WorkoutTrackerV2.ViewModels
         }
         #endregion
 
-        #region "LOAD MUSCLE GROUP ANALYTICS"
-        private async Task LoadMuscleGroupAnalytics()
+        #region "COMMANDS"
+        [RelayCommand]
+        private async Task SelectMuscleGroupProgress(MuscleGroupProgress group)
         {
-            if (string.IsNullOrEmpty(SelectedMuscleGroup))
+            await Shell.Current.GoToAsync(Routes.MuscleGroupProgress, new Dictionary<string, object>
             {
-                return;
-            }
-                
-            try
-            {
-                var groupProgress = await analyticsService.GetProgressForMuscleGroupAsync(SelectedMuscleGroup, SelectedDays);
-                TopExercises.Clear();
-                foreach (var progress in groupProgress)
-                {
-                    TopExercises.Add(progress);
-                }
-            }
-            catch (Exception ex)
-            {
-                await Shell.Current.DisplayAlertAsync("LoadMuscleGroupAnalytics Error", ex.Message, "OK");
-            }
+                { "MuscleGroup", group.MuscleGroup }
+            });
         }
         #endregion
-
-
     }
 }

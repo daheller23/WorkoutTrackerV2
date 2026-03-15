@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Microcharts.Maui;
+using Microsoft.Extensions.Logging;
+using SkiaSharp.Views.Maui.Controls.Hosting;
 using WorkoutTrackerV2.Services;
 using WorkoutTrackerV2.ViewModels;
 using WorkoutTrackerV2.Views;
@@ -12,6 +14,8 @@ namespace WorkoutTrackerV2
             var builder = MauiApp.CreateBuilder();
             builder
                 .UseMauiApp<App>()
+                .UseSkiaSharp()
+                .UseMicrocharts()
                 .ConfigureFonts(fonts =>
                 {
                     fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
@@ -40,6 +44,10 @@ namespace WorkoutTrackerV2
             builder.Services.AddTransient<SettingsViewModel>();
             builder.Services.AddTransient<ExercisePickerView>();
             builder.Services.AddTransient<ExercisePickerViewModel>();
+            builder.Services.AddTransient<MuscleGroupProgressView>();
+            builder.Services.AddTransient<MuscleGroupProgressViewModel>();
+            builder.Services.AddTransient<ExerciseProgressView>();
+            builder.Services.AddTransient<ExerciseProgressViewModel>();
             builder.Services.AddSingleton<AppShell>();
 
             return builder.Build();

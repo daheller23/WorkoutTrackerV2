@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="WorkoutTrackerV2.Views.MuscleGroupProgressView"
+             xmlns:vm="clr-namespace:WorkoutTrackerV2.ViewModels"
+             xmlns:models="clr-namespace:WorkoutTrackerV2.Models"
+             xmlns:microcharts="clr-namespace:Microcharts.Maui;assembly=Microcharts.Maui"
+             xmlns:converters="clr-namespace:WorkoutTrackerV2.Converters"
+             x:DataType="vm:MuscleGroupProgressViewModel"
+             BackgroundColor="#FAFAFA">
+
+    <ContentPage.Resources>
+        <converters:BoolToTrendConverter x:Key="BoolToTrendConverter"/>
+    </ContentPage.Resources>
+
+    <Shell.BackButtonBehavior>
+        <BackButtonBehavior IsVisible="False" IsEnabled="False"/>
+    </Shell.BackButtonBehavior>
+
+    <Grid RowDefinitions="Auto,*" RowSpacing="0">
+
+        <!-- Header -->
+        <StackLayout Grid.Row="0" BackgroundColor="#FFFFFF" Padding="24,16,24,24" Spacing="4">
+            <Button Text="← Back"
+                    Command="{Binding GoBackCommand}"
+                    BackgroundColor="Transparent"
+                    TextColor="#1F77F0"
+                    FontSize="14"
+                    Padding="0"
+                    HorizontalOptions="Start"/>
+            <Label Text="{Binding MuscleGroup}"
+                   FontSize="32"
+                   FontAttributes="Bold"
+                   TextColor="#1F77F0"
+                   CharacterSpacing="0.5"/>
+            <Label Text="Strength progress over time"
+                   FontSize="13"
+                   TextColor="#999999"/>
+        </StackLayout>
+
+        <ScrollView Grid.Row="1">
+            <StackLayout Padding="20,24" Spacing="20">
+
+                <!-- Time Period -->
+                <StackLayout Spacing="8">
+                    <Label Text="TIME PERIOD"
+                           FontSize="11"
+                           FontAttributes="Bold"
+                           TextColor="#999999"
+                           CharacterSpacing="1"/>
+                    <Picker SelectedItem="{Binding SelectedDays}"
+                            BackgroundColor="#FFFFFF"
+                            TextColor="#000000">
+                        <Picker.ItemsSource>
+                            <x:Array Type="{x:Type x:Int32}">
+                                <x:Int32>7</x:Int32>
+                                <x:Int32>14</x:Int32>
+                                <x:Int32>30</x:Int32>
+                                <x:Int32>60</x:Int32>
+                                <x:Int32>90</x:Int32>
+                            </x:Array>
+                        </Picker.ItemsSource>
+                    </Picker>
+                </StackLayout>
+
+                <!-- Combined Chart -->
+                <StackLayout BackgroundColor="#FFFFFF" Padding="16" Spacing="12">
+                    <Label Text="OVERALL PROGRESS"
+                           FontSize="11"
+                           FontAttributes="Bold"
+                           TextColor="#999999"
+                           CharacterSpacing="1"/>
+                    <microcharts:ChartView Chart="{Binding CombinedChart}"
+                                          HeightRequest="220"/>
+                </StackLayout>
+
+                <!-- Exercise List -->
+                <StackLayout Spacing="12">
+                    <Label Text="EXERCISES"
+                           FontSize="11"
+                           FontAttributes="Bold"
+                           TextColor="#999999"
+                           CharacterSpacing="1"/>
+
+                    <CollectionView ItemsSource="{Binding Exercises}" SelectionMode="None">
+                        <CollectionView.EmptyView>
+                            <StackLayout Padding="20,40" Spacing="8" HorizontalOptions="Center">
+                                <Label Text="📊" FontSize="40" HorizontalOptions="Center"/>
+                                <Label Text="No data for this period"
+                                       FontSize="13"
+                                       TextColor="#999999"
+                                       HorizontalOptions="Center"/>
+                            </StackLayout>
+                        </CollectionView.EmptyView>
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate x:DataType="models:ExerciseProgress">
+                                <Grid ColumnDefinitions="Auto,*,Auto,Auto"
+                                      ColumnSpacing="12"
+                                      Padding="16,14"
+                                      BackgroundColor="#FFFFFF"
+                                      Margin="0,0,0,2">
+                                    <Grid.GestureRecognizers>
+                                        <TapGestureRecognizer
+                                            Command="{Binding Source={RelativeSource AncestorType={x:Type vm:MuscleGroupProgressViewModel}}, Path=SelectExerciseCommand}"
+                                            CommandParameter="{Binding .}"/>
+                                    </Grid.GestureRecognizers>
+                                    <Label Grid.Column="0"
+                                           Text="{Binding IsTrending, Converter={StaticResource BoolToTrendConverter}}"
+                                           FontSize="20"
+                                           VerticalOptions="Center"/>
+                                    <StackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
+                                        <Label Text="{Binding ExerciseName}"
+                                               FontSize="14"
+                                               FontAttributes="Bold"
+                                               TextColor="#000000"/>
+                                        <Label Text="{Binding TotalReps, StringFormat='{0} total reps'}"
+                                               FontSize="11"
+                                               TextColor="#999999"/>
+                                    </StackLayout>
+                                    <StackLayout Grid.Column="2" Spacing="2" HorizontalOptions="End" VerticalOptions="Center">
+                                        <Label Text="MAX"
+                                               FontSize="9"
+                                               TextColor="#999999"
+                                               HorizontalOptions="End"
+                                               CharacterSpacing="0.5"/>
+                                        <Label Text="{Binding LatestMaxWeight, StringFormat='{0:F0} lbs'}"
+                                               FontSize="13"
+                                               FontAttributes="Bold"
+                                               TextColor="#1F77F0"
+                                               HorizontalOptions="End"/>
+                                    </StackLayout>
+                                    <Label Grid.Column="3"
+                                           Text="→"
+                                           FontSize="18"
+                                           TextColor="#1F77F0"
+                                           VerticalOptions="Center"/>
+                                </Grid>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                </StackLayout>
+
+            </StackLayout>
+        </ScrollView>
+
+    </Grid>
+</ContentPage>
