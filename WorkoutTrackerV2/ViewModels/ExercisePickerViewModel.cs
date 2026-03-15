@@ -64,7 +64,7 @@ namespace WorkoutTrackerV2.ViewModels
 
         #region "SELECT EXERCISE"
         [RelayCommand]
-        private async Task SelectExercise(Exercise exercise)
+        private static async Task SelectExercise(Exercise exercise)
         {
             await Shell.Current.GoToAsync("..", new Dictionary<string, object>
             {
