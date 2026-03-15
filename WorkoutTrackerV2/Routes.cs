@@ -13,6 +13,7 @@ namespace WorkoutTrackerV2
         public const string ExercisePicker = "//ExercisePicker";
         public const string MuscleGroupProgress = "//MuscleGroupProgress";
         public const string ExerciseProgress = "//ExerciseProgress";
+        public const string TemplatePicker = "//TemplatePicker";
         public const string Back = "..";
     }
 }

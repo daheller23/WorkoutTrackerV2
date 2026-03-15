@@ -48,6 +48,9 @@ namespace WorkoutTrackerV2
             builder.Services.AddTransient<MuscleGroupProgressViewModel>();
             builder.Services.AddTransient<ExerciseProgressView>();
             builder.Services.AddTransient<ExerciseProgressViewModel>();
+            builder.Services.AddTransient<TemplatePickerView>();
+            builder.Services.AddTransient<TemplatePickerViewModel>();
+            builder.Services.AddSingleton<ITemplateService, TemplateService>();
             builder.Services.AddSingleton<AppShell>();
 
             return builder.Build();

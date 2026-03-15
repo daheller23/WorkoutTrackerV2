@@ -253,28 +253,57 @@
         </ScrollView>
 
         <!-- Action Buttons -->
-        <Grid Grid.Row="1" ColumnDefinitions="*,*" ColumnSpacing="16" Padding="20" RowSpacing="0" BackgroundColor="#FFFFFF">
-            <Button Grid.Column="0"
-                    Text="Cancel"
-                    Command="{Binding CancelCommand}"
-                    BackgroundColor="Transparent"
-                    TextColor="#FF6B6B"
-                    FontAttributes="Bold"
-                    FontSize="14"
-                    Padding="0,14"
-                    CornerRadius="10"
-                    BorderWidth="1"
-                    BorderColor="#FF6B6B"/>
-            <Button Grid.Column="1"
-                    Text="Save Workout"
-                    Command="{Binding SaveWorkoutCommand}"
-                    BackgroundColor="#1F77F0"
-                    TextColor="#FFFFFF"
-                    FontAttributes="Bold"
-                    FontSize="14"
-                    Padding="0,14"
-                    CornerRadius="10"
-                    BorderWidth="0"/>
+        <Grid Grid.Row="1" RowDefinitions="Auto,Auto" RowSpacing="0" BackgroundColor="#FFFFFF">
+
+            <!-- Template Buttons -->
+            <Grid Grid.Row="0" ColumnDefinitions="*,*" ColumnSpacing="12" Padding="20,12,20,0">
+                <Button Grid.Column="0"
+                Text="📋 Load Template"
+                Command="{Binding OpenTemplatePickerCommand}"
+                BackgroundColor="#F0F7FF"
+                TextColor="#1F77F0"
+                FontAttributes="Bold"
+                FontSize="13"
+                Padding="0,10"
+                CornerRadius="8"
+                BorderWidth="0"/>
+                <Button Grid.Column="1"
+                Text="💾 Save as Template"
+                Command="{Binding SaveAsTemplateCommand}"
+                BackgroundColor="#F1F8F1"
+                TextColor="#4CAF50"
+                FontAttributes="Bold"
+                FontSize="13"
+                Padding="0,10"
+                CornerRadius="8"
+                BorderWidth="0"/>
+            </Grid>
+
+            <!-- Save / Clear -->
+            <Grid Grid.Row="1" ColumnDefinitions="*,*" ColumnSpacing="16" Padding="20" RowSpacing="0">
+                <Button Grid.Column="0"
+                Text="Clear"
+                Command="{Binding ClearCommand}"
+                BackgroundColor="Transparent"
+                TextColor="#FF6B6B"
+                FontAttributes="Bold"
+                FontSize="14"
+                Padding="0,14"
+                CornerRadius="10"
+                BorderWidth="1"
+                BorderColor="#FF6B6B"/>
+                <Button Grid.Column="1"
+                Text="Save Workout"
+                Command="{Binding SaveWorkoutCommand}"
+                BackgroundColor="#1F77F0"
+                TextColor="#FFFFFF"
+                FontAttributes="Bold"
+                FontSize="14"
+                Padding="0,14"
+                CornerRadius="10"
+                BorderWidth="0"/>
+            </Grid>
+
         </Grid>
 
     </Grid>

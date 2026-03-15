@@ -40,6 +40,8 @@ namespace WorkoutTrackerV2.Services
                 await _database.CreateTableAsync<Exercise>();
                 await _database.CreateTableAsync<WorkoutSession>();
                 await _database.CreateTableAsync<WorkoutSet>();
+                await _database.CreateTableAsync<WorkoutTemplate>();
+                await _database.CreateTableAsync<WorkoutTemplateSet>();
 
                 int exerciseCount = await _database.Table<Exercise>().CountAsync();
                 if (exerciseCount == 0)
@@ -266,6 +268,64 @@ namespace WorkoutTrackerV2.Services
                 return await _database.InsertAsync(set);
             }
             return await _database.UpdateAsync(set);
+        }
+        #endregion
+
+        #region "GET ALL TEMPLATES ASYNC"
+        public async Task<List<WorkoutTemplate>> GetAllTemplatesAsync()
+        {
+            await InitializeAsync();
+            return await _database.Table<WorkoutTemplate>().OrderBy(t => t.Name).ToListAsync();
+        }
+        #endregion
+
+        #region "SAVE TEMPLATE ASYNC"
+        public async Task<int> SaveTemplateAsync(WorkoutTemplate template)
+        {
+            await InitializeAsync();
+            if (template.Id == 0)
+            {
+                await _database.InsertAsync(template);
+                return template.Id;
+            }
+            await _database.UpdateAsync(template);
+            return template.Id;
+        }
+        #endregion
+
+        #region "GET TEMPLATE SETS ASYNC"
+        public async Task<List<WorkoutTemplateSet>> GetTemplateSetsAsync(int templateId)
+        {
+            await InitializeAsync();
+            return await _database.Table<WorkoutTemplateSet>()
+                .Where(x => x.TemplateId == templateId)
+                .OrderBy(x => x.SetNumber)
+                .ToListAsync();
+        }
+        #endregion
+
+        #region "SAVE TEMPLATE SET ASYNC"
+        public async Task<int> SaveTemplateSetAsync(WorkoutTemplateSet set)
+        {
+            await InitializeAsync();
+            if (set.Id == 0)
+            {
+                return await _database.InsertAsync(set);
+            }            
+            return await _database.UpdateAsync(set);
+        }
+        #endregion
+
+        #region "DELETE TEMPLATE ASYNC"
+        public async Task DeleteTemplateAsync(int templateId)
+        {
+            await InitializeAsync();
+            var sets = await _database.Table<WorkoutTemplateSet>()
+                .Where(x => x.TemplateId == templateId)
+                .ToListAsync();
+            foreach (var set in sets)
+                await _database.DeleteAsync(set);
+            await _database.DeleteAsync<WorkoutTemplate>(templateId);
         }
         #endregion
 

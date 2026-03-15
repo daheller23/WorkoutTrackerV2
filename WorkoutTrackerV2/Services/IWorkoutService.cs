@@ -19,5 +19,10 @@ namespace WorkoutTrackerV2.Services
         Task InitializeAsync();
         Task<int> SaveSessionAsync(WorkoutSession session);
         Task<int> SaveSetAsync(WorkoutSet set);
+        Task<List<WorkoutTemplate>> GetAllTemplatesAsync();
+        Task<int> SaveTemplateAsync(WorkoutTemplate template);
+        Task<List<WorkoutTemplateSet>> GetTemplateSetsAsync(int templateId);
+        Task<int> SaveTemplateSetAsync(WorkoutTemplateSet set);
+        Task DeleteTemplateAsync(int templateId);
     }
 }
