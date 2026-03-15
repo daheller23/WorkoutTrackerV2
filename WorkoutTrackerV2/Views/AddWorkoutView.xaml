@@ -26,14 +26,6 @@
                                FontSize="13"
                                TextColor="#999999"/>
                     </StackLayout>
-                    <Button Grid.Column="1"
-                            Text="⚙️"
-                            Command="{Binding OpenSettingsCommand}"
-                            BackgroundColor="Transparent"
-                            TextColor="#1F77F0"
-                            FontSize="22"
-                            Padding="0"
-                            VerticalOptions="Start"/>
                 </Grid>
 
                 <!-- Workout Name -->

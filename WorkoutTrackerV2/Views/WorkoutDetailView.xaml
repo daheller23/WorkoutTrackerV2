@@ -38,7 +38,7 @@
             <Label Text="{Binding Session.DayName}"
                    FontSize="32"
                    FontAttributes="Bold"
-                   TextColor="#000000"
+                   TextColor="#1F77F0"
                    CharacterSpacing="0.3"/>
             <Label Text="{Binding Session.Date, StringFormat='{0:MMMM d, yyyy}'}"
                    FontSize="13"
