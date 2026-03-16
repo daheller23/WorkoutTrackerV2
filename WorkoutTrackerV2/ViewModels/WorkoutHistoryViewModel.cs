@@ -35,6 +35,19 @@ namespace WorkoutTrackerV2.ViewModels
         private int _selectedDays = 0;
         #endregion
 
+        #region "SET TIME PERIOD"
+        [RelayCommand]
+        private void SetTimePeriod(string days)
+        {
+            if (int.TryParse(days, out int result))
+                SelectedDays = result;
+        }
+        #endregion
+
+        #region "ON SELECTED DAYS CHANGED"
+        partial void OnSelectedDaysChanged(int value) => LoadSessionsCommand.Execute(null);
+        #endregion
+
         #region "LOAD SESSION"
         [RelayCommand]
         private async Task LoadSessions()
