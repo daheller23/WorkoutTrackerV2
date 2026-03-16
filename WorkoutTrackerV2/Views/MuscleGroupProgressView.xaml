@@ -11,6 +11,8 @@
 
     <ContentPage.Resources>
         <converters:BoolToTrendConverter x:Key="BoolToTrendConverter"/>
+        <converters:DaysToColorConverter x:Key="DaysToColorConverter"/>
+        <converters:DaysToTextColorConverter x:Key="DaysToTextColorConverter"/>
     </ContentPage.Resources>
 
     <Shell.BackButtonBehavior>
@@ -41,26 +43,80 @@
         <ScrollView Grid.Row="1">
             <StackLayout Padding="20,24" Spacing="20">
 
-                <!-- Time Period -->
+                <!-- Time Period Pills -->
                 <StackLayout Spacing="8">
                     <Label Text="TIME PERIOD"
                            FontSize="11"
                            FontAttributes="Bold"
                            TextColor="#999999"
                            CharacterSpacing="1"/>
-                    <Picker SelectedItem="{Binding SelectedDays}"
-                            BackgroundColor="#FFFFFF"
-                            TextColor="#000000">
-                        <Picker.ItemsSource>
-                            <x:Array Type="{x:Type x:Int32}">
-                                <x:Int32>7</x:Int32>
-                                <x:Int32>14</x:Int32>
-                                <x:Int32>30</x:Int32>
-                                <x:Int32>60</x:Int32>
-                                <x:Int32>90</x:Int32>
-                            </x:Array>
-                        </Picker.ItemsSource>
-                    </Picker>
+                    <Grid ColumnDefinitions="*,*,*,*,*" ColumnSpacing="8">
+                        <Border Grid.Column="0"
+                                BackgroundColor="{Binding SelectedDays, Converter={StaticResource DaysToColorConverter}, ConverterParameter=7}"
+                                StrokeThickness="0">
+                            <Border.StrokeShape>
+                                <RoundRectangle CornerRadius="20"/>
+                            </Border.StrokeShape>
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding SetTimePeriodCommand}" CommandParameter="7"/>
+                            </Border.GestureRecognizers>
+                            <Label Text="7d" FontSize="12" FontAttributes="Bold"
+                                   TextColor="{Binding SelectedDays, Converter={StaticResource DaysToTextColorConverter}, ConverterParameter=7}"
+                                   HorizontalOptions="Center" Padding="0,8"/>
+                        </Border>
+                        <Border Grid.Column="1"
+                                BackgroundColor="{Binding SelectedDays, Converter={StaticResource DaysToColorConverter}, ConverterParameter=14}"
+                                StrokeThickness="0">
+                            <Border.StrokeShape>
+                                <RoundRectangle CornerRadius="20"/>
+                            </Border.StrokeShape>
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding SetTimePeriodCommand}" CommandParameter="14"/>
+                            </Border.GestureRecognizers>
+                            <Label Text="14d" FontSize="12" FontAttributes="Bold"
+                                   TextColor="{Binding SelectedDays, Converter={StaticResource DaysToTextColorConverter}, ConverterParameter=14}"
+                                   HorizontalOptions="Center" Padding="0,8"/>
+                        </Border>
+                        <Border Grid.Column="2"
+                                BackgroundColor="{Binding SelectedDays, Converter={StaticResource DaysToColorConverter}, ConverterParameter=30}"
+                                StrokeThickness="0">
+                            <Border.StrokeShape>
+                                <RoundRectangle CornerRadius="20"/>
+                            </Border.StrokeShape>
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding SetTimePeriodCommand}" CommandParameter="30"/>
+                            </Border.GestureRecognizers>
+                            <Label Text="30d" FontSize="12" FontAttributes="Bold"
+                                   TextColor="{Binding SelectedDays, Converter={StaticResource DaysToTextColorConverter}, ConverterParameter=30}"
+                                   HorizontalOptions="Center" Padding="0,8"/>
+                        </Border>
+                        <Border Grid.Column="3"
+                                BackgroundColor="{Binding SelectedDays, Converter={StaticResource DaysToColorConverter}, ConverterParameter=60}"
+                                StrokeThickness="0">
+                            <Border.StrokeShape>
+                                <RoundRectangle CornerRadius="20"/>
+                            </Border.StrokeShape>
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding SetTimePeriodCommand}" CommandParameter="60"/>
+                            </Border.GestureRecognizers>
+                            <Label Text="60d" FontSize="12" FontAttributes="Bold"
+                                   TextColor="{Binding SelectedDays, Converter={StaticResource DaysToTextColorConverter}, ConverterParameter=60}"
+                                   HorizontalOptions="Center" Padding="0,8"/>
+                        </Border>
+                        <Border Grid.Column="4"
+                                BackgroundColor="{Binding SelectedDays, Converter={StaticResource DaysToColorConverter}, ConverterParameter=90}"
+                                StrokeThickness="0">
+                            <Border.StrokeShape>
+                                <RoundRectangle CornerRadius="20"/>
+                            </Border.StrokeShape>
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding SetTimePeriodCommand}" CommandParameter="90"/>
+                            </Border.GestureRecognizers>
+                            <Label Text="90d" FontSize="12" FontAttributes="Bold"
+                                   TextColor="{Binding SelectedDays, Converter={StaticResource DaysToTextColorConverter}, ConverterParameter=90}"
+                                   HorizontalOptions="Center" Padding="0,8"/>
+                        </Border>
+                    </Grid>
                 </StackLayout>
 
                 <!-- Combined Chart -->
@@ -81,7 +137,6 @@
                            FontAttributes="Bold"
                            TextColor="#999999"
                            CharacterSpacing="1"/>
-
                     <CollectionView ItemsSource="{Binding Exercises}" SelectionMode="None">
                         <CollectionView.EmptyView>
                             <StackLayout Padding="20,40" Spacing="8" HorizontalOptions="Center">
