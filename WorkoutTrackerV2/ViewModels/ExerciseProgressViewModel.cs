@@ -1,7 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microcharts;
-using SkiaSharp;
+using WorkoutTrackerV2.Helpers;
 using WorkoutTrackerV2.Models;
 
 namespace WorkoutTrackerV2.ViewModels
@@ -33,38 +33,8 @@ namespace WorkoutTrackerV2.ViewModels
         #region "BUILD CHART"
         private void BuildChart(ExerciseProgress exercise)
         {
-            if (exercise.Points.Count == 0)
-            {
-                return;
-            }
-
-            var color = SKColor.Parse("#4CAF50");
-            var entries = exercise.Points.Select(p => new ChartEntry((float)p.MaxWeight)
-            {
-                Label = p.Date.ToString("MMM d"),
-                ValueLabel = p.MaxWeight.ToString("F0"),
-                Color = color,
-                TextColor = SKColor.Parse("#999999"),
-                ValueLabelColor = color
-            }).ToList();
-
-            Chart = new LineChart
-            {
-                Entries = entries,
-                LineMode = LineMode.Spline,
-                LineSize = 4,
-                PointMode = PointMode.Circle,
-                PointSize = 12,
-                BackgroundColor = SKColor.Parse("#FFFFFF"),
-                LabelTextSize = 28,
-                ValueLabelTextSize = 32,
-                LabelOrientation = Orientation.Horizontal,
-                ValueLabelOrientation = Orientation.Horizontal,
-                ShowYAxisLines = true,
-                ShowYAxisText = true,
-                YAxisTextPaint = new SKPaint { Color = SKColor.Parse("#999999"), TextSize = 24 },
-                YAxisLinesPaint = new SKPaint { Color = SKColor.Parse("#F0F0F0"), StrokeWidth = 1 }
-            };
+            if (exercise.Points.Count == 0) return;
+            Chart = ChartHelper.BuildProgressChart(exercise.Points);
         }
         #endregion
     }
