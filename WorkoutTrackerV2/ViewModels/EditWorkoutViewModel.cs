@@ -8,7 +8,7 @@ namespace WorkoutTrackerV2.ViewModels
 {
     [QueryProperty(nameof(Session), "Session")]
     [QueryProperty(nameof(SelectedExercise), "SelectedExercise")]
-    public partial class EditWorkoutViewModel(IWorkoutService workoutService) : BaseViewModel
+    public partial class EditWorkoutViewModel(IWorkoutService workoutService, ISettingsService settingsService) : BaseViewModel
     {
         #region "OBSERVABLE PROPERTIES"
         [ObservableProperty] private WorkoutSession _session = new();
@@ -39,16 +39,16 @@ namespace WorkoutTrackerV2.ViewModels
             {
                 return;
             }
-                
-            var existing = ExerciseGroups.FirstOrDefault(i => i.Exercise.Id == value.Id);
+
+            var existing = ExerciseGroups.FirstOrDefault(g => g.Exercise.Id == value.Id);
             if (existing is not null)
             {
-                existing.AddSet();
-            }          
+                existing.AddSet(settingsService.WeightUnit);
+            }              
             else
             {
-                var group = new ExerciseGroup(value);
-                group.AddSet();
+                var group = new ExerciseGroup(value, settingsService.WeightUnit);
+                group.AddSet(settingsService.WeightUnit);
                 ExerciseGroups.Add(group);
             }
             SelectedExercise = null;
@@ -116,7 +116,10 @@ namespace WorkoutTrackerV2.ViewModels
 
         #region "ADD SET"
         [RelayCommand]
-        private static void AddSet(ExerciseGroup group) => group.AddSet();
+        private void AddSet(ExerciseGroup group)
+        {
+            group.AddSet(settingsService.WeightUnit);
+        }
         #endregion
 
         #region "REMOVE EXERCISE"

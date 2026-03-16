@@ -329,5 +329,15 @@ namespace WorkoutTrackerV2.Services
         }
         #endregion
 
+        #region "CLEAR ALL DATA ASYNC"
+        public async Task ClearAllDataAsync()
+        {
+            await InitializeAsync();
+            await _database.DeleteAllAsync<WorkoutSet>();
+            await _database.DeleteAllAsync<WorkoutSession>();
+            await _database.DeleteAllAsync<WorkoutTemplate>();
+            await _database.DeleteAllAsync<WorkoutTemplateSet>();
+        }
+        #endregion
     }
 }

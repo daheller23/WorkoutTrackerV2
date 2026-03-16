@@ -7,7 +7,7 @@ using WorkoutTrackerV2.Services;
 namespace WorkoutTrackerV2.ViewModels
 {
     [QueryProperty(nameof(SelectedExercise), "SelectedExercise")]
-    public partial class AddWorkoutViewModel(IWorkoutService workoutService, ITemplateService templateService) : BaseViewModel
+    public partial class AddWorkoutViewModel(IWorkoutService workoutService, ITemplateService templateService, ISettingsService settingsService) : BaseViewModel
     {
         #region "OBSERVABLE PROPERTIES"
         [ObservableProperty] private ObservableCollection<ExerciseGroup> _exerciseGroups = [];
@@ -35,11 +35,13 @@ namespace WorkoutTrackerV2.ViewModels
 
             var existing = ExerciseGroups.FirstOrDefault(g => g.Exercise.Id == value.Id);
             if (existing is not null)
-                existing.AddSet();
+            {
+                existing.AddSet(settingsService.WeightUnit);
+            }              
             else
             {
-                var group = new ExerciseGroup(value);
-                group.AddSet();
+                var group = new ExerciseGroup(value, settingsService.WeightUnit);
+                group.AddSet(settingsService.WeightUnit);
                 ExerciseGroups.Add(group);
             }
             SelectedExercise = null;
@@ -178,9 +180,9 @@ namespace WorkoutTrackerV2.ViewModels
 
         #region "ADD SET"
         [RelayCommand]
-        private static void AddSet(ExerciseGroup group)
+        private void AddSet(ExerciseGroup group)
         {
-            group.AddSet();
+            group.AddSet(settingsService.WeightUnit);
         }
         #endregion
 

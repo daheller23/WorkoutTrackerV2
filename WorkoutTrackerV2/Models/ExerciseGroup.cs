@@ -4,28 +4,26 @@ using System.Collections.ObjectModel;
 
 namespace WorkoutTrackerV2.Models
 {
-    public partial class ExerciseGroup(Exercise exercise) : ObservableObject
+    public partial class ExerciseGroup(Exercise exercise, string defaultWeightUnit = "lbs") : ObservableObject
     {
+        private readonly string _defaultWeightUnit = defaultWeightUnit;
         public Exercise Exercise { get; set; } = exercise;
         public ObservableCollection<WorkoutSet> Sets { get; set; } = [];
 
-        #region "ADD SET"
-        public void AddSet()
+        public void AddSet(string? weightUnit = null)
         {
+            var unit = weightUnit ?? _defaultWeightUnit;
             var set = new WorkoutSet
             {
                 Exercise = Exercise,
                 ExerciseId = Exercise.Id,
                 SetNumber = Sets.Count + 1,
-                Reps = 0,
-                Weight = 0,
-                WeightUnit = "lbs",
+                WeightUnit = unit,
                 ParentGroup = this
             };
             set.DeleteCommand = new RelayCommand(() => RemoveSet(set));
             Sets.Add(set);
         }
-        #endregion
 
         #region "REMOVE SET"
         public void RemoveSet(WorkoutSet set)

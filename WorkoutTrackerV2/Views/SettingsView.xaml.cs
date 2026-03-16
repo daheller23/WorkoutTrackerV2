@@ -1,20 +1,20 @@
 using WorkoutTrackerV2.ViewModels;
 
-namespace WorkoutTrackerV2.Views;
-
-public partial class SettingsView : ContentPage
+namespace WorkoutTrackerV2.Views
 {
-    private readonly SettingsViewModel _vm;
-
-    public SettingsView(SettingsViewModel vm)
+    public partial class SettingsView : ContentPage
     {
-        InitializeComponent();
-        _vm = vm;
-        BindingContext = vm;
-    }
+        public SettingsView(SettingsViewModel viewModel)
+        {
+            InitializeComponent();
+            BindingContext = viewModel;
+        }
 
-    protected override void OnAppearing()
-    {
-        base.OnAppearing();
+        protected override void OnAppearing()
+        {
+            base.OnAppearing();
+            if (BindingContext is SettingsViewModel vm)
+                vm.LoadSettingsCommand.Execute(null);
+        }
     }
 }

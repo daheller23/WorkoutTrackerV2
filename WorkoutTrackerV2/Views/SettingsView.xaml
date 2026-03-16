@@ -2,11 +2,169 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="WorkoutTrackerV2.Views.SettingsView"
-             Title="SettingsView">
-    <VerticalStackLayout>
-        <Label 
-            Text="Welcome to .NET MAUI!"
-            VerticalOptions="Center" 
-            HorizontalOptions="Center" />
-    </VerticalStackLayout>
+             xmlns:vm="clr-namespace:WorkoutTrackerV2.ViewModels"
+             xmlns:converters="clr-namespace:WorkoutTrackerV2.Converters"
+             x:DataType="vm:SettingsViewModel"
+             BackgroundColor="#FAFAFA">
+
+    <Shell.BackButtonBehavior>
+        <BackButtonBehavior IsVisible="False" IsEnabled="False"/>
+    </Shell.BackButtonBehavior>
+
+    <ContentPage.Resources>
+        <converters:WeightUnitColorConverter x:Key="WeightUnitColorConverter"/>
+        <converters:WeightUnitTextColorConverter x:Key="WeightUnitTextColorConverter"/>
+    </ContentPage.Resources>
+
+    <Grid RowDefinitions="Auto,*" RowSpacing="0">
+
+        <!-- Header -->
+        <StackLayout Grid.Row="0" BackgroundColor="#FFFFFF" Padding="24,16,24,24" Spacing="4">
+            <Button Text="← Back"
+                    Command="{Binding GoBackCommand}"
+                    BackgroundColor="Transparent"
+                    TextColor="#1F77F0"
+                    FontSize="14"
+                    Padding="0"
+                    HorizontalOptions="Start"/>
+            <Label Text="⚙️ Settings"
+                   FontSize="32"
+                   FontAttributes="Bold"
+                   TextColor="#1F77F0"
+                   CharacterSpacing="0.5"/>
+            <Label Text="Customize your experience"
+                   FontSize="13"
+                   TextColor="#999999"/>
+        </StackLayout>
+
+        <ScrollView Grid.Row="1">
+            <StackLayout Padding="20,24" Spacing="24">
+
+                <!-- Preferences -->
+                <StackLayout Spacing="10">
+                    <Label Text="PREFERENCES"
+                           FontSize="11"
+                           FontAttributes="Bold"
+                           TextColor="#999999"
+                           CharacterSpacing="1"/>
+
+                    <!-- Weight Unit -->
+                    <StackLayout BackgroundColor="#FFFFFF" Padding="16" Spacing="12">
+                        <Label Text="Default Weight Unit"
+                               FontSize="12"
+                               TextColor="#999999"
+                               FontAttributes="Bold"
+                               CharacterSpacing="0.3"/>
+                        <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+                            <Border BackgroundColor="{Binding WeightUnit, Converter={StaticResource WeightUnitColorConverter}, ConverterParameter=lbs}"
+                                    StrokeThickness="0">
+                                <Border.StrokeShape>
+                                    <RoundRectangle CornerRadius="8"/>
+                                </Border.StrokeShape>
+                                <Border.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding SetWeightUnitCommand}" CommandParameter="lbs"/>
+                                </Border.GestureRecognizers>
+                                <Label Text="lbs"
+                                       FontSize="14"
+                                       FontAttributes="Bold"
+                                       TextColor="{Binding WeightUnit, Converter={StaticResource WeightUnitTextColorConverter}, ConverterParameter=lbs}"
+                                       HorizontalOptions="Center"
+                                       Padding="0,12"/>
+                            </Border>
+                            <Border Grid.Column="1"
+                                    BackgroundColor="{Binding WeightUnit, Converter={StaticResource WeightUnitColorConverter}, ConverterParameter=kg}"
+                                    StrokeThickness="0">
+                                <Border.StrokeShape>
+                                    <RoundRectangle CornerRadius="8"/>
+                                </Border.StrokeShape>
+                                <Border.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding SetWeightUnitCommand}" CommandParameter="kg"/>
+                                </Border.GestureRecognizers>
+                                <Label Text="kg"
+                                       FontSize="14"
+                                       FontAttributes="Bold"
+                                       TextColor="{Binding WeightUnit, Converter={StaticResource WeightUnitTextColorConverter}, ConverterParameter=kg}"
+                                       HorizontalOptions="Center"
+                                       Padding="0,12"/>
+                            </Border>
+                        </Grid>
+                    </StackLayout>
+
+                    <!-- Dark Mode -->
+                    <StackLayout BackgroundColor="#FFFFFF" Padding="16" Spacing="0">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <StackLayout Grid.Column="0" Spacing="3" VerticalOptions="Center">
+                                <Label Text="Dark Mode"
+                                       FontSize="15"
+                                       FontAttributes="Bold"
+                                       TextColor="#000000"/>
+                                <Label Text="Switch between light and dark theme"
+                                       FontSize="11"
+                                       TextColor="#999999"/>
+                            </StackLayout>
+                            <Switch Grid.Column="1"
+                                    IsToggled="{Binding IsDarkMode}"
+                                    OnColor="#1F77F0"
+                                    VerticalOptions="Center"/>
+                        </Grid>
+                    </StackLayout>
+                </StackLayout>
+
+                <!-- About -->
+                <StackLayout Spacing="10">
+                    <Label Text="ABOUT"
+                           FontSize="11"
+                           FontAttributes="Bold"
+                           TextColor="#999999"
+                           CharacterSpacing="1"/>
+                    <StackLayout BackgroundColor="#FFFFFF" Padding="16" Spacing="0">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <Label Grid.Column="0"
+                                   Text="App Version"
+                                   FontSize="15"
+                                   FontAttributes="Bold"
+                                   TextColor="#000000"
+                                   VerticalOptions="Center"/>
+                            <Label Grid.Column="1"
+                                   Text="{Binding AppVersion}"
+                                   FontSize="13"
+                                   TextColor="#999999"
+                                   VerticalOptions="Center"/>
+                        </Grid>
+                    </StackLayout>
+                </StackLayout>
+
+                <!-- Danger Zone -->
+                <StackLayout Spacing="10">
+                    <Label Text="DANGER ZONE"
+                           FontSize="11"
+                           FontAttributes="Bold"
+                           TextColor="#FF6B6B"
+                           CharacterSpacing="1"/>
+                    <StackLayout BackgroundColor="#FFFFFF" Padding="16" Spacing="8">
+                        <Label Text="Clear All Data"
+                               FontSize="15"
+                               FontAttributes="Bold"
+                               TextColor="#FF6B6B"/>
+                        <Label Text="Permanently delete all workouts, sets and history. This cannot be undone."
+                               FontSize="12"
+                               TextColor="#999999"
+                               LineBreakMode="WordWrap"/>
+                        <Button Text="Clear All Data"
+                                Command="{Binding ClearAllDataCommand}"
+                                BackgroundColor="#FF6B6B"
+                                TextColor="#FFFFFF"
+                                FontAttributes="Bold"
+                                FontSize="14"
+                                Padding="0,12"
+                                CornerRadius="8"
+                                BorderWidth="0"
+                                Margin="0,4,0,0"/>
+                    </StackLayout>
+                </StackLayout>
+
+            </StackLayout>
+        </ScrollView>
+
+    </Grid>
 </ContentPage>
