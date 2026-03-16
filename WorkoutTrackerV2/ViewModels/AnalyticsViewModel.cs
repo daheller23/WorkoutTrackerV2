@@ -19,6 +19,10 @@ namespace WorkoutTrackerV2.ViewModels
         [ObservableProperty] private Dictionary<DateTime, double> _heatmapData = [];
         [ObservableProperty] private DateTime _heatmapMonth = DateTime.Today;
         [ObservableProperty] private string _heatmapTitle = DateTime.Today.ToString("MMMM yyyy");
+        [ObservableProperty] private List<double> _volumeSparkline = [];
+        [ObservableProperty] private List<double> _setsSparkline = [];
+        [ObservableProperty] private List<double> _daysSparkline = [];
+        [ObservableProperty] private List<double> _avgVolumeSparkline = [];
         #endregion
 
         #region "PARTIAL METHODS"
@@ -68,6 +72,13 @@ namespace WorkoutTrackerV2.ViewModels
                 }                  
                 HeatmapData = heatmap;
                 HeatmapTitle = DateTime.Today.ToString("MMMM yyyy");
+
+                // Sparkline Data
+                var orderedStats = stats.OrderBy(s => s.Date).ToList();
+                VolumeSparkline = orderedStats.Select(s => s.TotalWeightLifted).ToList();
+                SetsSparkline = orderedStats.Select(s => (double)s.SetsCompleted).ToList();
+                DaysSparkline = orderedStats.Select((s, i) => (double)(i + 1)).ToList();
+                AvgVolumeSparkline = orderedStats.Select(s => s.TotalWeightLifted).ToList();
 
                 // Top exercises — fetch all progress in parallel
                 var exercises = exercisesTask.Result;
