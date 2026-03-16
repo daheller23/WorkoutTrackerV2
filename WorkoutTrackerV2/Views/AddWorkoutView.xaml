@@ -158,7 +158,8 @@
                                         <BoxView HeightRequest="0.5" Color="#F0F0F0" Margin="16,0"/>
 
                                         <!-- Table Header -->
-                                        <Grid ColumnDefinitions="30,*,*,80,36" ColumnSpacing="8" Margin="16,0">
+                                        <Grid ColumnDefinitions="30,*,*,80,36" ColumnSpacing="8" Margin="16,0"
+                                            IsVisible="{Binding HasSets}">
                                             <Label Grid.Column="0" Text="Set" FontSize="11" TextColor="#999999" FontAttributes="Bold" HorizontalOptions="Center"/>
                                             <Label Grid.Column="1" Text="Reps" FontSize="11" TextColor="#999999" FontAttributes="Bold" HorizontalOptions="Center"/>
                                             <Label Grid.Column="2" Text="Weight" FontSize="11" TextColor="#999999" FontAttributes="Bold" HorizontalOptions="Center"/>

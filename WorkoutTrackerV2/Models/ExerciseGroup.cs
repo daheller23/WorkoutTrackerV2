@@ -10,6 +10,7 @@ namespace WorkoutTrackerV2.Models
         public Exercise Exercise { get; set; } = exercise;
         public ObservableCollection<WorkoutSet> Sets { get; set; } = [];
         public string SetCountLabel => Sets.Count == 1 ? "1 set" : $"{Sets.Count} sets";
+        public bool HasSets => Sets.Count > 0;
 
         public void AddSet(string? weightUnit = null)
         {
@@ -25,6 +26,7 @@ namespace WorkoutTrackerV2.Models
             set.DeleteCommand = new RelayCommand(() => RemoveSet(set));
             Sets.Add(set);
             OnPropertyChanged(nameof(SetCountLabel));
+            OnPropertyChanged(nameof(HasSets));
         }
 
         #region "REMOVE SET"
@@ -36,6 +38,7 @@ namespace WorkoutTrackerV2.Models
                 Sets[i].SetNumber = i + 1;
             }
             OnPropertyChanged(nameof(SetCountLabel));
+            OnPropertyChanged(nameof(HasSets));
         }
         #endregion
     }
