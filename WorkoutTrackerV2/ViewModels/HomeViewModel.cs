@@ -19,6 +19,10 @@ namespace WorkoutTrackerV2.ViewModels
         [ObservableProperty] private WorkoutSession? _lastWorkoutSession;
         [ObservableProperty] private string _mostTrainedMuscleGroup = string.Empty;
         [ObservableProperty] private string _streakSubtitle = string.Empty;
+        [ObservableProperty] private int _workoutsThisWeek;
+        [ObservableProperty] private int _setsThisWeek;
+        [ObservableProperty] private double _volumeThisWeek;
+        [ObservableProperty] private string _mostTrainedMuscleGroupColor = "#1F77F0";
         #endregion
 
         #region "LOAD DATA"
@@ -57,6 +61,19 @@ namespace WorkoutTrackerV2.ViewModels
 
                 // Most trained muscle group this week
                 await LoadMostTrainedMuscleGroup(allSessions);
+
+                // This week stats
+                var weekStart = DateTime.Today.AddDays(-(int)DateTime.Today.DayOfWeek);
+                var thisWeekSessions = allSessions.Where(s => s.Date >= weekStart).ToList();
+                WorkoutsThisWeek = thisWeekSessions.Count;
+
+                var thisWeekSetTasks = thisWeekSessions
+                    .Select(s => workoutService.GetSetsForSessionAsync(s.Id))
+                    .ToList();
+                var thisWeekSets = await Task.WhenAll(thisWeekSetTasks);
+                var flatSets = thisWeekSets.SelectMany(s => s).ToList();
+                SetsThisWeek = flatSets.Count;
+                VolumeThisWeek = flatSets.Sum(s => s.Weight * s.Reps);
 
                 // Dynamic motivational message
                 SetMotivationalMessage();
@@ -103,6 +120,18 @@ namespace WorkoutTrackerV2.ViewModels
                     .GroupBy(s => exerciseDict[s.ExerciseId].MuscleGroup)
                     .OrderByDescending(g => g.Count())
                     .FirstOrDefault()?.Key ?? string.Empty;
+
+                // Set color based on muscle group
+                MostTrainedMuscleGroupColor = MostTrainedMuscleGroup switch
+                {
+                    "Chest" => "#1F77F0",
+                    "Back" => "#4CAF50",
+                    "Legs" => "#FF9800",
+                    "Shoulders" => "#9C27B0",
+                    "Arms" => "#FF6B6B",
+                    "Core" => "#00BCD4",
+                    _ => "#1F77F0"
+                };
             }
             catch
             {
