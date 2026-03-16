@@ -170,5 +170,58 @@ namespace WorkoutTrackerV2.Services
                 .ToDictionary(p => p.ExerciseName, p => p.MaxWeight);
         }
         #endregion
+
+        #region "GET PERSONAL RECORDS ASYNC"
+        public async Task<List<PersonalRecord>> GetPersonalRecordsAsync(int days = 0)
+        {
+            var exercises = await workoutService.GetAllExercisesAsync();
+            var recordTasks = exercises
+                .Select(e => GetPersonalRecordForExerciseAsync(e, days))
+                .ToList();
+            var allRecords = await Task.WhenAll(recordTasks);
+            return allRecords
+                .Where(r => r is not null && r.History.Count > 0)
+                .OrderByDescending(r => r!.BestWeight)
+                .ToList()!;
+        }
+
+        private async Task<PersonalRecord?> GetPersonalRecordForExerciseAsync(Exercise exercise, int days)
+        {
+            var sets = await workoutService.GetExerciseHistoryAsync(exercise.Id, days);
+            if (sets.Count == 0) return null;
+
+            // Find all times a new PR was set
+            double runningMax = 0;
+            var history = new List<PersonalRecordEntry>();
+
+            foreach (var set in sets.OrderBy(s => s.CreatedDate))
+            {
+                if (set.Weight > runningMax)
+                {
+                    runningMax = set.Weight;
+                    history.Add(new PersonalRecordEntry
+                    {
+                        Weight = set.Weight,
+                        Reps = set.Reps,
+                        Date = set.CreatedDate
+                    });
+                }
+            }
+
+            if (history.Count == 0) return null;
+
+            var best = history.Last();
+            return new PersonalRecord
+            {
+                ExerciseId = exercise.Id,
+                ExerciseName = exercise.Name,
+                MuscleGroup = exercise.MuscleGroup,
+                BestWeight = best.Weight,
+                BestReps = best.Reps,
+                BestDate = best.Date,
+                History = history
+            };
+        }
+        #endregion
     }
 }

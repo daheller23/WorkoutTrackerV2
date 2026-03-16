@@ -10,5 +10,6 @@ namespace WorkoutTrackerV2.Services
         Task<List<MuscleGroupProgress>> GetMuscleGroupProgressAsync(int days = 30);
         Task<List<ExerciseProgress>> GetProgressForMuscleGroupAsync(string muscleGroup, int days = 30);
         Task<Dictionary<string, double>> GetStrengthProgressAsync(int days = 30);
+        Task<List<PersonalRecord>> GetPersonalRecordsAsync(int days = 0);
     }
 }

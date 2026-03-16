@@ -25,6 +25,11 @@ namespace WorkoutTrackerV2.ViewModels
         [ObservableProperty] private string _mostTrainedMuscleGroupColor = "#1F77F0";
         #endregion
 
+        #region "VIEW PERSONAL RECORDS"
+        [RelayCommand]
+        private static Task ViewPersonalRecords() => Shell.Current.GoToAsync(Routes.PersonalRecords);
+        #endregion
+
         #region "LOAD DATA"
         [RelayCommand]
         private async Task LoadData()

@@ -20,6 +20,7 @@ namespace WorkoutTrackerV2.ViewModels
         [ObservableProperty] private string _workoutName = string.Empty;
         [ObservableProperty] private double _totalVolume;
         [ObservableProperty] private int _totalSets;
+        [ObservableProperty] private string _weightUnitLabel = "lbs total";
         #endregion
 
         #region "ON SELECTED EXERCISE CHANGED"
@@ -60,9 +61,8 @@ namespace WorkoutTrackerV2.ViewModels
                 -1 => "Tomorrow",
                 _ => days > 0 ? $"{days} days ago" : $"In {-days} days"
             };
-            DayName = $"{value.ToString("dddd")} · {relative}";
+            DayName = $"{value:dddd} · {relative}";
 
-            // Auto populate workout name if user hasn't typed anything
             if (string.IsNullOrWhiteSpace(WorkoutName))
                 WorkoutName = value.ToString("dddd");
         }
@@ -265,6 +265,24 @@ namespace WorkoutTrackerV2.ViewModels
                 return;
             }
 
+            // Validate reps and weight
+            var invalidSets = allSets.Where(s => s.Reps <= 0 || s.Weight < 0).ToList();
+            if (invalidSets.Count > 0)
+            {
+                await Shell.Current.DisplayAlertAsync("Error", "All sets must have reps greater than 0", "OK");
+                return;
+            }
+
+            // Warn if start time is after end time
+            if (StartTime > TimeSpan.Zero && EndTime > TimeSpan.Zero && StartTime >= EndTime)
+            {
+                bool proceed = await Shell.Current.DisplayAlertAsync(
+                    "Time Warning",
+                    "Start time is after or equal to end time. Duration will default to 60 minutes. Continue?",
+                    "Yes", "No");
+                if (!proceed) return;
+            }
+
             try
             {
                 IsLoading = true;
@@ -327,6 +345,7 @@ namespace WorkoutTrackerV2.ViewModels
             StartTime = TimeSpan.Zero;
             EndTime = TimeSpan.Zero;
             ExerciseGroups.Clear();
+            WeightUnitLabel = $"{settingsService.WeightUnit} total";
             UpdateTotals();
         }
         #endregion

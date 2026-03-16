@@ -12,8 +12,9 @@
 
     <ContentPage.Resources>
         <converters:MuscleGroupColorConverter x:Key="MuscleGroupColorConverter"/>
+        <converters:CopyLastButtonColorConverter x:Key="CopyLastButtonColorConverter"/>
+        <converters:CopyLastButtonTextColorConverter x:Key="CopyLastButtonTextColorConverter"/>
     </ContentPage.Resources>
-
     <Grid RowDefinitions="*,Auto" RowSpacing="0">
 
         <ScrollView Grid.Row="0">
@@ -159,7 +160,7 @@
 
                                         <!-- Table Header -->
                                         <Grid ColumnDefinitions="30,*,*,80,36" ColumnSpacing="8" Margin="16,0"
-                                            IsVisible="{Binding HasSets}">
+                                              IsVisible="{Binding HasSets}">
                                             <Label Grid.Column="0" Text="Set" FontSize="11" TextColor="#999999" FontAttributes="Bold" HorizontalOptions="Center"/>
                                             <Label Grid.Column="1" Text="Reps" FontSize="11" TextColor="#999999" FontAttributes="Bold" HorizontalOptions="Center"/>
                                             <Label Grid.Column="2" Text="Weight" FontSize="11" TextColor="#999999" FontAttributes="Bold" HorizontalOptions="Center"/>
@@ -240,27 +241,27 @@
                                         <!-- Add Set / Copy Last Set -->
                                         <Grid ColumnDefinitions="*,*" ColumnSpacing="8" Margin="16,0">
                                             <Button Grid.Column="0"
-                                                Text="+ Add Set"
-                                                Command="{Binding Source={RelativeSource AncestorType={x:Type vm:AddWorkoutViewModel}}, Path=AddSetCommand}"
-                                                CommandParameter="{Binding .}"
-                                                BackgroundColor="#F0F7FF"
-                                                TextColor="#1F77F0"
-                                                FontAttributes="Bold"
-                                                FontSize="13"
-                                                Padding="0,10"
-                                                CornerRadius="8"
-                                                BorderWidth="0"/>
+                                                    Text="+ Add Set"
+                                                    Command="{Binding Source={RelativeSource AncestorType={x:Type vm:AddWorkoutViewModel}}, Path=AddSetCommand}"
+                                                    CommandParameter="{Binding .}"
+                                                    BackgroundColor="#F0F7FF"
+                                                    TextColor="#1F77F0"
+                                                    FontAttributes="Bold"
+                                                    FontSize="13"
+                                                    Padding="0,10"
+                                                    CornerRadius="8"
+                                                    BorderWidth="0"/>
                                             <Button Grid.Column="1"
-                                                Text="Copy Last"
-                                                Command="{Binding Source={RelativeSource AncestorType={x:Type vm:AddWorkoutViewModel}}, Path=CopyLastSetCommand}"
-                                                CommandParameter="{Binding .}"
-                                                BackgroundColor="#F5F5F5"
-                                                TextColor="#999999"
-                                                FontAttributes="Bold"
-                                                FontSize="13"
-                                                Padding="0,10"
-                                                CornerRadius="8"
-                                                BorderWidth="0"/>
+                                                    Text="Copy Last"
+                                                    Command="{Binding Source={RelativeSource AncestorType={x:Type vm:AddWorkoutViewModel}}, Path=CopyLastSetCommand}"
+                                                    CommandParameter="{Binding .}"
+                                                    BackgroundColor="{Binding HasSets, Converter={StaticResource CopyLastButtonColorConverter}}"
+                                                    TextColor="{Binding HasSets, Converter={StaticResource CopyLastButtonTextColorConverter}}"
+                                                    FontAttributes="Bold"
+                                                    FontSize="13"
+                                                    Padding="0,10"
+                                                    CornerRadius="8"
+                                                    BorderWidth="0"/>
                                         </Grid>
 
                                     </StackLayout>
@@ -313,7 +314,8 @@
                 <StackLayout Grid.Column="1" Orientation="Horizontal" Spacing="6" HorizontalOptions="Center">
                     <Label Text="{Binding TotalVolume, StringFormat='{0:F0}'}"
                            FontSize="16" FontAttributes="Bold" TextColor="#4CAF50" VerticalOptions="Center"/>
-                    <Label Text="lbs total" FontSize="12" TextColor="#999999" VerticalOptions="Center"/>
+                    <Label Text="{Binding WeightUnitLabel}"
+                           FontSize="12" TextColor="#999999" VerticalOptions="Center"/>
                 </StackLayout>
             </Grid>
 

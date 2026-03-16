@@ -19,6 +19,7 @@ namespace WorkoutTrackerV2
             Routing.RegisterRoute(Routes.MuscleGroupProgress, typeof(MuscleGroupProgressView));
             Routing.RegisterRoute(Routes.ExerciseProgress, typeof(ExerciseProgressView));
             Routing.RegisterRoute(Routes.TemplatePicker, typeof(TemplatePickerView));
+            Routing.RegisterRoute(Routes.PersonalRecords, typeof(PersonalRecordsView));
         }
     }
 }

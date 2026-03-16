@@ -40,6 +40,11 @@ namespace WorkoutTrackerV2.ViewModels
         }
         #endregion
 
+        #region "VIEW PERSONAL RECORDS"
+        [RelayCommand]
+        private static Task ViewPersonalRecords() => Shell.Current.GoToAsync(Routes.PersonalRecords);
+        #endregion
+
         #region "LOAD ANALYTICS"
         [RelayCommand]
         private async Task LoadAnalytics()
