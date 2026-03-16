@@ -13,6 +13,7 @@
     <ContentPage.Resources>
         <converters:IsNotNullConverter x:Key="IsNotNullConverter"/>
         <converters:IsNotEmptyConverter x:Key="IsNotEmptyConverter"/>
+        <converters:RelativeDateConverter x:Key="RelativeDateConverter"/>
     </ContentPage.Resources>
 
     <Grid RowDefinitions="Auto,*" RowSpacing="0">
@@ -43,27 +44,26 @@
             <StackLayout Padding="20,24" Spacing="16">
 
                 <!-- Dynamic Motivational Card -->
-                <StackLayout BackgroundColor="#1F77F0" Padding="20,24" Spacing="8">
+                <StackLayout BackgroundColor="#F0F7FF" Padding="20,24" Spacing="8">
                     <Label Text="{Binding MotivationalMessage}"
-                           FontSize="20"
-                           FontAttributes="Bold"
-                           TextColor="#FFFFFF"
-                           CharacterSpacing="0.3"/>
+                       FontSize="20"
+                       FontAttributes="Bold"
+                       TextColor="#1F77F0"
+                       CharacterSpacing="0.3"/>
                     <Label Text="{Binding MotivationalSubMessage}"
-                           FontSize="13"
-                           TextColor="#FFFFFF"
-                           Opacity="0.85"
-                           LineBreakMode="WordWrap"/>
+                       FontSize="13"
+                       TextColor="#64B5F6"
+                       LineBreakMode="WordWrap"/>
                     <Button Text="+ Start Workout"
-                            Command="{Binding StartWorkoutCommand}"
-                            BackgroundColor="#FFFFFF"
-                            TextColor="#1F77F0"
-                            FontAttributes="Bold"
-                            FontSize="13"
-                            Padding="0,10"
-                            CornerRadius="8"
-                            BorderWidth="0"
-                            Margin="0,8,0,0"/>
+                        Command="{Binding StartWorkoutCommand}"
+                        BackgroundColor="#1F77F0"
+                        TextColor="#FFFFFF"
+                        FontAttributes="Bold"
+                        FontSize="13"
+                        Padding="0,10"
+                        CornerRadius="8"
+                        BorderWidth="0"
+                        Margin="0,8,0,0"/>
                 </StackLayout>
 
                 <!-- Compact Stats Row -->
@@ -136,7 +136,7 @@
                                FontSize="16"
                                FontAttributes="Bold"
                                TextColor="#000000"/>
-                            <Label Text="{Binding LastWorkoutSession.Date, StringFormat='{0:MMM d, yyyy}'}"
+                            <Label Text="{Binding LastWorkoutDate, Converter={StaticResource RelativeDateConverter}}"
                                FontSize="12"
                                TextColor="#999999"/>
                         </StackLayout>
@@ -147,9 +147,9 @@
                                TextColor="#1F77F0"
                                HorizontalOptions="End"/>
                             <Label Text="{Binding LastWorkoutSession.TotalExercises, StringFormat='{0} exercises'}"
-                               FontSize="11"
-                               TextColor="#999999"
-                               HorizontalOptions="End"/>
+                                FontSize="11"
+                                TextColor="#999999"
+                                HorizontalOptions="End"/>
                         </StackLayout>
                     </Grid>
                     <BoxView HeightRequest="0.5" Color="#F0F0F0"/>
@@ -195,12 +195,12 @@
                                FontSize="20"
                                VerticalOptions="Center"/>
                         <Label Grid.Column="1"
-                               Text="Recent Activity"
-                               FontSize="16"
-                               FontAttributes="Bold"
-                               TextColor="#000000"
-                               CharacterSpacing="0.3"
-                               VerticalOptions="Center"/>
+                           Text="More Recent Activity"
+                           FontSize="16"
+                           FontAttributes="Bold"
+                           TextColor="#000000"
+                           CharacterSpacing="0.3"
+                           VerticalOptions="Center"/>
                         <Button Grid.Column="2"
                                 Text="View all →"
                                 BackgroundColor="Transparent"

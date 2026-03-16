@@ -45,13 +45,15 @@ namespace WorkoutTrackerV2.ViewModels
                 AverageDuration = averageDurationTask.Result;
 
                 var allSessions = allSessionsTask.Result;
-                var recent = allSessions.Take(5).ToList();
+
+                // Last workout shown in its own card
+                LastWorkoutSession = allSessions.FirstOrDefault();
+
+                // Skip first since it's shown in Last Workout card, take next 3
+                var recent = allSessions.Skip(1).Take(3).ToList();
                 RecentSessions.Clear();
                 foreach (var session in recent)
                     RecentSessions.Add(session);
-
-                // Last workout session
-                LastWorkoutSession = allSessions.FirstOrDefault();
 
                 // Most trained muscle group this week
                 await LoadMostTrainedMuscleGroup(allSessions);
