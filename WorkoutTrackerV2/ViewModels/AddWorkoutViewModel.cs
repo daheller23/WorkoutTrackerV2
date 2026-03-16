@@ -68,6 +68,35 @@ namespace WorkoutTrackerV2.ViewModels
         }
         #endregion
 
+        #region "COPY LAST SET"
+        [RelayCommand]
+        private void CopyLastSet(ExerciseGroup group)
+        {
+            var lastSet = group.Sets.LastOrDefault();
+            if (lastSet is null)
+            {
+                group.AddSet(settingsService.WeightUnit);
+                UpdateTotals();
+                return;
+            }
+
+            var newSet = new WorkoutSet
+            {
+                Exercise = group.Exercise,
+                ExerciseId = group.Exercise.Id,
+                SetNumber = group.Sets.Count + 1,
+                Reps = lastSet.Reps,
+                Weight = lastSet.Weight,
+                WeightUnit = lastSet.WeightUnit,
+                ParentGroup = group
+            };
+            newSet.DeleteCommand = new CommunityToolkit.Mvvm.Input.RelayCommand(() => group.RemoveSet(newSet));
+            group.Sets.Add(newSet);
+            OnPropertyChanged(nameof(group.SetCountLabel));
+            UpdateTotals();
+        }
+        #endregion
+
         #region "SAVE AS TEMPLATE"
         [RelayCommand]
         private async Task SaveAsTemplate()

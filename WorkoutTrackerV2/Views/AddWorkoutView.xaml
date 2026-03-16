@@ -112,12 +112,10 @@
 
                                         <!-- Muscle Group Color Bar + Exercise Header -->
                                         <Grid ColumnDefinitions="6,*,Auto,Auto" ColumnSpacing="12">
-                                            <!-- Color Bar -->
                                             <BoxView Grid.Column="0"
                                                      BackgroundColor="{Binding Exercise.MuscleGroup, Converter={StaticResource MuscleGroupColorConverter}}"
                                                      HorizontalOptions="Fill"
                                                      VerticalOptions="Fill"/>
-                                            <!-- Exercise Info -->
                                             <StackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center" Padding="0,12,0,0">
                                                 <Label Text="{Binding Exercise.Name}"
                                                        FontSize="15"
@@ -127,7 +125,6 @@
                                                        FontSize="11"
                                                        TextColor="{Binding Exercise.MuscleGroup, Converter={StaticResource MuscleGroupColorConverter}}"/>
                                             </StackLayout>
-                                            <!-- Set Count Badge -->
                                             <Border Grid.Column="2"
                                                     BackgroundColor="#F0F7FF"
                                                     StrokeThickness="0"
@@ -142,7 +139,6 @@
                                                        FontAttributes="Bold"
                                                        TextColor="#1F77F0"/>
                                             </Border>
-                                            <!-- Remove Button -->
                                             <Button Grid.Column="3"
                                                     Text="✕"
                                                     Command="{Binding Source={RelativeSource AncestorType={x:Type vm:AddWorkoutViewModel}}, Path=RemoveExerciseCommand}"
@@ -172,6 +168,13 @@
 
                                         <!-- Sets Rows -->
                                         <StackLayout BindableLayout.ItemsSource="{Binding Sets}" Spacing="6" Margin="16,0">
+                                            <BindableLayout.EmptyView>
+                                                <Label Text="No sets yet — tap + Add Set to get started"
+                                                       FontSize="11"
+                                                       TextColor="#D0D0D0"
+                                                       HorizontalOptions="Center"
+                                                       Margin="0,4,0,4"/>
+                                            </BindableLayout.EmptyView>
                                             <BindableLayout.ItemTemplate>
                                                 <DataTemplate x:DataType="models:WorkoutSet">
                                                     <Grid ColumnDefinitions="30,*,*,80,36" ColumnSpacing="8">
@@ -233,8 +236,10 @@
                                             </BindableLayout.ItemTemplate>
                                         </StackLayout>
 
-                                        <!-- Add Set Button -->
-                                        <Button Text="+ Add Set"
+                                        <!-- Add Set / Copy Last Set -->
+                                        <Grid ColumnDefinitions="*,*" ColumnSpacing="8" Margin="16,0">
+                                            <Button Grid.Column="0"
+                                                Text="+ Add Set"
                                                 Command="{Binding Source={RelativeSource AncestorType={x:Type vm:AddWorkoutViewModel}}, Path=AddSetCommand}"
                                                 CommandParameter="{Binding .}"
                                                 BackgroundColor="#F0F7FF"
@@ -243,8 +248,19 @@
                                                 FontSize="13"
                                                 Padding="0,10"
                                                 CornerRadius="8"
-                                                BorderWidth="0"
-                                                Margin="16,0"/>
+                                                BorderWidth="0"/>
+                                            <Button Grid.Column="1"
+                                                Text="Copy Last"
+                                                Command="{Binding Source={RelativeSource AncestorType={x:Type vm:AddWorkoutViewModel}}, Path=CopyLastSetCommand}"
+                                                CommandParameter="{Binding .}"
+                                                BackgroundColor="#F5F5F5"
+                                                TextColor="#999999"
+                                                FontAttributes="Bold"
+                                                FontSize="13"
+                                                Padding="0,10"
+                                                CornerRadius="8"
+                                                BorderWidth="0"/>
+                                        </Grid>
 
                                     </StackLayout>
                                 </StackLayout>
@@ -275,6 +291,7 @@
                             BackgroundColor="#F5F5F5"
                             TextColor="#000000"
                             HeightRequest="80"
+                            MaxLength="500"
                             Placeholder="How did you feel? Any notes about this session..."
                             PlaceholderColor="#D0D0D0"/>
                 </StackLayout>
