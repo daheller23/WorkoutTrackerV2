@@ -42,7 +42,7 @@
         </Grid>
 
         <ScrollView Grid.Row="1">
-            <StackLayout Padding="20,24" Spacing="16">
+            <StackLayout Padding="20,24" Spacing="20">
 
                 <!-- Dynamic Motivational Card -->
                 <StackLayout BackgroundColor="#F0F7FF" Padding="20,24" Spacing="8">
@@ -91,7 +91,8 @@
                     </StackLayout>
                 </Grid>
 
-                <BoxView HeightRequest="1" Color="#F0F0F0"/>
+                <!-- Divider with breathing room -->
+                <BoxView HeightRequest="1" Color="#F0F0F0" Margin="0,4"/>
 
                 <!-- Last Workout Card -->
                 <StackLayout IsVisible="{Binding LastWorkoutSession, Converter={StaticResource IsNotNullConverter}}"
@@ -186,14 +187,12 @@
 
                 <!-- Recent Workouts Section -->
                 <StackLayout Spacing="12">
-                    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12" RowSpacing="0">
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12" RowSpacing="0">
                         <Label Grid.Column="0"
-                               Text="📋" FontSize="20" VerticalOptions="Center"/>
-                        <Label Grid.Column="1"
                                Text="More Recent Activity"
                                FontSize="16" FontAttributes="Bold" TextColor="#000000"
                                CharacterSpacing="0.3" VerticalOptions="Center"/>
-                        <Button Grid.Column="2"
+                        <Button Grid.Column="1"
                                 Text="View all →"
                                 BackgroundColor="Transparent"
                                 TextColor="#1F77F0"
