@@ -117,42 +117,46 @@
 
                 <!-- Last Workout Card -->
                 <StackLayout IsVisible="{Binding LastWorkoutSession, Converter={StaticResource IsNotNullConverter}}"
-                             BackgroundColor="#FFFFFF"
-                             Padding="16"
-                             Spacing="10">
-                    <Label Text="LAST WORKOUT"
-                           FontSize="11"
-                           FontAttributes="Bold"
-                           TextColor="#999999"
-                           CharacterSpacing="1"/>
-                    <Grid ColumnDefinitions="*,Auto">
-                        <StackLayout Grid.Column="0" Spacing="3">
-                            <Label Text="{Binding LastWorkoutSession.DayName}"
-                                   FontSize="16"
-                                   FontAttributes="Bold"
-                                   TextColor="#000000"/>
-                            <Label Text="{Binding LastWorkoutSession.Date, StringFormat='{0:MMM d, yyyy}'}"
-                                   FontSize="12"
-                                   TextColor="#999999"/>
-                        </StackLayout>
-                        <StackLayout Grid.Column="1" Spacing="3" HorizontalOptions="End" VerticalOptions="Center">
-                            <Label Text="{Binding LastWorkoutSession.Duration, StringFormat='{0:hh\\:mm}'}"
-                                   FontSize="14"
-                                   FontAttributes="Bold"
-                                   TextColor="#1F77F0"
-                                   HorizontalOptions="End"/>
-                            <Label Text="{Binding LastWorkoutSession.TotalExercises, StringFormat='{0} exercises'}"
-                                   FontSize="11"
-                                   TextColor="#999999"
-                                   HorizontalOptions="End"/>
-                        </StackLayout>
-                    </Grid>
-                    <BoxView HeightRequest="0.5" Color="#F0F0F0"/>
-                    <Grid.GestureRecognizers>
+                    BackgroundColor="#FFFFFF"
+                    Padding="16"
+                    Spacing="10">
+                    <StackLayout.GestureRecognizers>
                         <TapGestureRecognizer
                             Command="{Binding ViewWorkoutCommand}"
                             CommandParameter="{Binding LastWorkoutSession}"/>
-                    </Grid.GestureRecognizers>
+                    </StackLayout.GestureRecognizers>
+                    <Label Text="LAST WORKOUT"
+                       FontSize="11"
+                       FontAttributes="Bold"
+                       TextColor="#999999"
+                       CharacterSpacing="1"/>
+                    <Grid ColumnDefinitions="*,Auto">
+                        <StackLayout Grid.Column="0" Spacing="3">
+                            <Label Text="{Binding LastWorkoutSession.DayName}"
+                               FontSize="16"
+                               FontAttributes="Bold"
+                               TextColor="#000000"/>
+                            <Label Text="{Binding LastWorkoutSession.Date, StringFormat='{0:MMM d, yyyy}'}"
+                               FontSize="12"
+                               TextColor="#999999"/>
+                        </StackLayout>
+                        <StackLayout Grid.Column="1" Spacing="3" HorizontalOptions="End" VerticalOptions="Center">
+                            <Label Text="{Binding LastWorkoutSession.Duration, StringFormat='{0:hh\\:mm}'}"
+                               FontSize="14"
+                               FontAttributes="Bold"
+                               TextColor="#1F77F0"
+                               HorizontalOptions="End"/>
+                            <Label Text="{Binding LastWorkoutSession.TotalExercises, StringFormat='{0} exercises'}"
+                               FontSize="11"
+                               TextColor="#999999"
+                               HorizontalOptions="End"/>
+                        </StackLayout>
+                    </Grid>
+                    <BoxView HeightRequest="0.5" Color="#F0F0F0"/>
+                    <Label Text="Tap to view details →"
+                       FontSize="11"
+                       TextColor="#1F77F0"
+                       HorizontalOptions="End"/>
                 </StackLayout>
 
                 <!-- Most Trained Muscle Group -->
