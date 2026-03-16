@@ -4,10 +4,15 @@
              x:Class="WorkoutTrackerV2.Views.AddWorkoutView"
              xmlns:vm="clr-namespace:WorkoutTrackerV2.ViewModels"
              xmlns:models="clr-namespace:WorkoutTrackerV2.Models"
+             xmlns:converters="clr-namespace:WorkoutTrackerV2.Converters"
              x:DataType="vm:AddWorkoutViewModel"
              BackgroundColor="#FAFAFA">
 
     <Shell.NavBarIsVisible>False</Shell.NavBarIsVisible>
+
+    <ContentPage.Resources>
+        <converters:MuscleGroupColorConverter x:Key="MuscleGroupColorConverter"/>
+    </ContentPage.Resources>
 
     <Grid RowDefinitions="*,Auto" RowSpacing="0">
 
@@ -26,6 +31,14 @@
                                FontSize="13"
                                TextColor="#999999"/>
                     </StackLayout>
+                    <Button Grid.Column="1"
+                            Text="⚙️"
+                            Command="{Binding ViewSettingsCommand}"
+                            BackgroundColor="Transparent"
+                            TextColor="#1F77F0"
+                            FontSize="22"
+                            Padding="8"
+                            VerticalOptions="Start"/>
                 </Grid>
 
                 <!-- Workout Name -->
@@ -43,9 +56,9 @@
                            FontSize="14"/>
                 </StackLayout>
 
-                <!-- Date & Day Selection -->
+                <!-- Date & Time -->
                 <StackLayout Spacing="12" BackgroundColor="#FFFFFF" Padding="16">
-                    <Label Text="Workout Date"
+                    <Label Text="Date &amp; Time"
                            FontSize="12"
                            TextColor="#999999"
                            FontAttributes="Bold"
@@ -54,37 +67,25 @@
                                 BackgroundColor="#F5F5F5"
                                 TextColor="#000000"
                                 Format="MMM dd, yyyy"/>
+                    <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+                        <StackLayout Grid.Column="0" Spacing="4">
+                            <Label Text="Start" FontSize="11" TextColor="#999999"/>
+                            <TimePicker Time="{Binding StartTime}"
+                                        BackgroundColor="#F5F5F5"
+                                        TextColor="#000000"/>
+                        </StackLayout>
+                        <StackLayout Grid.Column="1" Spacing="4">
+                            <Label Text="End" FontSize="11" TextColor="#999999"/>
+                            <TimePicker Time="{Binding EndTime}"
+                                        BackgroundColor="#F5F5F5"
+                                        TextColor="#000000"/>
+                        </StackLayout>
+                    </Grid>
                     <Label Text="{Binding DayName}"
-                           FontSize="18"
+                           FontSize="15"
                            FontAttributes="Bold"
                            TextColor="#1F77F0"
-                           HorizontalOptions="Center"
-                           Margin="0,8,0,0"/>
-                </StackLayout>
-
-                <!-- Time Selection -->
-                <Grid ColumnDefinitions="*,*" ColumnSpacing="16">
-                    <StackLayout Spacing="12" BackgroundColor="#FFFFFF" Padding="16">
-                        <Label Text="Start Time" FontSize="12" TextColor="#999999" FontAttributes="Bold" CharacterSpacing="0.3"/>
-                        <TimePicker Time="{Binding StartTime}" BackgroundColor="#F5F5F5" TextColor="#000000"/>
-                    </StackLayout>
-                    <StackLayout Grid.Column="1" Spacing="12" BackgroundColor="#FFFFFF" Padding="16">
-                        <Label Text="End Time" FontSize="12" TextColor="#999999" FontAttributes="Bold" CharacterSpacing="0.3"/>
-                        <TimePicker Time="{Binding EndTime}" BackgroundColor="#F5F5F5" TextColor="#000000"/>
-                    </StackLayout>
-                </Grid>
-
-                <!-- Notes -->
-                <StackLayout Spacing="12" BackgroundColor="#FFFFFF" Padding="16">
-                    <Label Text="Workout Notes"
-                           FontSize="12"
-                           TextColor="#999999"
-                           FontAttributes="Bold"
-                           CharacterSpacing="0.3"/>
-                    <Editor Text="{Binding Notes}"
-                            BackgroundColor="#F5F5F5"
-                            TextColor="#000000"
-                            HeightRequest="80"/>
+                           HorizontalOptions="Center"/>
                 </StackLayout>
 
                 <!-- Exercise Groups -->
@@ -107,20 +108,42 @@
                         <CollectionView.ItemTemplate>
                             <DataTemplate x:DataType="models:ExerciseGroup">
                                 <StackLayout Margin="0,0,0,12">
-                                    <StackLayout BackgroundColor="#FFFFFF" Padding="16" Spacing="12">
+                                    <StackLayout BackgroundColor="#FFFFFF" Padding="0,0,0,12" Spacing="12">
 
-                                        <!-- Exercise Header -->
-                                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
-                                            <StackLayout Grid.Column="0" Spacing="2">
+                                        <!-- Muscle Group Color Bar + Exercise Header -->
+                                        <Grid ColumnDefinitions="6,*,Auto,Auto" ColumnSpacing="12">
+                                            <!-- Color Bar -->
+                                            <BoxView Grid.Column="0"
+                                                     BackgroundColor="{Binding Exercise.MuscleGroup, Converter={StaticResource MuscleGroupColorConverter}}"
+                                                     HorizontalOptions="Fill"
+                                                     VerticalOptions="Fill"/>
+                                            <!-- Exercise Info -->
+                                            <StackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center" Padding="0,12,0,0">
                                                 <Label Text="{Binding Exercise.Name}"
                                                        FontSize="15"
                                                        FontAttributes="Bold"
                                                        TextColor="#000000"/>
                                                 <Label Text="{Binding Exercise.MuscleGroup}"
                                                        FontSize="11"
-                                                       TextColor="#999999"/>
+                                                       TextColor="{Binding Exercise.MuscleGroup, Converter={StaticResource MuscleGroupColorConverter}}"/>
                                             </StackLayout>
-                                            <Button Grid.Column="1"
+                                            <!-- Set Count Badge -->
+                                            <Border Grid.Column="2"
+                                                    BackgroundColor="#F0F7FF"
+                                                    StrokeThickness="0"
+                                                    VerticalOptions="Center"
+                                                    Padding="8,4"
+                                                    Margin="0,12,0,0">
+                                                <Border.StrokeShape>
+                                                    <RoundRectangle CornerRadius="10"/>
+                                                </Border.StrokeShape>
+                                                <Label Text="{Binding SetCountLabel}"
+                                                       FontSize="11"
+                                                       FontAttributes="Bold"
+                                                       TextColor="#1F77F0"/>
+                                            </Border>
+                                            <!-- Remove Button -->
+                                            <Button Grid.Column="3"
                                                     Text="✕"
                                                     Command="{Binding Source={RelativeSource AncestorType={x:Type vm:AddWorkoutViewModel}}, Path=RemoveExerciseCommand}"
                                                     CommandParameter="{Binding .}"
@@ -132,27 +155,26 @@
                                                     Padding="0"
                                                     CornerRadius="6"
                                                     BorderWidth="0"
-                                                    VerticalOptions="Center"/>
+                                                    VerticalOptions="Center"
+                                                    Margin="0,12,12,0"/>
                                         </Grid>
 
-                                        <BoxView HeightRequest="0.5" Color="#F0F0F0"/>
+                                        <BoxView HeightRequest="0.5" Color="#F0F0F0" Margin="16,0"/>
 
                                         <!-- Table Header -->
-                                        <Grid ColumnDefinitions="30,*,*,80,36" ColumnSpacing="8">
+                                        <Grid ColumnDefinitions="30,*,*,80,36" ColumnSpacing="8" Margin="16,0">
                                             <Label Grid.Column="0" Text="Set" FontSize="11" TextColor="#999999" FontAttributes="Bold" HorizontalOptions="Center"/>
                                             <Label Grid.Column="1" Text="Reps" FontSize="11" TextColor="#999999" FontAttributes="Bold" HorizontalOptions="Center"/>
                                             <Label Grid.Column="2" Text="Weight" FontSize="11" TextColor="#999999" FontAttributes="Bold" HorizontalOptions="Center"/>
                                             <Label Grid.Column="3" Text="Unit" FontSize="11" TextColor="#999999" FontAttributes="Bold" HorizontalOptions="Center"/>
-                                            <Label Grid.Column="4" Text="" FontSize="11" TextColor="#999999"/>
+                                            <Label Grid.Column="4" Text=""/>
                                         </Grid>
 
                                         <!-- Sets Rows -->
-                                        <StackLayout BindableLayout.ItemsSource="{Binding Sets}" Spacing="6">
+                                        <StackLayout BindableLayout.ItemsSource="{Binding Sets}" Spacing="6" Margin="16,0">
                                             <BindableLayout.ItemTemplate>
                                                 <DataTemplate x:DataType="models:WorkoutSet">
-                                                    <Grid ColumnDefinitions="30,*,*,80,36" ColumnSpacing="8" RowSpacing="0">
-
-                                                        <!-- Set Number -->
+                                                    <Grid ColumnDefinitions="30,*,*,80,36" ColumnSpacing="8">
                                                         <Border Grid.Column="0"
                                                                 BackgroundColor="#F0F7FF"
                                                                 WidthRequest="28"
@@ -169,8 +191,6 @@
                                                                    HorizontalOptions="Center"
                                                                    VerticalOptions="Center"/>
                                                         </Border>
-
-                                                        <!-- Reps -->
                                                         <Entry Grid.Column="1"
                                                                Text="{Binding Reps}"
                                                                Keyboard="Numeric"
@@ -178,8 +198,6 @@
                                                                TextColor="#1F77F0"
                                                                FontSize="13"
                                                                HorizontalTextAlignment="Center"/>
-
-                                                        <!-- Weight -->
                                                         <Entry Grid.Column="2"
                                                                Text="{Binding Weight}"
                                                                Keyboard="Numeric"
@@ -187,8 +205,6 @@
                                                                TextColor="#1F77F0"
                                                                FontSize="13"
                                                                HorizontalTextAlignment="Center"/>
-
-                                                        <!-- Unit Picker -->
                                                         <Picker Grid.Column="3"
                                                                 SelectedItem="{Binding WeightUnit}"
                                                                 BackgroundColor="#F5F5F5"
@@ -201,19 +217,17 @@
                                                                 </x:Array>
                                                             </Picker.ItemsSource>
                                                         </Picker>
-
-                                                        <!-- Delete Set -->
                                                         <Button Grid.Column="4"
-                                                            Text="✕"
-                                                            Command="{Binding DeleteCommand}"
-                                                            BackgroundColor="Transparent"
-                                                            TextColor="#FF6B6B"
-                                                            FontSize="14"
-                                                            Padding="0"
-                                                            WidthRequest="36"
-                                                            HeightRequest="36"
-                                                            BorderWidth="0"
-                                                            VerticalOptions="Center"/>
+                                                                Text="✕"
+                                                                Command="{Binding DeleteCommand}"
+                                                                BackgroundColor="Transparent"
+                                                                TextColor="#FF6B6B"
+                                                                FontSize="14"
+                                                                Padding="0"
+                                                                WidthRequest="36"
+                                                                HeightRequest="36"
+                                                                BorderWidth="0"
+                                                                VerticalOptions="Center"/>
                                                     </Grid>
                                                 </DataTemplate>
                                             </BindableLayout.ItemTemplate>
@@ -229,7 +243,8 @@
                                                 FontSize="13"
                                                 Padding="0,10"
                                                 CornerRadius="8"
-                                                BorderWidth="0"/>
+                                                BorderWidth="0"
+                                                Margin="16,0"/>
 
                                     </StackLayout>
                                 </StackLayout>
@@ -249,59 +264,88 @@
                             BorderWidth="0"/>
                 </StackLayout>
 
+                <!-- Notes -->
+                <StackLayout Spacing="12" BackgroundColor="#FFFFFF" Padding="16">
+                    <Label Text="Workout Notes"
+                           FontSize="12"
+                           TextColor="#999999"
+                           FontAttributes="Bold"
+                           CharacterSpacing="0.3"/>
+                    <Editor Text="{Binding Notes}"
+                            BackgroundColor="#F5F5F5"
+                            TextColor="#000000"
+                            HeightRequest="80"
+                            Placeholder="How did you feel? Any notes about this session..."
+                            PlaceholderColor="#D0D0D0"/>
+                </StackLayout>
+
             </StackLayout>
         </ScrollView>
 
         <!-- Action Buttons -->
-        <Grid Grid.Row="1" RowDefinitions="Auto,Auto" RowSpacing="0" BackgroundColor="#FFFFFF">
+        <Grid Grid.Row="1" RowDefinitions="Auto,Auto,Auto" RowSpacing="0" BackgroundColor="#FFFFFF">
+
+            <!-- Live Volume Counter -->
+            <Grid Grid.Row="0" ColumnDefinitions="*,*" Padding="20,12,20,0" ColumnSpacing="12">
+                <StackLayout Grid.Column="0" Orientation="Horizontal" Spacing="6" HorizontalOptions="Center">
+                    <Label Text="{Binding TotalSets}"
+                           FontSize="16" FontAttributes="Bold" TextColor="#1F77F0" VerticalOptions="Center"/>
+                    <Label Text="sets" FontSize="12" TextColor="#999999" VerticalOptions="Center"/>
+                </StackLayout>
+                <StackLayout Grid.Column="1" Orientation="Horizontal" Spacing="6" HorizontalOptions="Center">
+                    <Label Text="{Binding TotalVolume, StringFormat='{0:F0}'}"
+                           FontSize="16" FontAttributes="Bold" TextColor="#4CAF50" VerticalOptions="Center"/>
+                    <Label Text="lbs total" FontSize="12" TextColor="#999999" VerticalOptions="Center"/>
+                </StackLayout>
+            </Grid>
 
             <!-- Template Buttons -->
-            <Grid Grid.Row="0" ColumnDefinitions="*,*" ColumnSpacing="12" Padding="20,12,20,0">
+            <Grid Grid.Row="1" ColumnDefinitions="*,*" ColumnSpacing="12" Padding="20,8,20,0">
                 <Button Grid.Column="0"
-                Text="📋 Load Template"
-                Command="{Binding OpenTemplatePickerCommand}"
-                BackgroundColor="#F0F7FF"
-                TextColor="#1F77F0"
-                FontAttributes="Bold"
-                FontSize="13"
-                Padding="0,10"
-                CornerRadius="8"
-                BorderWidth="0"/>
+                        Text="📋 Load Template"
+                        Command="{Binding OpenTemplatePickerCommand}"
+                        BackgroundColor="#F0F7FF"
+                        TextColor="#1F77F0"
+                        FontAttributes="Bold"
+                        FontSize="13"
+                        Padding="0,10"
+                        CornerRadius="8"
+                        BorderWidth="0"/>
                 <Button Grid.Column="1"
-                Text="💾 Save as Template"
-                Command="{Binding SaveAsTemplateCommand}"
-                BackgroundColor="#F1F8F1"
-                TextColor="#4CAF50"
-                FontAttributes="Bold"
-                FontSize="13"
-                Padding="0,10"
-                CornerRadius="8"
-                BorderWidth="0"/>
+                        Text="💾 Save as Template"
+                        Command="{Binding SaveAsTemplateCommand}"
+                        BackgroundColor="#F1F8F1"
+                        TextColor="#4CAF50"
+                        FontAttributes="Bold"
+                        FontSize="13"
+                        Padding="0,10"
+                        CornerRadius="8"
+                        BorderWidth="0"/>
             </Grid>
 
             <!-- Save / Clear -->
-            <Grid Grid.Row="1" ColumnDefinitions="*,*" ColumnSpacing="16" Padding="20" RowSpacing="0">
+            <Grid Grid.Row="2" ColumnDefinitions="*,*" ColumnSpacing="16" Padding="20" RowSpacing="0">
                 <Button Grid.Column="0"
-                Text="Clear"
-                Command="{Binding ClearCommand}"
-                BackgroundColor="Transparent"
-                TextColor="#FF6B6B"
-                FontAttributes="Bold"
-                FontSize="14"
-                Padding="0,14"
-                CornerRadius="10"
-                BorderWidth="1"
-                BorderColor="#FF6B6B"/>
+                        Text="Clear"
+                        Command="{Binding ClearCommand}"
+                        BackgroundColor="Transparent"
+                        TextColor="#FF6B6B"
+                        FontAttributes="Bold"
+                        FontSize="14"
+                        Padding="0,14"
+                        CornerRadius="10"
+                        BorderWidth="1"
+                        BorderColor="#FF6B6B"/>
                 <Button Grid.Column="1"
-                Text="Save Workout"
-                Command="{Binding SaveWorkoutCommand}"
-                BackgroundColor="#1F77F0"
-                TextColor="#FFFFFF"
-                FontAttributes="Bold"
-                FontSize="14"
-                Padding="0,14"
-                CornerRadius="10"
-                BorderWidth="0"/>
+                        Text="Save Workout"
+                        Command="{Binding SaveWorkoutCommand}"
+                        BackgroundColor="#1F77F0"
+                        TextColor="#FFFFFF"
+                        FontAttributes="Bold"
+                        FontSize="14"
+                        Padding="0,14"
+                        CornerRadius="10"
+                        BorderWidth="0"/>
             </Grid>
 
         </Grid>

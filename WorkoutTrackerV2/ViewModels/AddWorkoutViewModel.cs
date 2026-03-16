@@ -11,13 +11,15 @@ namespace WorkoutTrackerV2.ViewModels
     {
         #region "OBSERVABLE PROPERTIES"
         [ObservableProperty] private ObservableCollection<ExerciseGroup> _exerciseGroups = [];
-        [ObservableProperty] private string _dayName = string.Empty;
+        [ObservableProperty] private string _dayName = $"{DateTime.Today:dddd} · Today";
         [ObservableProperty] private TimeSpan _endTime;
         [ObservableProperty] private string _notes = string.Empty;
         [ObservableProperty] private DateTime _selectedDate = DateTime.Today;
         [ObservableProperty] private Exercise? _selectedExercise;
         [ObservableProperty] private TimeSpan _startTime;
         [ObservableProperty] private string _workoutName = string.Empty;
+        [ObservableProperty] private double _totalVolume;
+        [ObservableProperty] private int _totalSets;
         #endregion
 
         #region "ON SELECTED EXERCISE CHANGED"
@@ -35,9 +37,7 @@ namespace WorkoutTrackerV2.ViewModels
 
             var existing = ExerciseGroups.FirstOrDefault(g => g.Exercise.Id == value.Id);
             if (existing is not null)
-            {
                 existing.AddSet(settingsService.WeightUnit);
-            }              
             else
             {
                 var group = new ExerciseGroup(value, settingsService.WeightUnit);
@@ -45,6 +45,26 @@ namespace WorkoutTrackerV2.ViewModels
                 ExerciseGroups.Add(group);
             }
             SelectedExercise = null;
+            UpdateTotals();
+        }
+        #endregion
+
+        #region "ON SELECTED DATE CHANGED"
+        partial void OnSelectedDateChanged(DateTime value)
+        {
+            var days = (DateTime.Today - value.Date).Days;
+            string relative = days switch
+            {
+                0 => "Today",
+                1 => "Yesterday",
+                -1 => "Tomorrow",
+                _ => days > 0 ? $"{days} days ago" : $"In {-days} days"
+            };
+            DayName = $"{value.ToString("dddd")} · {relative}";
+
+            // Auto populate workout name if user hasn't typed anything
+            if (string.IsNullOrWhiteSpace(WorkoutName))
+                WorkoutName = value.ToString("dddd");
         }
         #endregion
 
@@ -67,19 +87,12 @@ namespace WorkoutTrackerV2.ViewModels
 
             try
             {
-                var template = new WorkoutTemplate
-                {
-                    Name = name,
-                    Notes = Notes
-                };
-
+                var template = new WorkoutTemplate { Name = name, Notes = Notes };
                 int templateId = await workoutService.SaveTemplateAsync(template);
                 int setNumber = 1;
 
                 foreach (var group in ExerciseGroups)
-                {
                     foreach (var set in group.Sets)
-                    {
                         await workoutService.SaveTemplateSetAsync(new WorkoutTemplateSet
                         {
                             TemplateId = templateId,
@@ -89,8 +102,6 @@ namespace WorkoutTrackerV2.ViewModels
                             Weight = set.Weight,
                             WeightUnit = set.WeightUnit
                         });
-                    }
-                }
 
                 await Shell.Current.DisplayAlertAsync("Saved", $"'{name}' saved as a template!", "OK");
             }
@@ -153,6 +164,7 @@ namespace WorkoutTrackerV2.ViewModels
                         ExerciseGroups.Add(group);
                     }
                 }
+                UpdateTotals();
             }
             catch (Exception ex)
             {
@@ -183,6 +195,7 @@ namespace WorkoutTrackerV2.ViewModels
         private void AddSet(ExerciseGroup group)
         {
             group.AddSet(settingsService.WeightUnit);
+            UpdateTotals();
         }
         #endregion
 
@@ -193,6 +206,7 @@ namespace WorkoutTrackerV2.ViewModels
             args.Group.RemoveSet(args.Set);
             if (args.Group.Sets.Count == 0)
                 ExerciseGroups.Remove(args.Group);
+            UpdateTotals();
         }
         #endregion
 
@@ -201,6 +215,7 @@ namespace WorkoutTrackerV2.ViewModels
         private void RemoveExercise(ExerciseGroup group)
         {
             ExerciseGroups.Remove(group);
+            UpdateTotals();
         }
         #endregion
 
@@ -241,9 +256,7 @@ namespace WorkoutTrackerV2.ViewModels
                 int sessionId = await workoutService.SaveSessionAsync(session);
                 int setNumber = 1;
                 foreach (var group in ExerciseGroups)
-                {
                     foreach (var set in group.Sets)
-                    {
                         await workoutService.SaveSetAsync(new WorkoutSet
                         {
                             ExerciseId = group.Exercise.Id,
@@ -254,8 +267,7 @@ namespace WorkoutTrackerV2.ViewModels
                             WeightUnit = set.WeightUnit,
                             CreatedDate = SelectedDate
                         });
-                    }
-                }
+
                 ResetForm();
                 await Shell.Current.GoToAsync(Routes.Home);
             }
@@ -273,10 +285,7 @@ namespace WorkoutTrackerV2.ViewModels
 
         #region "CLEAR"
         [RelayCommand]
-        private void Clear()
-        {
-            ResetForm();
-        }
+        private void Clear() => ResetForm();
         #endregion
 
         #region "RESET FORM"
@@ -289,7 +298,23 @@ namespace WorkoutTrackerV2.ViewModels
             StartTime = TimeSpan.Zero;
             EndTime = TimeSpan.Zero;
             ExerciseGroups.Clear();
+            UpdateTotals();
         }
+        #endregion
+
+        #region "UPDATE TOTALS"
+        private void UpdateTotals()
+        {
+            TotalSets = ExerciseGroups.Sum(g => g.Sets.Count);
+            TotalVolume = ExerciseGroups
+                .SelectMany(g => g.Sets)
+                .Sum(s => s.Weight * s.Reps);
+        }
+        #endregion
+
+        #region "VIEW SETTINGS"
+        [RelayCommand]
+        private static Task ViewSettings() => Shell.Current.GoToAsync(Routes.Settings);
         #endregion
     }
 }
