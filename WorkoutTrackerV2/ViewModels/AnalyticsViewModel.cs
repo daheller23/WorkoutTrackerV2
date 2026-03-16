@@ -27,9 +27,12 @@ namespace WorkoutTrackerV2.ViewModels
 
         #region "SET TIME PERIOD"
         [RelayCommand]
-        private void SetTimePeriod(int days)
+        private void SetTimePeriod(string days)
         {
-            SelectedDays = days;
+            if (int.TryParse(days, out int result))
+            {
+                SelectedDays = result;
+            }             
         }
         #endregion
 

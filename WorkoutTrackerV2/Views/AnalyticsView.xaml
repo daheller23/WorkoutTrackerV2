@@ -5,8 +5,8 @@
              xmlns:vm="clr-namespace:WorkoutTrackerV2.ViewModels"
              xmlns:converters="clr-namespace:WorkoutTrackerV2.Converters"
              xmlns:models="clr-namespace:WorkoutTrackerV2.Models"
-             x:DataType="vm:AnalyticsViewModel"
              xmlns:controls="clr-namespace:WorkoutTrackerV2.Controls"
+             x:DataType="vm:AnalyticsViewModel"
              Title="Analytics"
              BackgroundColor="#FAFAFA">
 
@@ -33,155 +33,155 @@
         </StackLayout>
 
         <ScrollView Grid.Row="1">
-            <StackLayout Padding="20,24" Spacing="20">
+            <StackLayout Padding="20,24" Spacing="24">
 
-                <!-- Time Period Pills -->
-                <StackLayout Spacing="8">
+                <!-- ───── TIME PERIOD ───── -->
+                <StackLayout Spacing="10">
                     <Label Text="TIME PERIOD"
-                       FontSize="11"
-                       FontAttributes="Bold"
-                       TextColor="#999999"
-                       CharacterSpacing="1"/>
-                    <Grid ColumnDefinitions="*,*,*,*,*" ColumnSpacing="8">
-                        <Border Grid.Column="0"
-                            BackgroundColor="{Binding SelectedDays, Converter={StaticResource DaysToColorConverter}, ConverterParameter=7}"
-                            StrokeThickness="0">
-                            <Border.StrokeShape>
-                                <RoundRectangle CornerRadius="20"/>
-                            </Border.StrokeShape>
-                            <Border.GestureRecognizers>
-                                <TapGestureRecognizer Command="{Binding SetTimePeriodCommand}" CommandParameter="{x:Int32 7}"/>
-                            </Border.GestureRecognizers>
-                            <Label Text="7d" FontSize="12" FontAttributes="Bold"
-                               TextColor="{Binding SelectedDays, Converter={StaticResource DaysToTextColorConverter}, ConverterParameter=7}"
-                               HorizontalOptions="Center" Padding="0,8"/>
-                        </Border>
-                        <Border Grid.Column="1"
-                            BackgroundColor="{Binding SelectedDays, Converter={StaticResource DaysToColorConverter}, ConverterParameter=14}"
-                            StrokeThickness="0">
-                            <Border.StrokeShape>
-                                <RoundRectangle CornerRadius="20"/>
-                            </Border.StrokeShape>
-                            <Border.GestureRecognizers>
-                                <TapGestureRecognizer Command="{Binding SetTimePeriodCommand}" CommandParameter="{x:Int32 14}"/>
-                            </Border.GestureRecognizers>
-                            <Label Text="14d" FontSize="12" FontAttributes="Bold"
-                                TextColor="{Binding SelectedDays, Converter={StaticResource DaysToTextColorConverter}, ConverterParameter=14}"
-                                HorizontalOptions="Center" Padding="0,8"/>
-                        </Border>
-                        <Border Grid.Column="2"
-                            BackgroundColor="{Binding SelectedDays, Converter={StaticResource DaysToColorConverter}, ConverterParameter=30}"
-                            StrokeThickness="0">
-                            <Border.StrokeShape>
-                                <RoundRectangle CornerRadius="20"/>
-                            </Border.StrokeShape>
-                            <Border.GestureRecognizers>
-                                <TapGestureRecognizer Command="{Binding SetTimePeriodCommand}" CommandParameter="{x:Int32 30}"/>
-                            </Border.GestureRecognizers>
-                            <Label Text="30d" FontSize="12" FontAttributes="Bold"
-                               TextColor="{Binding SelectedDays, Converter={StaticResource DaysToTextColorConverter}, ConverterParameter=30}"
-                               HorizontalOptions="Center" Padding="0,8"/>
-                        </Border>
-                        <Border Grid.Column="3"
-                            BackgroundColor="{Binding SelectedDays, Converter={StaticResource DaysToColorConverter}, ConverterParameter=60}"
-                            StrokeThickness="0">
-                            <Border.StrokeShape>
-                                <RoundRectangle CornerRadius="20"/>
-                            </Border.StrokeShape>
-                            <Border.GestureRecognizers>
-                                <TapGestureRecognizer Command="{Binding SetTimePeriodCommand}" CommandParameter="{x:Int32 60}"/>
-                            </Border.GestureRecognizers>
-                            <Label Text="60d" FontSize="12" FontAttributes="Bold"
-                               TextColor="{Binding SelectedDays, Converter={StaticResource DaysToTextColorConverter}, ConverterParameter=60}"
-                               HorizontalOptions="Center" Padding="0,8"/>
-                        </Border>
-                        <Border Grid.Column="4"
-                            BackgroundColor="{Binding SelectedDays, Converter={StaticResource DaysToColorConverter}, ConverterParameter=90}"
-                            StrokeThickness="0">
-                            <Border.StrokeShape>
-                                <RoundRectangle CornerRadius="20"/>
-                            </Border.StrokeShape>
-                            <Border.GestureRecognizers>
-                                <TapGestureRecognizer Command="{Binding SetTimePeriodCommand}" CommandParameter="{x:Int32 90}"/>
-                            </Border.GestureRecognizers>
-                            <Label Text="90d" FontSize="12" FontAttributes="Bold"
-                               TextColor="{Binding SelectedDays, Converter={StaticResource DaysToTextColorConverter}, ConverterParameter=90}"
-                               HorizontalOptions="Center" Padding="0,8"/>
-                            </Border>
-                    </Grid>
-                </StackLayout>
-
-                <!-- Workout Heatmap -->
-                <StackLayout Spacing="12" BackgroundColor="#FFFFFF" Padding="16">
-                    <Grid ColumnDefinitions="*,Auto">
-                        <Label Grid.Column="0"
-                           Text="WORKOUT FREQUENCY"
                            FontSize="11"
                            FontAttributes="Bold"
                            TextColor="#999999"
-                           CharacterSpacing="1"
-                           VerticalOptions="Center"/>
-                        <Label Grid.Column="1"
-                           Text="{Binding HeatmapTitle}"
-                           FontSize="12"
-                           FontAttributes="Bold"
-                           TextColor="#1F77F0"
-                           VerticalOptions="Center"/>
+                           CharacterSpacing="1"/>
+                    <Grid ColumnDefinitions="*,*,*,*,*" ColumnSpacing="8">
+                        <Border Grid.Column="0"
+                                BackgroundColor="{Binding SelectedDays, Converter={StaticResource DaysToColorConverter}, ConverterParameter=7}"
+                                StrokeThickness="0">
+                            <Border.StrokeShape>
+                                <RoundRectangle CornerRadius="20"/>
+                            </Border.StrokeShape>
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding SetTimePeriodCommand}" CommandParameter="7"/>
+                            </Border.GestureRecognizers>
+                            <Label Text="7d" FontSize="12" FontAttributes="Bold"
+                                   TextColor="{Binding SelectedDays, Converter={StaticResource DaysToTextColorConverter}, ConverterParameter=7}"
+                                   HorizontalOptions="Center" Padding="0,8"/>
+                        </Border>
+                        <Border Grid.Column="1"
+                                BackgroundColor="{Binding SelectedDays, Converter={StaticResource DaysToColorConverter}, ConverterParameter=14}"
+                                StrokeThickness="0">
+                            <Border.StrokeShape>
+                                <RoundRectangle CornerRadius="20"/>
+                            </Border.StrokeShape>
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding SetTimePeriodCommand}" CommandParameter="14"/>
+                            </Border.GestureRecognizers>
+                            <Label Text="14d" FontSize="12" FontAttributes="Bold"
+                                   TextColor="{Binding SelectedDays, Converter={StaticResource DaysToTextColorConverter}, ConverterParameter=14}"
+                                   HorizontalOptions="Center" Padding="0,8"/>
+                        </Border>
+                        <Border Grid.Column="2"
+                                BackgroundColor="{Binding SelectedDays, Converter={StaticResource DaysToColorConverter}, ConverterParameter=30}"
+                                StrokeThickness="0">
+                            <Border.StrokeShape>
+                                <RoundRectangle CornerRadius="20"/>
+                            </Border.StrokeShape>
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding SetTimePeriodCommand}" CommandParameter="30"/>
+                            </Border.GestureRecognizers>
+                            <Label Text="30d" FontSize="12" FontAttributes="Bold"
+                                   TextColor="{Binding SelectedDays, Converter={StaticResource DaysToTextColorConverter}, ConverterParameter=30}"
+                                   HorizontalOptions="Center" Padding="0,8"/>
+                        </Border>
+                        <Border Grid.Column="3"
+                                BackgroundColor="{Binding SelectedDays, Converter={StaticResource DaysToColorConverter}, ConverterParameter=60}"
+                                StrokeThickness="0">
+                            <Border.StrokeShape>
+                                <RoundRectangle CornerRadius="20"/>
+                            </Border.StrokeShape>
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding SetTimePeriodCommand}" CommandParameter="60"/>
+                            </Border.GestureRecognizers>
+                            <Label Text="60d" FontSize="12" FontAttributes="Bold"
+                                   TextColor="{Binding SelectedDays, Converter={StaticResource DaysToTextColorConverter}, ConverterParameter=60}"
+                                   HorizontalOptions="Center" Padding="0,8"/>
+                        </Border>
+                        <Border Grid.Column="4"
+                                BackgroundColor="{Binding SelectedDays, Converter={StaticResource DaysToColorConverter}, ConverterParameter=90}"
+                                StrokeThickness="0">
+                            <Border.StrokeShape>
+                                <RoundRectangle CornerRadius="20"/>
+                            </Border.StrokeShape>
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding SetTimePeriodCommand}" CommandParameter="90"/>
+                            </Border.GestureRecognizers>
+                            <Label Text="90d" FontSize="12" FontAttributes="Bold"
+                                   TextColor="{Binding SelectedDays, Converter={StaticResource DaysToTextColorConverter}, ConverterParameter=90}"
+                                   HorizontalOptions="Center" Padding="0,8"/>
+                        </Border>
                     </Grid>
-                    
-                    <controls:WorkoutHeatmapView
-                        HeatmapData="{Binding HeatmapData}"
-                        Month="{Binding HeatmapMonth}"
-                        HeightRequest="240"/>
+                </StackLayout>
 
-                    <!-- Legend -->
-                    <StackLayout Orientation="Horizontal" HorizontalOptions="End" Spacing="6">
-                        <Label Text="Less"
-                           FontSize="10"
+                <!-- ───── SUMMARY STATS ───── -->
+                <StackLayout Spacing="10">
+                    <Label Text="OVERVIEW"
+                           FontSize="11"
+                           FontAttributes="Bold"
                            TextColor="#999999"
-                           VerticalOptions="Center"/>
-                                    <BoxView Color="#F0F0F0" WidthRequest="14" HeightRequest="14" CornerRadius="3"/>
-                                    <BoxView Color="#C8E6FF" WidthRequest="14" HeightRequest="14" CornerRadius="3"/>
-                                    <BoxView Color="#7EC0F8" WidthRequest="14" HeightRequest="14" CornerRadius="3"/>
-                                    <BoxView Color="#4499F4" WidthRequest="14" HeightRequest="14" CornerRadius="3"/>
-                                    <BoxView Color="#1F77F0" WidthRequest="14" HeightRequest="14" CornerRadius="3"/>
-                                    <Label Text="More"
-                           FontSize="10"
-                           TextColor="#999999"
-                           VerticalOptions="Center"/>
+                           CharacterSpacing="1"/>
+                    <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto" ColumnSpacing="12" RowSpacing="12">
+                        <StackLayout Grid.Row="0" Grid.Column="0" BackgroundColor="#F0F7FF" Padding="16,20" Spacing="6">
+                            <Label Text="VOLUME" FontSize="10" TextColor="#1F77F0" FontAttributes="Bold" CharacterSpacing="1"/>
+                            <Label Text="{Binding TotalVolumeLifted, StringFormat='{0:F0}'}"
+                                   FontSize="28" FontAttributes="Bold" TextColor="#1F77F0"/>
+                            <Label Text="total lbs lifted" FontSize="10" TextColor="#1F77F0"/>
+                        </StackLayout>
+                        <StackLayout Grid.Row="0" Grid.Column="1" BackgroundColor="#F1F8F1" Padding="16,20" Spacing="6">
+                            <Label Text="AVG VOLUME" FontSize="10" TextColor="#4CAF50" FontAttributes="Bold" CharacterSpacing="1"/>
+                            <Label Text="{Binding AverageVolume, StringFormat='{0:F0}'}"
+                                   FontSize="28" FontAttributes="Bold" TextColor="#4CAF50"/>
+                            <Label Text="per workout" FontSize="10" TextColor="#4CAF50"/>
+                        </StackLayout>
+                        <StackLayout Grid.Row="1" Grid.Column="0" BackgroundColor="#FFF8E1" Padding="16,20" Spacing="6">
+                            <Label Text="SETS" FontSize="10" TextColor="#FF9800" FontAttributes="Bold" CharacterSpacing="1"/>
+                            <Label Text="{Binding TotalSets}"
+                                   FontSize="28" FontAttributes="Bold" TextColor="#FF9800"/>
+                            <Label Text="completed" FontSize="10" TextColor="#FF9800"/>
+                        </StackLayout>
+                        <StackLayout Grid.Row="1" Grid.Column="1" BackgroundColor="#FFF0F0" Padding="16,20" Spacing="6">
+                            <Label Text="DAYS" FontSize="10" TextColor="#FF6B6B" FontAttributes="Bold" CharacterSpacing="1"/>
+                            <Label Text="{Binding DailyStats.Count}"
+                                   FontSize="28" FontAttributes="Bold" TextColor="#FF6B6B"/>
+                            <Label Text="worked out" FontSize="10" TextColor="#FF6B6B"/>
+                        </StackLayout>
+                    </Grid>
+                </StackLayout>
+
+                <!-- ───── WORKOUT HEATMAP ───── -->
+                <StackLayout Spacing="10">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <Label Grid.Column="0"
+                               Text="WORKOUT FREQUENCY"
+                               FontSize="11"
+                               FontAttributes="Bold"
+                               TextColor="#999999"
+                               CharacterSpacing="1"
+                               VerticalOptions="Center"/>
+                        <Label Grid.Column="1"
+                               Text="{Binding HeatmapTitle}"
+                               FontSize="12"
+                               FontAttributes="Bold"
+                               TextColor="#1F77F0"
+                               VerticalOptions="Center"/>
+                    </Grid>
+                    <StackLayout BackgroundColor="#FFFFFF" Padding="16" Spacing="12">
+                        <controls:WorkoutHeatmapView
+                            HeatmapData="{Binding HeatmapData}"
+                            Month="{Binding HeatmapMonth}"
+                            HeightRequest="240"/>
+                        <StackLayout Orientation="Horizontal" HorizontalOptions="End" Spacing="6">
+                            <Label Text="Less" FontSize="10" TextColor="#999999" VerticalOptions="Center"/>
+                            <BoxView Color="#F0F0F0" WidthRequest="14" HeightRequest="14" CornerRadius="3"/>
+                            <BoxView Color="#C8E6FF" WidthRequest="14" HeightRequest="14" CornerRadius="3"/>
+                            <BoxView Color="#7EC0F8" WidthRequest="14" HeightRequest="14" CornerRadius="3"/>
+                            <BoxView Color="#4499F4" WidthRequest="14" HeightRequest="14" CornerRadius="3"/>
+                            <BoxView Color="#1F77F0" WidthRequest="14" HeightRequest="14" CornerRadius="3"/>
+                            <Label Text="More" FontSize="10" TextColor="#999999" VerticalOptions="Center"/>
+                        </StackLayout>
                     </StackLayout>
                 </StackLayout>
 
-                <!-- Summary Stats -->
-                <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto" ColumnSpacing="12" RowSpacing="12">
-                    <StackLayout Grid.Row="0" Grid.Column="0" BackgroundColor="#F0F7FF" Padding="16,20" Spacing="6">
-                        <Label Text="VOLUME" FontSize="10" TextColor="#1F77F0" FontAttributes="Bold" CharacterSpacing="1"/>
-                        <Label Text="{Binding TotalVolumeLifted, StringFormat='{0:F0}'}"
-                               FontSize="28" FontAttributes="Bold" TextColor="#1F77F0"/>
-                        <Label Text="total lbs lifted" FontSize="10" TextColor="#1F77F0"/>
-                    </StackLayout>
-                    <StackLayout Grid.Row="0" Grid.Column="1" BackgroundColor="#F1F8F1" Padding="16,20" Spacing="6">
-                        <Label Text="AVG VOLUME" FontSize="10" TextColor="#4CAF50" FontAttributes="Bold" CharacterSpacing="1"/>
-                        <Label Text="{Binding AverageVolume, StringFormat='{0:F0}'}"
-                               FontSize="28" FontAttributes="Bold" TextColor="#4CAF50"/>
-                        <Label Text="per workout" FontSize="10" TextColor="#4CAF50"/>
-                    </StackLayout>
-                    <StackLayout Grid.Row="1" Grid.Column="0" BackgroundColor="#FFF8E1" Padding="16,20" Spacing="6">
-                        <Label Text="SETS" FontSize="10" TextColor="#FF9800" FontAttributes="Bold" CharacterSpacing="1"/>
-                        <Label Text="{Binding TotalSets}"
-                               FontSize="28" FontAttributes="Bold" TextColor="#FF9800"/>
-                        <Label Text="completed" FontSize="10" TextColor="#FF9800"/>
-                    </StackLayout>
-                    <StackLayout Grid.Row="1" Grid.Column="1" BackgroundColor="#FFF0F0" Padding="16,20" Spacing="6">
-                        <Label Text="DAYS" FontSize="10" TextColor="#FF6B6B" FontAttributes="Bold" CharacterSpacing="1"/>
-                        <Label Text="{Binding DailyStats.Count}"
-                               FontSize="28" FontAttributes="Bold" TextColor="#FF6B6B"/>
-                        <Label Text="worked out" FontSize="10" TextColor="#FF6B6B"/>
-                    </StackLayout>
-                </Grid>
-
-                <!-- Top Exercises -->
-                <StackLayout Spacing="12">
+                <!-- ───── TOP EXERCISES ───── -->
+                <StackLayout Spacing="10">
                     <Label Text="TOP EXERCISES"
                            FontSize="11"
                            FontAttributes="Bold"
@@ -228,8 +228,8 @@
                     </CollectionView>
                 </StackLayout>
 
-                <!-- Strength Progress -->
-                <StackLayout Spacing="12">
+                <!-- ───── STRENGTH PROGRESS ───── -->
+                <StackLayout Spacing="10">
                     <Label Text="STRENGTH PROGRESS"
                            FontSize="11"
                            FontAttributes="Bold"
@@ -283,13 +283,13 @@
                     </CollectionView>
                 </StackLayout>
 
-                <!-- Insights Card -->
+                <!-- ───── INSIGHTS ───── -->
                 <StackLayout BackgroundColor="#F0F7FF" Padding="20" Spacing="8">
-                    <Label Text="💡 Insight"
-                           FontSize="12"
+                    <Label Text="💡 INSIGHT"
+                           FontSize="11"
                            FontAttributes="Bold"
                            TextColor="#1F77F0"
-                           CharacterSpacing="0.5"/>
+                           CharacterSpacing="1"/>
                     <Label Text="Consistency matters more than perfection. Every workout builds your strength and habits. Keep pushing! 💪"
                            FontSize="13"
                            TextColor="#1F77F0"
