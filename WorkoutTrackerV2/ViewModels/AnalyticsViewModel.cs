@@ -25,6 +25,14 @@ namespace WorkoutTrackerV2.ViewModels
         partial void OnSelectedDaysChanged(int value) => LoadAnalyticsCommand.Execute(null);
         #endregion
 
+        #region "SET TIME PERIOD"
+        [RelayCommand]
+        private void SetTimePeriod(int days)
+        {
+            SelectedDays = days;
+        }
+        #endregion
+
         #region "LOAD ANALYTICS"
         [RelayCommand]
         private async Task LoadAnalytics()
