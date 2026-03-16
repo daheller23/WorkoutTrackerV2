@@ -92,7 +92,10 @@ namespace WorkoutTrackerV2.ViewModels
         [RelayCommand]
         private static async Task Cancel()
         {
-            await Shell.Current.GoToAsync("..");
+            await Shell.Current.GoToAsync("..", new Dictionary<string, object>
+            {
+                { "SelectedExercise", null! }
+            });
         }
         #endregion
     }
