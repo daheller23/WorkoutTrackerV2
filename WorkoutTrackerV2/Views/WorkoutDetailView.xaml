@@ -23,33 +23,54 @@
 
         <!-- Header -->
         <StackLayout BackgroundColor="#FFFFFF" Padding="24,16,24,24" Spacing="4">
-            <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+            <Grid ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="8">
                 <Button Grid.Column="0"
-                        Text="← Back"
-                        Command="{Binding GoBackCommand}"
-                        BackgroundColor="Transparent"
-                        TextColor="#1F77F0"
-                        FontSize="14"
-                        Padding="0"/>
+                    Text="← Back"
+                    Command="{Binding GoBackCommand}"
+                    BackgroundColor="Transparent"
+                    TextColor="#1F77F0"
+                    FontSize="14"
+                    Padding="0"/>
                 <Button Grid.Column="2"
-                        Text="✏️ Edit"
-                        Command="{Binding EditWorkoutCommand}"
-                        BackgroundColor="#1F77F0"
-                        TextColor="#FFFFFF"
-                        FontSize="12"
-                        FontAttributes="Bold"
-                        Padding="14,8"
-                        CornerRadius="20"
-                        BorderWidth="0"/>
+                    Text="✏️ Edit"
+                    Command="{Binding EditWorkoutCommand}"
+                    BackgroundColor="Transparent"
+                    TextColor="#1F77F0"
+                    FontSize="13"
+                    FontAttributes="Bold"
+                    Padding="10,8"
+                    CornerRadius="20"
+                    BorderWidth="1"
+                    BorderColor="#1F77F0"/>
+                <Button Grid.Column="3"
+                    Text="🗑 Delete"
+                    Command="{Binding DeleteWorkoutCommand}"
+                    BackgroundColor="Transparent"
+                    TextColor="#FF6B6B"
+                    FontSize="13"
+                    FontAttributes="Bold"
+                    Padding="10,8"
+                    CornerRadius="20"
+                    BorderWidth="1"
+                    BorderColor="#FF6B6B"/>
             </Grid>
             <Label Text="{Binding Session.DayName}"
-                   FontSize="32"
-                   FontAttributes="Bold"
+               FontSize="32"
+               FontAttributes="Bold"
+               TextColor="#1F77F0"
+               CharacterSpacing="0.3"/>
+            <StackLayout Orientation="Horizontal" Spacing="8">
+                <Label Text="{Binding Session.Date, Converter={StaticResource RelativeDateConverter}}"
+                   FontSize="13"
                    TextColor="#1F77F0"
-                   CharacterSpacing="0.3"/>
-            <Label Text="{Binding Session.Date, Converter={StaticResource RelativeDateConverter}}"
+                   FontAttributes="Bold"/>
+                <Label Text="·"
                    FontSize="13"
                    TextColor="#999999"/>
+                <Label Text="{Binding Session.Date, StringFormat='{0:MMMM d, yyyy}'}"
+                   FontSize="13"
+                   TextColor="#999999"/>
+            </StackLayout>
         </StackLayout>
 
         <ScrollView Grid.Row="1">
