@@ -6,8 +6,8 @@ using WorkoutTrackerV2.Services;
 
 namespace WorkoutTrackerV2.ViewModels
 {
+    [QueryProperty(nameof(SelectedExercise), "EditSelectedExercise")]
     [QueryProperty(nameof(Session), "Session")]
-    [QueryProperty(nameof(SelectedExercise), "SelectedExercise")]
     public partial class EditWorkoutViewModel(IWorkoutService workoutService, ISettingsService settingsService) : BaseViewModel
     {
         #region "OBSERVABLE PROPERTIES"

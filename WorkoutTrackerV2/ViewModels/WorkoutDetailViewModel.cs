@@ -12,41 +12,29 @@ namespace WorkoutTrackerV2.ViewModels
         #region "OBSERVABLE PROPERTIES"
         [ObservableProperty] private WorkoutSession _session = new();
         [ObservableProperty] private ObservableCollection<ExerciseGroup> _exerciseGroups = [];
-        #endregion
-
-        #region "ON SESSION CHANGED"
-        partial void OnSessionChanged(WorkoutSession value)
-        {
-            if (value is not null)
-            {
-                LoadSetsCommand.Execute(null);
-            }             
-        }
+        [ObservableProperty] private int _totalSets;
+        [ObservableProperty] private double _totalVolume;
         #endregion
 
         #region "LOAD SETS"
         [RelayCommand]
-        private async Task LoadSets()
+        private async Task LoadData()
         {
-            if (IsLoading)
-            {
-                return;
-            }
-
+            if (IsLoading || Session?.Id == 0) return;
             try
             {
                 IsLoading = true;
+
+                // Reload session from DB to get latest data
+                var sets = await workoutService.GetSetsForSessionAsync(Session.Id);
                 ExerciseGroups.Clear();
 
-                var sets = await workoutService.GetSetsForSessionAsync(Session.Id);
                 foreach (var set in sets)
                 {
                     set.Exercise = await workoutService.GetExerciseAsync(set.ExerciseId);
                     var existing = ExerciseGroups.FirstOrDefault(g => g.Exercise.Id == set.ExerciseId);
                     if (existing is not null)
-                    {
                         existing.Sets.Add(set);
-                    }
                     else
                     {
                         var group = new ExerciseGroup(set.Exercise);
@@ -54,10 +42,13 @@ namespace WorkoutTrackerV2.ViewModels
                         ExerciseGroups.Add(group);
                     }
                 }
+
+                TotalSets = ExerciseGroups.Sum(g => g.Sets.Count);
+                TotalVolume = ExerciseGroups.SelectMany(g => g.Sets).Sum(s => s.Weight * s.Reps);
             }
             catch (Exception ex)
             {
-                await Shell.Current.DisplayAlertAsync("LoadSets Error", ex.Message, "OK");
+                await Shell.Current.DisplayAlertAsync("Error", ex.Message, "OK");
             }
             finally
             {

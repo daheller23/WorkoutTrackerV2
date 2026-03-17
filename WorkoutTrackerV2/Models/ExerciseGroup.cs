@@ -11,6 +11,7 @@ namespace WorkoutTrackerV2.Models
         public ObservableCollection<WorkoutSet> Sets { get; set; } = [];
         public string SetCountLabel => Sets.Count == 1 ? "1 set" : $"{Sets.Count} sets";
         public bool HasSets => Sets.Count > 0;
+        public int TotalReps => Sets.Sum(s => s.Reps);
 
         public void AddSet(string? weightUnit = null)
         {

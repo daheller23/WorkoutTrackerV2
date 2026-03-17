@@ -83,7 +83,8 @@ namespace WorkoutTrackerV2.ViewModels
         {
             await Shell.Current.GoToAsync("..", new Dictionary<string, object>
             {
-                { "SelectedExercise", exercise }
+                { "SelectedExercise", exercise },
+                { "EditSelectedExercise", exercise }
             });
         }
         #endregion
@@ -94,7 +95,8 @@ namespace WorkoutTrackerV2.ViewModels
         {
             await Shell.Current.GoToAsync("..", new Dictionary<string, object>
             {
-                { "SelectedExercise", null! }
+                { "SelectedExercise", null! },
+                { "EditSelectedExercise", null! }
             });
         }
         #endregion
