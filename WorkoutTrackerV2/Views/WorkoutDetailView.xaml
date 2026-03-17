@@ -137,12 +137,15 @@
                            FontAttributes="Bold"
                            TextColor="#999999"
                            CharacterSpacing="1"/>
-                    <StackLayout Orientation="Horizontal"
-                                 Spacing="8"
-                                 BindableLayout.ItemsSource="{Binding MuscleGroups}">
+                    <FlexLayout Wrap="Wrap"
+                                JustifyContent="Start"
+                                AlignItems="Start"
+                                BindableLayout.ItemsSource="{Binding MuscleGroups}">
                         <BindableLayout.ItemTemplate>
                             <DataTemplate x:DataType="x:String">
-                                <Border StrokeThickness="0" Padding="10,6">
+                                <Border StrokeThickness="0"
+                                        Padding="10,6"
+                                        Margin="0,0,8,8">
                                     <Border.BackgroundColor>
                                         <Binding Converter="{StaticResource MuscleGroupColorConverter}"/>
                                     </Border.BackgroundColor>
@@ -162,7 +165,7 @@
                                 </Border>
                             </DataTemplate>
                         </BindableLayout.ItemTemplate>
-                    </StackLayout>
+                    </FlexLayout>
                 </StackLayout>
 
                 <!-- Notes -->
@@ -251,7 +254,7 @@
                                             <BoxView HeightRequest="0.5" Color="#F0F0F0" Margin="16,0"/>
 
                                             <!-- Table Header -->
-                                            <Grid ColumnDefinitions="30,*,*,80" ColumnSpacing="8" Margin="16,0">
+                                            <Grid ColumnDefinitions="30,*,Auto,80" ColumnSpacing="8" Margin="16,0">
                                                 <Label Grid.Column="0" Text="Set" FontSize="11" TextColor="#999999" FontAttributes="Bold" HorizontalOptions="Center"/>
                                                 <Label Grid.Column="1" Text="Reps" FontSize="11" TextColor="#999999" FontAttributes="Bold" HorizontalOptions="Center"/>
                                                 <Label Grid.Column="2" Text="Weight" FontSize="11" TextColor="#999999" FontAttributes="Bold" HorizontalOptions="Center"/>
@@ -262,7 +265,7 @@
                                             <StackLayout BindableLayout.ItemsSource="{Binding Sets}" Spacing="6" Margin="16,0">
                                                 <BindableLayout.ItemTemplate>
                                                     <DataTemplate x:DataType="models:WorkoutSet">
-                                                        <Grid ColumnDefinitions="30,*,*,80" ColumnSpacing="8">
+                                                        <Grid ColumnDefinitions="30,*,Auto,80" ColumnSpacing="8">
                                                             <Border Grid.Column="0"
                                                                     BackgroundColor="#F0F7FF"
                                                                     WidthRequest="28"
@@ -286,12 +289,21 @@
                                                                    TextColor="#1F77F0"
                                                                    HorizontalOptions="Center"
                                                                    VerticalOptions="Center"/>
-                                                            <Label Grid.Column="2"
-                                                                   Text="{Binding Weight}"
-                                                                   FontSize="13"
-                                                                   TextColor="#000000"
-                                                                   HorizontalOptions="Center"
-                                                                   VerticalOptions="Center"/>
+                                                            <!-- Weight + PR indicator -->
+                                                            <StackLayout Grid.Column="2"
+                                                                         Orientation="Horizontal"
+                                                                         Spacing="4"
+                                                                         HorizontalOptions="Center"
+                                                                         VerticalOptions="Center">
+                                                                <Label Text="{Binding Weight}"
+                                                                       FontSize="13"
+                                                                       TextColor="#000000"
+                                                                       VerticalOptions="Center"/>
+                                                                <Label Text="🏆"
+                                                                       FontSize="11"
+                                                                       IsVisible="{Binding IsPR}"
+                                                                       VerticalOptions="Center"/>
+                                                            </StackLayout>
                                                             <Label Grid.Column="3"
                                                                    Text="{Binding WeightUnit}"
                                                                    FontSize="13"

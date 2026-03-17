@@ -74,6 +74,25 @@ namespace WorkoutTrackerV2.ViewModels
                     .OrderBy(m => m)
                     .ToList();
 
+                // Mark PR sets
+                var allExerciseIds = ExerciseGroups.Select(g => g.Exercise.Id).Distinct().ToList();
+                var prTasks = allExerciseIds
+                    .Select(id => workoutService.GetExerciseHistoryAsync(id, 0))
+                    .ToList();
+                var allHistories = await Task.WhenAll(prTasks);
+
+                for (int i = 0; i < allExerciseIds.Count; i++)
+                {
+                    var exerciseId = allExerciseIds[i];
+                    var history = allHistories[i];
+                    var allTimeMax = history.Count > 0 ? history.Max(s => s.Weight) : 0;
+                    var group = ExerciseGroups.FirstOrDefault(g => g.Exercise.Id == exerciseId);
+                    if (group is null) continue;
+
+                    foreach (var set in group.Sets)
+                        set.IsPR = set.Weight >= allTimeMax && allTimeMax > 0;
+                }
+
                 // Volume comparison
                 await LoadVolumeComparison();
             }
@@ -97,7 +116,7 @@ namespace WorkoutTrackerV2.ViewModels
                 var previousSession = allSessions
                     .Where(s => s.Id != Session.Id
                         && s.Date < Session.Date
-                        && s.DayName == Session.DayName) // 👈 only same workout type
+                        && s.DayName == Session.DayName)
                     .OrderByDescending(s => s.Date)
                     .FirstOrDefault();
 

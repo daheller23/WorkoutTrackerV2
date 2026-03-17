@@ -37,5 +37,9 @@ namespace WorkoutTrackerV2.Models
 
         [Ignore]
         public IRelayCommand? DeleteCommand { get; set; }
+
+        [property: Ignore]
+        [ObservableProperty]
+        private bool _isPR;
     }
 }
