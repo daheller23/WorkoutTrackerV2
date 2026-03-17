@@ -9,6 +9,8 @@ namespace WorkoutTrackerV2.ViewModels
     [QueryProperty(nameof(SelectedExercise), "SelectedExercise")]
     public partial class AddWorkoutViewModel(IWorkoutService workoutService, ITemplateService templateService, ISettingsService settingsService) : BaseViewModel
     {
+        private bool _ignoreNextExerciseSelection = false;
+
         #region "OBSERVABLE PROPERTIES"
         [ObservableProperty] private ObservableCollection<ExerciseGroup> _exerciseGroups = [];
         [ObservableProperty] private string _dayName = $"{DateTime.Today:dddd} · Today";
@@ -23,10 +25,23 @@ namespace WorkoutTrackerV2.ViewModels
         [ObservableProperty] private string _weightUnitLabel = "lbs total";
         #endregion
 
+        [RelayCommand]
+        private void PrepareForTemplatePicker()
+        {
+            _ignoreNextExerciseSelection = true;
+        }
+
         #region "ON SELECTED EXERCISE CHANGED"
         partial void OnSelectedExerciseChanged(Exercise? value)
         {
             if (value is null) return;
+
+            if (_ignoreNextExerciseSelection)
+            {
+                _ignoreNextExerciseSelection = false;
+                SelectedExercise = null;
+                return;
+            }
 
             if (templateService.PendingTemplate is not null)
             {
@@ -207,6 +222,7 @@ namespace WorkoutTrackerV2.ViewModels
         private async Task OpenTemplatePicker()
         {
             templateService.PendingTemplate = null;
+            _ignoreNextExerciseSelection = true;
             await Shell.Current.GoToAsync(Routes.TemplatePicker);
         }
         #endregion
@@ -423,5 +439,11 @@ namespace WorkoutTrackerV2.ViewModels
             }
         }
         #endregion
+
+        [RelayCommand]
+        private void ClearSelectedExercise()
+        {
+            SelectedExercise = null;
+        }
     }
 }

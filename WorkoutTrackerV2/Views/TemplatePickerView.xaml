@@ -53,37 +53,37 @@
             <CollectionView.ItemTemplate>
                 <DataTemplate x:DataType="models:WorkoutTemplate">
                     <Grid ColumnDefinitions="*,Auto"
-      Padding="20,14"
-      BackgroundColor="#FFFFFF"
-      Margin="0,0,0,2">
+                      Padding="20,14"
+                      BackgroundColor="#FFFFFF"
+                      Margin="0,0,0,2">
                         <Grid.GestureRecognizers>
                             <TapGestureRecognizer
-            Command="{Binding Source={RelativeSource AncestorType={x:Type vm:TemplatePickerViewModel}}, Path=SelectTemplateCommand}"
-            CommandParameter="{Binding .}"/>
+                                Command="{Binding Source={RelativeSource AncestorType={x:Type vm:TemplatePickerViewModel}}, Path=SelectTemplateCommand}"
+                                CommandParameter="{Binding .}"/>
                         </Grid.GestureRecognizers>
 
                         <!-- Template Info -->
                         <StackLayout Grid.Column="0" Spacing="3" VerticalOptions="Center">
                             <Label Text="{Binding Name}"
-               FontSize="15"
-               FontAttributes="Bold"
-               TextColor="#000000"/>
+                               FontSize="15"
+                               FontAttributes="Bold"
+                               TextColor="#000000"/>
                             <Label Text="{Binding CreatedDate, StringFormat='Created {0:MMM d, yyyy}'}"
-               FontSize="11"
-               TextColor="#999999"/>
+                               FontSize="11"
+                               TextColor="#999999"/>
                         </StackLayout>
 
                         <!-- Delete Button -->
                         <Button Grid.Column="1"
-            Text="✕"
-            Command="{Binding Source={RelativeSource AncestorType={x:Type vm:TemplatePickerViewModel}}, Path=DeleteTemplateCommand}"
-            CommandParameter="{Binding .}"
-            BackgroundColor="Transparent"
-            TextColor="#FF6B6B"
-            FontSize="16"
-            Padding="8"
-            BorderWidth="0"
-            VerticalOptions="Center"/>
+                            Text="✕"
+                            Command="{Binding Source={RelativeSource AncestorType={x:Type vm:TemplatePickerViewModel}}, Path=DeleteTemplateCommand}"
+                            CommandParameter="{Binding .}"
+                            BackgroundColor="Transparent"
+                            TextColor="#FF6B6B"
+                            FontSize="16"
+                            Padding="8"
+                            BorderWidth="0"
+                            VerticalOptions="Center"/>
                     </Grid>
                 </DataTemplate>
             </CollectionView.ItemTemplate>

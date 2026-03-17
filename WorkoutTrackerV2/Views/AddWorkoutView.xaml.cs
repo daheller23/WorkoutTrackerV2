@@ -31,5 +31,11 @@ public partial class AddWorkoutView : ContentPage
             else
                 _vm.LoadFromTemplateCommand.Execute(template);
         }
+        else
+        {
+            // Always clear SelectedExercise on appear to prevent
+            // Shell re-applying stale QueryProperty value
+            _vm.ClearSelectedExerciseCommand.Execute(null);
+        }
     }
 }

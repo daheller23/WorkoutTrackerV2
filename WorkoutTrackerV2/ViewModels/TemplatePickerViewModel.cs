@@ -59,6 +59,10 @@ namespace WorkoutTrackerV2.ViewModels
         }
 
         [RelayCommand]
-        private static Task Cancel() => Shell.Current.GoToAsync("..");
+        private async Task Cancel()
+        {
+            templateService.PendingTemplate = null;
+            await Shell.Current.GoToAsync("..");
+        }
     }
 }

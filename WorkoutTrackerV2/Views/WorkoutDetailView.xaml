@@ -13,6 +13,7 @@
         <converters:MuscleGroupEmojiConverter x:Key="MuscleGroupEmojiConverter"/>
         <converters:RelativeDateConverter x:Key="RelativeDateConverter"/>
         <converters:IsNotEmptyConverter x:Key="IsNotEmptyConverter"/>
+        <converters:VolumeComparisonColorConverter x:Key="VolumeComparisonColorConverter"/>
     </ContentPage.Resources>
 
     <Shell.NavBarIsVisible>False</Shell.NavBarIsVisible>
@@ -104,29 +105,28 @@
                 </Grid>
 
                 <!-- Volume Card -->
-                <StackLayout BackgroundColor="#1F77F0" Padding="20,16" Spacing="4">
+                <StackLayout BackgroundColor="#F0F7FF" Padding="20,16" Spacing="4">
                     <Label Text="TOTAL VOLUME"
                            FontSize="11"
                            FontAttributes="Bold"
-                           TextColor="#FFFFFF"
+                           TextColor="#1F77F0"
                            Opacity="0.8"
                            CharacterSpacing="1"/>
                     <StackLayout Orientation="Horizontal" Spacing="6">
                         <Label Text="{Binding TotalVolume, StringFormat='{0:F0}'}"
                                FontSize="32"
                                FontAttributes="Bold"
-                               TextColor="#FFFFFF"/>
+                               TextColor="#1F77F0"/>
                         <Label Text="{Binding WeightUnitLabel}"
                                FontSize="14"
-                               TextColor="#FFFFFF"
+                               TextColor="#1F77F0"
                                Opacity="0.8"
                                VerticalOptions="End"
                                Margin="0,0,0,4"/>
                     </StackLayout>
                     <Label Text="{Binding VolumeComparison}"
                            FontSize="12"
-                           TextColor="#FFFFFF"
-                           Opacity="0.8"
+                           TextColor="{Binding VolumeIsUp, Converter={StaticResource VolumeComparisonColorConverter}}"
                            IsVisible="{Binding HasVolumeComparison}"/>
                 </StackLayout>
 
@@ -154,8 +154,7 @@
                                     </Border.StrokeShape>
                                     <StackLayout Orientation="Horizontal" Spacing="4">
                                         <Label Text="{Binding ., Converter={StaticResource MuscleGroupEmojiConverter}}"
-                                               FontSize="12"
-                                               VerticalOptions="Center"/>
+                                               FontSize="12" VerticalOptions="Center"/>
                                         <Label Text="{Binding .}"
                                                FontSize="11"
                                                FontAttributes="Bold"
@@ -184,25 +183,22 @@
                            LineBreakMode="WordWrap"/>
                 </StackLayout>
 
-                <!-- Do Workout Again -->
-                <Button Text="🔄 Do This Workout Again"
-                        Command="{Binding DoWorkoutAgainCommand}"
-                        BackgroundColor="#FFFFFF"
-                        TextColor="#1F77F0"
-                        FontAttributes="Bold"
-                        FontSize="14"
-                        Padding="0,14"
-                        CornerRadius="10"
-                        BorderWidth="1"
-                        BorderColor="#1F77F0"/>
-
                 <!-- Exercise Groups -->
                 <StackLayout Spacing="12">
-                    <Label Text="EXERCISES"
-                           FontSize="11"
-                           FontAttributes="Bold"
-                           TextColor="#999999"
-                           CharacterSpacing="1"/>
+                    <Grid ColumnDefinitions="*,Auto">
+                        <Label Grid.Column="0"
+                               Text="EXERCISES"
+                               FontSize="11"
+                               FontAttributes="Bold"
+                               TextColor="#999999"
+                               CharacterSpacing="1"
+                               VerticalOptions="Center"/>
+                        <Label Grid.Column="1"
+                               Text="🏆 = Personal Record"
+                               FontSize="10"
+                               TextColor="#999999"
+                               VerticalOptions="Center"/>
+                    </Grid>
                     <CollectionView ItemsSource="{Binding ExerciseGroups}" SelectionMode="None">
                         <CollectionView.EmptyView>
                             <Label Text="No exercises found"
@@ -289,7 +285,6 @@
                                                                    TextColor="#1F77F0"
                                                                    HorizontalOptions="Center"
                                                                    VerticalOptions="Center"/>
-                                                            <!-- Weight + PR indicator -->
                                                             <StackLayout Grid.Column="2"
                                                                          Orientation="Horizontal"
                                                                          Spacing="4"
@@ -339,6 +334,18 @@
                         </CollectionView.ItemTemplate>
                     </CollectionView>
                 </StackLayout>
+
+                <!-- Do Workout Again -->
+                <Button Text="🔄 Do This Workout Again"
+                        Command="{Binding DoWorkoutAgainCommand}"
+                        BackgroundColor="#FFFFFF"
+                        TextColor="#1F77F0"
+                        FontAttributes="Bold"
+                        FontSize="14"
+                        Padding="0,14"
+                        CornerRadius="10"
+                        BorderWidth="1"
+                        BorderColor="#1F77F0"/>
 
                 <Label Text=" " Margin="0,20"/>
 
