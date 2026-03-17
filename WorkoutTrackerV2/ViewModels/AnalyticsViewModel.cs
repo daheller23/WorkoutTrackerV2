@@ -27,6 +27,7 @@ namespace WorkoutTrackerV2.ViewModels
         [ObservableProperty] private string _insightEmoji = "💡";
         [ObservableProperty] private string _bestWeekLabel = string.Empty;
         [ObservableProperty] private double _bestWeekVolume;
+        [ObservableProperty] private string _bestWeekMuscleGroups = string.Empty;
         #endregion
 
         #region "PARTIAL METHODS"
@@ -227,6 +228,7 @@ namespace WorkoutTrackerV2.ViewModels
             if (DailyStats.Count == 0)
             {
                 BestWeekLabel = string.Empty;
+                BestWeekMuscleGroups = string.Empty;
                 return;
             }
 
@@ -245,6 +247,18 @@ namespace WorkoutTrackerV2.ViewModels
             {
                 BestWeekVolume = bestWeek.Volume;
                 BestWeekLabel = $"Week of {bestWeek.WeekStart:MMM d} — {bestWeek.Workouts} {(bestWeek.Workouts == 1 ? "workout" : "workouts")}";
+
+                // Find muscle groups trained that week
+                var weekEnd = bestWeek.WeekStart.AddDays(7);
+                var muscleGroups = MuscleGroupProgress
+                    .Where(m => m.Exercises.Any(e => e.Sets
+                        .Any(s => s.CreatedDate >= bestWeek.WeekStart && s.CreatedDate < weekEnd)))
+                    .Select(m => m.MuscleGroup)
+                    .ToList();
+
+                BestWeekMuscleGroups = muscleGroups.Count > 0
+                    ? string.Join(" · ", muscleGroups)
+                    : string.Empty;
             }
         }
         #endregion

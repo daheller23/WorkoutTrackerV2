@@ -14,6 +14,7 @@
         <converters:BoolToTrendConverter x:Key="BoolToTrendConverter"/>
         <converters:DaysToColorConverter x:Key="DaysToColorConverter"/>
         <converters:DaysToTextColorConverter x:Key="DaysToTextColorConverter"/>
+        <converters:IsNotEmptyConverter x:Key="IsNotEmptyConverter"/>
     </ContentPage.Resources>
 
     <Shell.NavBarIsVisible>False</Shell.NavBarIsVisible>
@@ -42,8 +43,21 @@
                            FontAttributes="Bold"
                            TextColor="#999999"
                            CharacterSpacing="1"/>
-                    <Grid ColumnDefinitions="*,*,*,*,*" ColumnSpacing="8">
+                    <Grid ColumnDefinitions="*,*,*,*,*,*" ColumnSpacing="6">
                         <Border Grid.Column="0"
+                                BackgroundColor="{Binding SelectedDays, Converter={StaticResource DaysToColorConverter}, ConverterParameter=0}"
+                                StrokeThickness="0">
+                            <Border.StrokeShape>
+                                <RoundRectangle CornerRadius="20"/>
+                            </Border.StrokeShape>
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding SetTimePeriodCommand}" CommandParameter="0"/>
+                            </Border.GestureRecognizers>
+                            <Label Text="All" FontSize="11" FontAttributes="Bold"
+                                   TextColor="{Binding SelectedDays, Converter={StaticResource DaysToTextColorConverter}, ConverterParameter=0}"
+                                   HorizontalOptions="Center" Padding="0,8"/>
+                        </Border>
+                        <Border Grid.Column="1"
                                 BackgroundColor="{Binding SelectedDays, Converter={StaticResource DaysToColorConverter}, ConverterParameter=7}"
                                 StrokeThickness="0">
                             <Border.StrokeShape>
@@ -52,11 +66,11 @@
                             <Border.GestureRecognizers>
                                 <TapGestureRecognizer Command="{Binding SetTimePeriodCommand}" CommandParameter="7"/>
                             </Border.GestureRecognizers>
-                            <Label Text="7d" FontSize="12" FontAttributes="Bold"
+                            <Label Text="7d" FontSize="11" FontAttributes="Bold"
                                    TextColor="{Binding SelectedDays, Converter={StaticResource DaysToTextColorConverter}, ConverterParameter=7}"
                                    HorizontalOptions="Center" Padding="0,8"/>
                         </Border>
-                        <Border Grid.Column="1"
+                        <Border Grid.Column="2"
                                 BackgroundColor="{Binding SelectedDays, Converter={StaticResource DaysToColorConverter}, ConverterParameter=14}"
                                 StrokeThickness="0">
                             <Border.StrokeShape>
@@ -65,11 +79,11 @@
                             <Border.GestureRecognizers>
                                 <TapGestureRecognizer Command="{Binding SetTimePeriodCommand}" CommandParameter="14"/>
                             </Border.GestureRecognizers>
-                            <Label Text="14d" FontSize="12" FontAttributes="Bold"
+                            <Label Text="14d" FontSize="11" FontAttributes="Bold"
                                    TextColor="{Binding SelectedDays, Converter={StaticResource DaysToTextColorConverter}, ConverterParameter=14}"
                                    HorizontalOptions="Center" Padding="0,8"/>
                         </Border>
-                        <Border Grid.Column="2"
+                        <Border Grid.Column="3"
                                 BackgroundColor="{Binding SelectedDays, Converter={StaticResource DaysToColorConverter}, ConverterParameter=30}"
                                 StrokeThickness="0">
                             <Border.StrokeShape>
@@ -78,11 +92,11 @@
                             <Border.GestureRecognizers>
                                 <TapGestureRecognizer Command="{Binding SetTimePeriodCommand}" CommandParameter="30"/>
                             </Border.GestureRecognizers>
-                            <Label Text="30d" FontSize="12" FontAttributes="Bold"
+                            <Label Text="30d" FontSize="11" FontAttributes="Bold"
                                    TextColor="{Binding SelectedDays, Converter={StaticResource DaysToTextColorConverter}, ConverterParameter=30}"
                                    HorizontalOptions="Center" Padding="0,8"/>
                         </Border>
-                        <Border Grid.Column="3"
+                        <Border Grid.Column="4"
                                 BackgroundColor="{Binding SelectedDays, Converter={StaticResource DaysToColorConverter}, ConverterParameter=60}"
                                 StrokeThickness="0">
                             <Border.StrokeShape>
@@ -91,11 +105,11 @@
                             <Border.GestureRecognizers>
                                 <TapGestureRecognizer Command="{Binding SetTimePeriodCommand}" CommandParameter="60"/>
                             </Border.GestureRecognizers>
-                            <Label Text="60d" FontSize="12" FontAttributes="Bold"
+                            <Label Text="60d" FontSize="11" FontAttributes="Bold"
                                    TextColor="{Binding SelectedDays, Converter={StaticResource DaysToTextColorConverter}, ConverterParameter=60}"
                                    HorizontalOptions="Center" Padding="0,8"/>
                         </Border>
-                        <Border Grid.Column="4"
+                        <Border Grid.Column="5"
                                 BackgroundColor="{Binding SelectedDays, Converter={StaticResource DaysToColorConverter}, ConverterParameter=90}"
                                 StrokeThickness="0">
                             <Border.StrokeShape>
@@ -104,7 +118,7 @@
                             <Border.GestureRecognizers>
                                 <TapGestureRecognizer Command="{Binding SetTimePeriodCommand}" CommandParameter="90"/>
                             </Border.GestureRecognizers>
-                            <Label Text="90d" FontSize="12" FontAttributes="Bold"
+                            <Label Text="90d" FontSize="11" FontAttributes="Bold"
                                    TextColor="{Binding SelectedDays, Converter={StaticResource DaysToTextColorConverter}, ConverterParameter=90}"
                                    HorizontalOptions="Center" Padding="0,8"/>
                         </Border>
@@ -160,6 +174,10 @@
                     <Label Text="{Binding BestWeekVolume, StringFormat='{0:F0} lbs total volume'}"
                            FontSize="12"
                            TextColor="#999999"/>
+                    <Label Text="{Binding BestWeekMuscleGroups}"
+                           FontSize="11"
+                           TextColor="#999999"
+                           IsVisible="{Binding BestWeekMuscleGroups, Converter={StaticResource IsNotEmptyConverter}}"/>
                 </StackLayout>
 
                 <!-- ───── WORKOUT HEATMAP ───── -->
@@ -170,9 +188,10 @@
                                 Command="{Binding PreviousMonthCommand}"
                                 BackgroundColor="Transparent"
                                 TextColor="#1F77F0"
-                                FontSize="16"
-                                Padding="0"
-                                BorderWidth="0"/>
+                                FontSize="18"
+                                Padding="12,8"
+                                BorderWidth="0"
+                                MinimumWidthRequest="44"/>
                         <Label Grid.Column="1"
                                Text="{Binding HeatmapTitle}"
                                FontSize="12"
@@ -185,9 +204,10 @@
                                 Command="{Binding NextMonthCommand}"
                                 BackgroundColor="Transparent"
                                 TextColor="#1F77F0"
-                                FontSize="16"
-                                Padding="0"
-                                BorderWidth="0"/>
+                                FontSize="18"
+                                Padding="12,8"
+                                BorderWidth="0"
+                                MinimumWidthRequest="44"/>
                     </Grid>
                     <StackLayout BackgroundColor="#FFFFFF" Padding="16" Spacing="12">
                         <controls:WorkoutHeatmapView
@@ -314,7 +334,7 @@
                 </StackLayout>
 
                 <!-- ───── PERSONAL RECORDS ───── -->
-                <StackLayout BackgroundColor="#FFFFFF" Padding="16" Spacing="0">
+                <StackLayout BackgroundColor="#FFF8E1" Padding="16" Spacing="0">
                     <StackLayout.GestureRecognizers>
                         <TapGestureRecognizer Command="{Binding ViewPersonalRecordsCommand}"/>
                     </StackLayout.GestureRecognizers>
@@ -328,7 +348,7 @@
                             <Label Text="Personal Records"
                                    FontSize="15"
                                    FontAttributes="Bold"
-                                   TextColor="#000000"/>
+                                   TextColor="#FF9800"/>
                             <Label Text="View your all time best lifts"
                                    FontSize="11"
                                    TextColor="#999999"/>
@@ -336,7 +356,7 @@
                         <Label Grid.Column="2"
                                Text="→"
                                FontSize="18"
-                               TextColor="#1F77F0"
+                               TextColor="#FF9800"
                                VerticalOptions="Center"/>
                     </Grid>
                 </StackLayout>
@@ -344,21 +364,21 @@
                 <!-- ───── INSIGHTS ───── -->
                 <StackLayout BackgroundColor="#FFFFFF" Padding="16" Spacing="8">
                     <Label Text="INSIGHT"
-                       FontSize="11"
-                       FontAttributes="Bold"
-                       TextColor="#999999"
-                       CharacterSpacing="1"/>
+                           FontSize="11"
+                           FontAttributes="Bold"
+                           TextColor="#999999"
+                           CharacterSpacing="1"/>
                     <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
                         <Label Grid.Column="0"
-                           Text="{Binding InsightEmoji}"
-                           FontSize="32"
-                           VerticalOptions="Center"/>
+                               Text="{Binding InsightEmoji}"
+                               FontSize="32"
+                               VerticalOptions="Center"/>
                         <Label Grid.Column="1"
-                           Text="{Binding InsightMessage}"
-                           FontSize="13"
-                           TextColor="#000000"
-                           LineBreakMode="WordWrap"
-                           VerticalOptions="Center"/>
+                               Text="{Binding InsightMessage}"
+                               FontSize="13"
+                               TextColor="#000000"
+                               LineBreakMode="WordWrap"
+                               VerticalOptions="Center"/>
                     </Grid>
                 </StackLayout>
 
