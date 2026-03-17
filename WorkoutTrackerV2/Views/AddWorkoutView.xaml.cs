@@ -19,12 +19,17 @@ public partial class AddWorkoutView : ContentPage
     protected override void OnAppearing()
     {
         base.OnAppearing();
-
         if (_templateService.PendingTemplate is not null)
         {
             var template = _templateService.PendingTemplate;
+            var sets = _templateService.PendingTemplateSets;
             _templateService.PendingTemplate = null;
-            _vm.LoadFromTemplateCommand.Execute(template);
+            _templateService.PendingTemplateSets = [];
+
+            if (sets.Count > 0)
+                _vm.LoadFromTemplateSetsCommand.Execute((template, sets));
+            else
+                _vm.LoadFromTemplateCommand.Execute(template);
         }
     }
 }

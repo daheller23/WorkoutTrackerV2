@@ -364,5 +364,64 @@ namespace WorkoutTrackerV2.ViewModels
         [RelayCommand]
         private static Task ViewSettings() => Shell.Current.GoToAsync(Routes.Settings);
         #endregion
+
+        #region "LOAD FROM TEMPLATE SETS"
+        [RelayCommand]
+        private async Task LoadFromTemplateSets((WorkoutTemplate template, List<WorkoutTemplateSet> sets) args)
+        {
+            try
+            {
+                var exercises = await workoutService.GetAllExercisesAsync();
+                ExerciseGroups.Clear();
+                WorkoutName = args.template.Name;
+                Notes = args.template.Notes;
+
+                foreach (var set in args.sets)
+                {
+                    var exercise = exercises.FirstOrDefault(e => e.Id == set.ExerciseId);
+                    if (exercise is null) continue;
+
+                    var existing = ExerciseGroups.FirstOrDefault(g => g.Exercise.Id == exercise.Id);
+                    if (existing is not null)
+                    {
+                        var workoutSet = new WorkoutSet
+                        {
+                            Exercise = exercise,
+                            ExerciseId = exercise.Id,
+                            SetNumber = existing.Sets.Count + 1,
+                            Reps = set.Reps,
+                            Weight = set.Weight,
+                            WeightUnit = set.WeightUnit,
+                            ParentGroup = existing
+                        };
+                        workoutSet.DeleteCommand = new CommunityToolkit.Mvvm.Input.RelayCommand(() => existing.RemoveSet(workoutSet));
+                        existing.Sets.Add(workoutSet);
+                    }
+                    else
+                    {
+                        var group = new ExerciseGroup(exercise, settingsService.WeightUnit);
+                        var workoutSet = new WorkoutSet
+                        {
+                            Exercise = exercise,
+                            ExerciseId = exercise.Id,
+                            SetNumber = 1,
+                            Reps = set.Reps,
+                            Weight = set.Weight,
+                            WeightUnit = set.WeightUnit,
+                            ParentGroup = group
+                        };
+                        workoutSet.DeleteCommand = new CommunityToolkit.Mvvm.Input.RelayCommand(() => group.RemoveSet(workoutSet));
+                        group.Sets.Add(workoutSet);
+                        ExerciseGroups.Add(group);
+                    }
+                }
+                UpdateTotals();
+            }
+            catch (Exception ex)
+            {
+                await Shell.Current.DisplayAlertAsync("Error", ex.Message, "OK");
+            }
+        }
+        #endregion
     }
 }

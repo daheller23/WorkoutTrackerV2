@@ -5,5 +5,6 @@ namespace WorkoutTrackerV2.Services
     public class TemplateService : ITemplateService
     {
         public WorkoutTemplate? PendingTemplate { get; set; }
+        public List<WorkoutTemplateSet> PendingTemplateSets { get; set; } = [];
     }
 }

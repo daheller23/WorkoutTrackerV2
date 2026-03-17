@@ -95,7 +95,9 @@ namespace WorkoutTrackerV2.ViewModels
             {
                 var allSessions = await workoutService.GetAllSessionsAsync();
                 var previousSession = allSessions
-                    .Where(s => s.Id != Session.Id && s.Date < Session.Date)
+                    .Where(s => s.Id != Session.Id
+                        && s.Date < Session.Date
+                        && s.DayName == Session.DayName) // 👈 only same workout type
                     .OrderByDescending(s => s.Date)
                     .FirstOrDefault();
 
@@ -118,7 +120,7 @@ namespace WorkoutTrackerV2.ViewModels
                 var percent = (diff / previousVolume) * 100;
                 VolumeIsUp = diff >= 0;
                 var sign = diff >= 0 ? "+" : "";
-                VolumeComparison = $"{sign}{diff:F0} {settingsService.WeightUnit} ({sign}{percent:F0}%) vs last session";
+                VolumeComparison = $"{sign}{diff:F0} {settingsService.WeightUnit} ({sign}{percent:F0}%) vs last {Session.DayName}";
                 HasVolumeComparison = true;
             }
             catch
@@ -134,28 +136,28 @@ namespace WorkoutTrackerV2.ViewModels
         {
             try
             {
+                // Build an in-memory template without saving to DB
                 var template = new WorkoutTemplate
                 {
+                    Id = -1, // sentinel value so template service knows it's temporary
                     Name = Session.DayName,
-                    Notes = Session.Notes
+                    Notes = string.Empty
                 };
 
-                int templateId = await workoutService.SaveTemplateAsync(template);
-                int setNumber = 1;
-
-                foreach (var group in ExerciseGroups)
-                    foreach (var set in group.Sets)
-                        await workoutService.SaveTemplateSetAsync(new WorkoutTemplateSet
-                        {
-                            TemplateId = templateId,
-                            ExerciseId = group.Exercise.Id,
-                            SetNumber = setNumber++,
-                            Reps = set.Reps,
-                            Weight = set.Weight,
-                            WeightUnit = set.WeightUnit
-                        });
-
+                // Store sets directly on the template service
+                // We need a different approach — store exercise groups directly
                 templateService.PendingTemplate = template;
+                templateService.PendingTemplateSets = ExerciseGroups
+                    .SelectMany(g => g.Sets.Select(s => new WorkoutTemplateSet
+                    {
+                        TemplateId = -1,
+                        ExerciseId = g.Exercise.Id,
+                        Reps = s.Reps,
+                        Weight = s.Weight,
+                        WeightUnit = s.WeightUnit
+                    }))
+                    .ToList();
+
                 await Shell.Current.GoToAsync(Routes.Workout);
             }
             catch (Exception ex)
@@ -218,5 +220,6 @@ namespace WorkoutTrackerV2.ViewModels
             }
         }
         #endregion
+
     }
 }
