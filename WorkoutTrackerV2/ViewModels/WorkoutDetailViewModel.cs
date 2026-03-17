@@ -7,7 +7,10 @@ using WorkoutTrackerV2.Services;
 namespace WorkoutTrackerV2.ViewModels
 {
     [QueryProperty(nameof(Session), "Session")]
-    public partial class WorkoutDetailViewModel(IWorkoutService workoutService, ISettingsService settingsService) : BaseViewModel
+    public partial class WorkoutDetailViewModel(
+        IWorkoutService workoutService,
+        ISettingsService settingsService,
+        ITemplateService templateService) : BaseViewModel
     {
         #region "OBSERVABLE PROPERTIES"
         [ObservableProperty] private WorkoutSession _session = new();
@@ -16,9 +19,13 @@ namespace WorkoutTrackerV2.ViewModels
         [ObservableProperty] private double _totalVolume;
         [ObservableProperty] private int _totalReps;
         [ObservableProperty] private string _weightUnitLabel = "lbs";
+        [ObservableProperty] private List<string> _muscleGroups = [];
+        [ObservableProperty] private string _volumeComparison = string.Empty;
+        [ObservableProperty] private bool _volumeIsUp;
+        [ObservableProperty] private bool _hasVolumeComparison;
         #endregion
 
-        #region "LOAD SETS"
+        #region "LOAD DATA"
         [RelayCommand]
         private async Task LoadData()
         {
@@ -27,7 +34,7 @@ namespace WorkoutTrackerV2.ViewModels
             {
                 IsLoading = true;
 
-                // Reload session from DB to get latest TotalExercises and other fields
+                // Reload session from DB to get latest fields
                 var freshSession = await workoutService.GetSessionAsync(Session.Id);
                 if (freshSession is not null)
                     Session = freshSession;
@@ -59,6 +66,16 @@ namespace WorkoutTrackerV2.ViewModels
                 TotalVolume = ExerciseGroups.SelectMany(g => g.Sets).Sum(s => s.Weight * s.Reps);
                 TotalReps = ExerciseGroups.SelectMany(g => g.Sets).Sum(s => s.Reps);
                 WeightUnitLabel = settingsService.WeightUnit;
+
+                // Muscle group breakdown
+                MuscleGroups = ExerciseGroups
+                    .Select(g => g.Exercise.MuscleGroup)
+                    .Distinct()
+                    .OrderBy(m => m)
+                    .ToList();
+
+                // Volume comparison
+                await LoadVolumeComparison();
             }
             catch (Exception ex)
             {
@@ -67,6 +84,83 @@ namespace WorkoutTrackerV2.ViewModels
             finally
             {
                 IsLoading = false;
+            }
+        }
+        #endregion
+
+        #region "LOAD VOLUME COMPARISON"
+        private async Task LoadVolumeComparison()
+        {
+            try
+            {
+                var allSessions = await workoutService.GetAllSessionsAsync();
+                var previousSession = allSessions
+                    .Where(s => s.Id != Session.Id && s.Date < Session.Date)
+                    .OrderByDescending(s => s.Date)
+                    .FirstOrDefault();
+
+                if (previousSession is null)
+                {
+                    HasVolumeComparison = false;
+                    return;
+                }
+
+                var previousSets = await workoutService.GetSetsForSessionAsync(previousSession.Id);
+                var previousVolume = previousSets.Sum(s => s.Weight * s.Reps);
+
+                if (previousVolume == 0)
+                {
+                    HasVolumeComparison = false;
+                    return;
+                }
+
+                var diff = TotalVolume - previousVolume;
+                var percent = (diff / previousVolume) * 100;
+                VolumeIsUp = diff >= 0;
+                var sign = diff >= 0 ? "+" : "";
+                VolumeComparison = $"{sign}{diff:F0} {settingsService.WeightUnit} ({sign}{percent:F0}%) vs last session";
+                HasVolumeComparison = true;
+            }
+            catch
+            {
+                HasVolumeComparison = false;
+            }
+        }
+        #endregion
+
+        #region "DO WORKOUT AGAIN"
+        [RelayCommand]
+        private async Task DoWorkoutAgain()
+        {
+            try
+            {
+                var template = new WorkoutTemplate
+                {
+                    Name = Session.DayName,
+                    Notes = Session.Notes
+                };
+
+                int templateId = await workoutService.SaveTemplateAsync(template);
+                int setNumber = 1;
+
+                foreach (var group in ExerciseGroups)
+                    foreach (var set in group.Sets)
+                        await workoutService.SaveTemplateSetAsync(new WorkoutTemplateSet
+                        {
+                            TemplateId = templateId,
+                            ExerciseId = group.Exercise.Id,
+                            SetNumber = setNumber++,
+                            Reps = set.Reps,
+                            Weight = set.Weight,
+                            WeightUnit = set.WeightUnit
+                        });
+
+                templateService.PendingTemplate = template;
+                await Shell.Current.GoToAsync(Routes.Workout);
+            }
+            catch (Exception ex)
+            {
+                await Shell.Current.DisplayAlertAsync("Error", ex.Message, "OK");
             }
         }
         #endregion
