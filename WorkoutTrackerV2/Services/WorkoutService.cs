@@ -339,5 +339,15 @@ namespace WorkoutTrackerV2.Services
             await _database.DeleteAllAsync<WorkoutTemplateSet>();
         }
         #endregion
+
+        #region "GET SESSION ASYNC"
+        public async Task<WorkoutSession?> GetSessionAsync(int id)
+        {
+            await InitializeAsync();
+            return await _database.Table<WorkoutSession>()
+                .Where(s => s.Id == id)
+                .FirstOrDefaultAsync();
+        }
+        #endregion
     }
 }

@@ -12,7 +12,7 @@ namespace WorkoutTrackerV2.Models
         public string SetCountLabel => Sets.Count == 1 ? "1 set" : $"{Sets.Count} sets";
         public bool HasSets => Sets.Count > 0;
         public int TotalReps => Sets.Sum(s => s.Reps);
-
+        public double MaxWeight => Sets.Count > 0 ? Sets.Max(s => s.Weight) : 0;
         public void AddSet(string? weightUnit = null)
         {
             var unit = weightUnit ?? _defaultWeightUnit;

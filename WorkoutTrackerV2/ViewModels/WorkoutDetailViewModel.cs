@@ -7,13 +7,15 @@ using WorkoutTrackerV2.Services;
 namespace WorkoutTrackerV2.ViewModels
 {
     [QueryProperty(nameof(Session), "Session")]
-    public partial class WorkoutDetailViewModel(IWorkoutService workoutService) : BaseViewModel
+    public partial class WorkoutDetailViewModel(IWorkoutService workoutService, ISettingsService settingsService) : BaseViewModel
     {
         #region "OBSERVABLE PROPERTIES"
         [ObservableProperty] private WorkoutSession _session = new();
         [ObservableProperty] private ObservableCollection<ExerciseGroup> _exerciseGroups = [];
         [ObservableProperty] private int _totalSets;
         [ObservableProperty] private double _totalVolume;
+        [ObservableProperty] private int _totalReps;
+        [ObservableProperty] private string _weightUnitLabel = "lbs";
         #endregion
 
         #region "LOAD SETS"
@@ -25,13 +27,23 @@ namespace WorkoutTrackerV2.ViewModels
             {
                 IsLoading = true;
 
-                // Reload session from DB to get latest data
-                var sets = await workoutService.GetSetsForSessionAsync(Session.Id);
-                ExerciseGroups.Clear();
+                // Reload session from DB to get latest TotalExercises and other fields
+                var freshSession = await workoutService.GetSessionAsync(Session.Id);
+                if (freshSession is not null)
+                    Session = freshSession;
 
+                var setsTask = workoutService.GetSetsForSessionAsync(Session.Id);
+                var exercisesTask = workoutService.GetAllExercisesAsync();
+                await Task.WhenAll(setsTask, exercisesTask);
+
+                var sets = setsTask.Result;
+                var exerciseDict = exercisesTask.Result.ToDictionary(e => e.Id);
+
+                ExerciseGroups.Clear();
                 foreach (var set in sets)
                 {
-                    set.Exercise = await workoutService.GetExerciseAsync(set.ExerciseId);
+                    if (!exerciseDict.TryGetValue(set.ExerciseId, out var exercise)) continue;
+                    set.Exercise = exercise;
                     var existing = ExerciseGroups.FirstOrDefault(g => g.Exercise.Id == set.ExerciseId);
                     if (existing is not null)
                         existing.Sets.Add(set);
@@ -45,6 +57,8 @@ namespace WorkoutTrackerV2.ViewModels
 
                 TotalSets = ExerciseGroups.Sum(g => g.Sets.Count);
                 TotalVolume = ExerciseGroups.SelectMany(g => g.Sets).Sum(s => s.Weight * s.Reps);
+                TotalReps = ExerciseGroups.SelectMany(g => g.Sets).Sum(s => s.Reps);
+                WeightUnitLabel = settingsService.WeightUnit;
             }
             catch (Exception ex)
             {
