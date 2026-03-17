@@ -119,90 +119,75 @@
                            TextColor="#999999"
                            CharacterSpacing="1"/>
                     <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto" ColumnSpacing="12" RowSpacing="12">
-
-                        <!-- Volume Card -->
-                        <StackLayout Grid.Row="0" Grid.Column="0"
-                                     BackgroundColor="#1F77F0"
-                                     Padding="16,16,16,12"
-                                     Spacing="4">
+                        <StackLayout Grid.Row="0" Grid.Column="0" BackgroundColor="#1F77F0" Padding="16,16,16,12" Spacing="4">
                             <Label Text="VOLUME" FontSize="10" TextColor="#FFFFFF" FontAttributes="Bold" CharacterSpacing="1" Opacity="0.8"/>
                             <Label Text="{Binding TotalVolumeLifted, StringFormat='{0:F0}'}" FontSize="28" FontAttributes="Bold" TextColor="#FFFFFF"/>
                             <Label Text="total lbs lifted" FontSize="10" TextColor="#FFFFFF" Opacity="0.8"/>
-                            <controls:SparklineView
-                                Data="{Binding VolumeSparkline}"
-                                LineColor="#FFFFFF"
-                                BackgroundColorHex="#1F77F0"
-                                HeightRequest="44"
-                                Margin="0,4,0,0"/>
+                            <controls:SparklineView Data="{Binding VolumeSparkline}" LineColor="#FFFFFF" BackgroundColorHex="#1F77F0" HeightRequest="44" Margin="0,4,0,0"/>
                         </StackLayout>
-
-                        <!-- Avg Volume Card -->
-                        <StackLayout Grid.Row="0" Grid.Column="1"
-                                     BackgroundColor="#4CAF50"
-                                     Padding="16,16,16,12"
-                                     Spacing="4">
+                        <StackLayout Grid.Row="0" Grid.Column="1" BackgroundColor="#4CAF50" Padding="16,16,16,12" Spacing="4">
                             <Label Text="AVG VOLUME" FontSize="10" TextColor="#FFFFFF" FontAttributes="Bold" CharacterSpacing="1" Opacity="0.8"/>
                             <Label Text="{Binding AverageVolume, StringFormat='{0:F0}'}" FontSize="28" FontAttributes="Bold" TextColor="#FFFFFF"/>
                             <Label Text="per workout" FontSize="10" TextColor="#FFFFFF" Opacity="0.8"/>
-                            <controls:SparklineView
-                                Data="{Binding AvgVolumeSparkline}"
-                                LineColor="#FFFFFF"
-                                BackgroundColorHex="#4CAF50"
-                                HeightRequest="44"
-                                Margin="0,4,0,0"/>
+                            <controls:SparklineView Data="{Binding AvgVolumeSparkline}" LineColor="#FFFFFF" BackgroundColorHex="#4CAF50" HeightRequest="44" Margin="0,4,0,0"/>
                         </StackLayout>
-
-                        <!-- Sets Card -->
-                        <StackLayout Grid.Row="1" Grid.Column="0"
-                                     BackgroundColor="#FF9800"
-                                     Padding="16,16,16,12"
-                                     Spacing="4">
+                        <StackLayout Grid.Row="1" Grid.Column="0" BackgroundColor="#FF9800" Padding="16,16,16,12" Spacing="4">
                             <Label Text="SETS" FontSize="10" TextColor="#FFFFFF" FontAttributes="Bold" CharacterSpacing="1" Opacity="0.8"/>
                             <Label Text="{Binding TotalSets}" FontSize="28" FontAttributes="Bold" TextColor="#FFFFFF"/>
                             <Label Text="completed" FontSize="10" TextColor="#FFFFFF" Opacity="0.8"/>
-                            <controls:SparklineView
-                                Data="{Binding SetsSparkline}"
-                                LineColor="#FFFFFF"
-                                BackgroundColorHex="#FF9800"
-                                HeightRequest="44"
-                                Margin="0,4,0,0"/>
+                            <controls:SparklineView Data="{Binding SetsSparkline}" LineColor="#FFFFFF" BackgroundColorHex="#FF9800" HeightRequest="44" Margin="0,4,0,0"/>
                         </StackLayout>
-
-                        <!-- Days Card -->
-                        <StackLayout Grid.Row="1" Grid.Column="1"
-                                     BackgroundColor="#FF6B6B"
-                                     Padding="16,16,16,12"
-                                     Spacing="4">
+                        <StackLayout Grid.Row="1" Grid.Column="1" BackgroundColor="#FF6B6B" Padding="16,16,16,12" Spacing="4">
                             <Label Text="DAYS" FontSize="10" TextColor="#FFFFFF" FontAttributes="Bold" CharacterSpacing="1" Opacity="0.8"/>
                             <Label Text="{Binding DailyStats.Count}" FontSize="28" FontAttributes="Bold" TextColor="#FFFFFF"/>
                             <Label Text="worked out" FontSize="10" TextColor="#FFFFFF" Opacity="0.8"/>
-                            <controls:SparklineView
-                                Data="{Binding DaysSparkline}"
-                                LineColor="#FFFFFF"
-                                BackgroundColorHex="#FF6B6B"
-                                HeightRequest="44"
-                                Margin="0,4,0,0"/>
+                            <controls:SparklineView Data="{Binding DaysSparkline}" LineColor="#FFFFFF" BackgroundColorHex="#FF6B6B" HeightRequest="44" Margin="0,4,0,0"/>
                         </StackLayout>
-
                     </Grid>
+                </StackLayout>
+
+                <!-- ───── BEST WEEK ───── -->
+                <StackLayout BackgroundColor="#FFFFFF" Padding="16" Spacing="6">
+                    <Label Text="BEST WEEK"
+                           FontSize="11"
+                           FontAttributes="Bold"
+                           TextColor="#999999"
+                           CharacterSpacing="1"/>
+                    <Label Text="{Binding BestWeekLabel}"
+                           FontSize="14"
+                           FontAttributes="Bold"
+                           TextColor="#1F77F0"/>
+                    <Label Text="{Binding BestWeekVolume, StringFormat='{0:F0} lbs total volume'}"
+                           FontSize="12"
+                           TextColor="#999999"/>
                 </StackLayout>
 
                 <!-- ───── WORKOUT HEATMAP ───── -->
                 <StackLayout Spacing="10">
-                    <Grid ColumnDefinitions="*,Auto">
-                        <Label Grid.Column="0"
-                               Text="WORKOUT FREQUENCY"
-                               FontSize="11"
-                               FontAttributes="Bold"
-                               TextColor="#999999"
-                               CharacterSpacing="1"
-                               VerticalOptions="Center"/>
+                    <Grid ColumnDefinitions="Auto,*,Auto">
+                        <Button Grid.Column="0"
+                                Text="←"
+                                Command="{Binding PreviousMonthCommand}"
+                                BackgroundColor="Transparent"
+                                TextColor="#1F77F0"
+                                FontSize="16"
+                                Padding="0"
+                                BorderWidth="0"/>
                         <Label Grid.Column="1"
                                Text="{Binding HeatmapTitle}"
                                FontSize="12"
                                FontAttributes="Bold"
                                TextColor="#1F77F0"
+                               HorizontalOptions="Center"
                                VerticalOptions="Center"/>
+                        <Button Grid.Column="2"
+                                Text="→"
+                                Command="{Binding NextMonthCommand}"
+                                BackgroundColor="Transparent"
+                                TextColor="#1F77F0"
+                                FontSize="16"
+                                Padding="0"
+                                BorderWidth="0"/>
                     </Grid>
                     <StackLayout BackgroundColor="#FFFFFF" Padding="16" Spacing="12">
                         <controls:WorkoutHeatmapView
@@ -250,8 +235,12 @@
                                            VerticalOptions="Center"/>
                                     <StackLayout Grid.Column="1" Spacing="2" HorizontalOptions="Center">
                                         <Label Text="MAX" FontSize="9" TextColor="#999999" HorizontalOptions="Center" CharacterSpacing="0.5"/>
-                                        <Label Text="{Binding MaxWeight, StringFormat='{0:F0}'}"
-                                               FontSize="13" FontAttributes="Bold" TextColor="#4CAF50" HorizontalOptions="Center"/>
+                                        <StackLayout Orientation="Horizontal" Spacing="4" HorizontalOptions="Center">
+                                            <Label Text="{Binding MaxWeight, StringFormat='{0:F0}'}"
+                                                   FontSize="13" FontAttributes="Bold" TextColor="#4CAF50" VerticalOptions="Center"/>
+                                            <Label Text="{Binding IsTrending, Converter={StaticResource BoolToTrendConverter}}"
+                                                   FontSize="10" VerticalOptions="Center"/>
+                                        </StackLayout>
                                     </StackLayout>
                                     <StackLayout Grid.Column="2" Spacing="2" HorizontalOptions="Center">
                                         <Label Text="AVG" FontSize="9" TextColor="#999999" HorizontalOptions="Center" CharacterSpacing="0.5"/>
@@ -324,45 +313,53 @@
                     </CollectionView>
                 </StackLayout>
 
-                <!-- Personal Records -->
+                <!-- ───── PERSONAL RECORDS ───── -->
                 <StackLayout BackgroundColor="#FFFFFF" Padding="16" Spacing="0">
                     <StackLayout.GestureRecognizers>
                         <TapGestureRecognizer Command="{Binding ViewPersonalRecordsCommand}"/>
                     </StackLayout.GestureRecognizers>
                     <Grid ColumnDefinitions="Auto,*,Auto">
                         <Label Grid.Column="0"
-                           Text="🏆"
-                           FontSize="24"
-                           VerticalOptions="Center"
-                           Margin="0,0,12,0"/>
+                               Text="🏆"
+                               FontSize="24"
+                               VerticalOptions="Center"
+                               Margin="0,0,12,0"/>
                         <StackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
                             <Label Text="Personal Records"
-                               FontSize="15"
-                               FontAttributes="Bold"
-                               TextColor="#000000"/>
+                                   FontSize="15"
+                                   FontAttributes="Bold"
+                                   TextColor="#000000"/>
                             <Label Text="View your all time best lifts"
-                               FontSize="11"
-                               TextColor="#999999"/>
+                                   FontSize="11"
+                                   TextColor="#999999"/>
                         </StackLayout>
                         <Label Grid.Column="2"
-                           Text="→"
-                           FontSize="18"
-                           TextColor="#1F77F0"
-                           VerticalOptions="Center"/>
+                               Text="→"
+                               FontSize="18"
+                               TextColor="#1F77F0"
+                               VerticalOptions="Center"/>
                     </Grid>
                 </StackLayout>
 
                 <!-- ───── INSIGHTS ───── -->
-                <StackLayout BackgroundColor="#F0F7FF" Padding="20" Spacing="8">
-                    <Label Text="💡 INSIGHT"
-                           FontSize="11"
-                           FontAttributes="Bold"
-                           TextColor="#1F77F0"
-                           CharacterSpacing="1"/>
-                    <Label Text="Consistency matters more than perfection. Every workout builds your strength and habits. Keep pushing! 💪"
+                <StackLayout BackgroundColor="#FFFFFF" Padding="16" Spacing="8">
+                    <Label Text="INSIGHT"
+                       FontSize="11"
+                       FontAttributes="Bold"
+                       TextColor="#999999"
+                       CharacterSpacing="1"/>
+                    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+                        <Label Grid.Column="0"
+                           Text="{Binding InsightEmoji}"
+                           FontSize="32"
+                           VerticalOptions="Center"/>
+                        <Label Grid.Column="1"
+                           Text="{Binding InsightMessage}"
                            FontSize="13"
-                           TextColor="#1F77F0"
-                           LineBreakMode="WordWrap"/>
+                           TextColor="#000000"
+                           LineBreakMode="WordWrap"
+                           VerticalOptions="Center"/>
+                    </Grid>
                 </StackLayout>
 
                 <Label Text=" " Margin="0,20"/>
