@@ -7,5 +7,6 @@
         public int TotalReps { get; set; } = 0;
         public double TotalWeight { get; set; } = 0;
         public List<WorkoutSet> Sets { get; set; } = [];
+        public string MuscleGroup { get; set; } = string.Empty;
     }
 }
