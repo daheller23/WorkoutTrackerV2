@@ -16,7 +16,7 @@
 		<NoWarn>MVVMTK0045</NoWarn>
 
 		<!-- Display name -->
-		<ApplicationTitle>WorkoutTrackerV2</ApplicationTitle>
+		<ApplicationTitle>Replify</ApplicationTitle>
 
 		<!-- App Identifier -->
 		<ApplicationId>com.companyname.workouttrackerv2</ApplicationId>
