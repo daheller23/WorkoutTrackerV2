@@ -263,11 +263,11 @@
                                 </StackLayout>
                             </StackLayout>
                             <Button Grid.Column="2" Text="🗑"
-                                    Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ExercisePickerViewModel}}, Path=DeleteExerciseCommand}"
-                                    CommandParameter="{Binding .}"
-                                    BackgroundColor="Transparent" TextColor="#FF6B6B"
-                                    FontSize="16" Padding="8" BorderWidth="0"
-                                    IsVisible="{Binding IsCustom}" VerticalOptions="Center"/>
+                                Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ExercisePickerViewModel}}, Path=DeleteExerciseCommand}"
+                                CommandParameter="{Binding .}"
+                                BackgroundColor="Transparent" TextColor="#FF6B6B"
+                                FontSize="16" Padding="8" BorderWidth="0"
+                                VerticalOptions="Center"/>
                             <Label Grid.Column="3" Text="+" FontSize="22" FontAttributes="Bold"
                                    TextColor="#1F77F0" VerticalOptions="Center" Padding="0,0,16,0"/>
                         </Grid>
@@ -319,11 +319,11 @@
                                                 </StackLayout>
                                             </StackLayout>
                                             <Button Grid.Column="2" Text="🗑"
-                                                    Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ExercisePickerViewModel}}, Path=DeleteExerciseCommand}"
-                                                    CommandParameter="{Binding .}"
-                                                    BackgroundColor="Transparent" TextColor="#FF6B6B"
-                                                    FontSize="16" Padding="8" BorderWidth="0"
-                                                    IsVisible="{Binding IsCustom}" VerticalOptions="Center"/>
+                                                Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ExercisePickerViewModel}}, Path=DeleteExerciseCommand}"
+                                                CommandParameter="{Binding .}"
+                                                BackgroundColor="Transparent" TextColor="#FF6B6B"
+                                                FontSize="16" Padding="8" BorderWidth="0"
+                                                VerticalOptions="Center"/>
                                             <Label Grid.Column="3" Text="+" FontSize="22" FontAttributes="Bold"
                                                    TextColor="#1F77F0" VerticalOptions="Center" Padding="0,0,16,0"/>
                                         </Grid>
