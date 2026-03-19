@@ -11,26 +11,30 @@ namespace WorkoutTrackerV2.ViewModels
         #region "OBSERVABLE PROPERTIES"
         [ObservableProperty] private ObservableCollection<Exercise> _filteredExercises = [];
         [ObservableProperty] private string _searchText = string.Empty;
+        [ObservableProperty] private string _selectedMuscleGroup = "All";
+        [ObservableProperty] private bool _hasSearchText;
         #endregion
 
         #region "PRIVATE VARIABLES"
         private List<Exercise> _allExercises = [];
         #endregion
 
-        #region "ON SEARCH TEXT CHANGED"
-        partial void OnSearchTextChanged(string value) => FilterExercises();
+        #region "PARTIAL METHODS"
+        partial void OnSearchTextChanged(string value)
+        {
+            HasSearchText = !string.IsNullOrEmpty(value);
+            FilterExercises();
+        }
+
+        partial void OnSelectedMuscleGroupChanged(string value) => FilterExercises();
         #endregion
 
         #region "LOAD EXERCISES"
         [RelayCommand]
         private async Task LoadExercises()
         {
-            if (IsLoading)
-            {
-                return;
-            }
-                
-            // Only reload if list is empty
+            if (IsLoading) return;
+
             if (_allExercises.Count > 0)
             {
                 FilterExercises();
@@ -58,22 +62,36 @@ namespace WorkoutTrackerV2.ViewModels
         #region "FILTER EXERCISES"
         private void FilterExercises()
         {
-            var filtered = string.IsNullOrWhiteSpace(SearchText)
-                ? _allExercises.Take(50).ToList()
-                : _allExercises
-                    .Where(e =>
-                        e.Name.Contains(SearchText, StringComparison.OrdinalIgnoreCase) ||
-                        e.MuscleGroup.Contains(SearchText, StringComparison.OrdinalIgnoreCase))
-                    .Take(50)
-                    .ToList();
+            var filtered = _allExercises.AsEnumerable();
 
-            // Only update if results actually changed
-            if (filtered.SequenceEqual(FilteredExercises))
-            {
-                return;
-            }
+            if (SelectedMuscleGroup != "All")
+                filtered = filtered.Where(e => e.MuscleGroup == SelectedMuscleGroup);
 
-            FilteredExercises = new ObservableCollection<Exercise>(filtered);
+            if (!string.IsNullOrWhiteSpace(SearchText))
+                filtered = filtered.Where(e =>
+                    e.Name.Contains(SearchText, StringComparison.OrdinalIgnoreCase) ||
+                    e.MuscleGroup.Contains(SearchText, StringComparison.OrdinalIgnoreCase));
+
+            var result = filtered.Take(50).ToList();
+
+            if (result.SequenceEqual(FilteredExercises)) return;
+            FilteredExercises = new ObservableCollection<Exercise>(result);
+        }
+        #endregion
+
+        #region "FILTER BY MUSCLE GROUP"
+        [RelayCommand]
+        private void FilterByMuscleGroup(string muscleGroup)
+        {
+            SelectedMuscleGroup = muscleGroup;
+        }
+        #endregion
+
+        #region "CLEAR SEARCH"
+        [RelayCommand]
+        private void ClearSearch()
+        {
+            SearchText = string.Empty;
         }
         #endregion
 
