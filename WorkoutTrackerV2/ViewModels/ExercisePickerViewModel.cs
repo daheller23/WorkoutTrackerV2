@@ -11,9 +11,12 @@ namespace WorkoutTrackerV2.ViewModels
     {
         #region "OBSERVABLE PROPERTIES"
         [ObservableProperty] private ObservableCollection<Exercise> _filteredExercises = [];
+        [ObservableProperty] private ObservableCollection<AlphaExerciseGroup> _groupedExercises = [];
         [ObservableProperty] private string _searchText = string.Empty;
         [ObservableProperty] private string _selectedMuscleGroup = "All";
+        [ObservableProperty] private string _exerciseCountLabel = string.Empty;
         [ObservableProperty] private bool _hasSearchText;
+        [ObservableProperty] private bool _showGrouped;
         #endregion
 
         #region "PRIVATE VARIABLES"
@@ -42,7 +45,6 @@ namespace WorkoutTrackerV2.ViewModels
                 _allExercises = await workoutService.GetAllExercisesAsync();
                 _allExercises = [.. _allExercises.OrderBy(e => e.Name)];
 
-                // Load recently used exercise IDs from last 30 days
                 var recentSets = await workoutService.GetRecentExerciseIdsAsync(30);
                 _recentExerciseIds = recentSets.ToHashSet();
 
@@ -76,17 +78,34 @@ namespace WorkoutTrackerV2.ViewModels
                     e.Name.Contains(SearchText, StringComparison.OrdinalIgnoreCase) ||
                     e.MuscleGroup.Contains(SearchText, StringComparison.OrdinalIgnoreCase));
 
-            // Sort recent exercises to top when showing All
+            // Sort recent to top when showing All with no search
             if (SelectedMuscleGroup == "All" && string.IsNullOrWhiteSpace(SearchText))
-            {
                 filtered = filtered
                     .OrderByDescending(e => _recentExerciseIds.Contains(e.Id))
                     .ThenBy(e => e.Name);
-            }
 
             var result = filtered.ToList();
+
+            // Show grouped only when All is selected with no search text
+            ShowGrouped = SelectedMuscleGroup == "All" && string.IsNullOrWhiteSpace(SearchText);
+
+            if (ShowGrouped)
+            {
+                var groups = result
+                    .GroupBy(e => _recentExerciseIds.Contains(e.Id)
+                        ? "🕐 Recent"
+                        : e.Name[0].ToString().ToUpper())
+                    .OrderBy(g => g.Key == "🕐 Recent" ? "!" : g.Key)
+                    .Select(g => new AlphaExerciseGroup(g.Key, g.ToList()))
+                    .ToList();
+                GroupedExercises = new ObservableCollection<AlphaExerciseGroup>(groups);
+            }
+
             if (result.SequenceEqual(FilteredExercises)) return;
             FilteredExercises = new ObservableCollection<Exercise>(result);
+
+            var count = result.Count;
+            ExerciseCountLabel = count == 1 ? "· 1 exercise" : $"· {count} exercises";
         }
         #endregion
 
@@ -102,6 +121,15 @@ namespace WorkoutTrackerV2.ViewModels
         [RelayCommand]
         private void ClearSearch()
         {
+            SearchText = string.Empty;
+        }
+        #endregion
+
+        #region "RESET FILTER"
+        [RelayCommand]
+        private void ResetFilter()
+        {
+            SelectedMuscleGroup = "All";
             SearchText = string.Empty;
         }
         #endregion
@@ -160,12 +188,5 @@ namespace WorkoutTrackerV2.ViewModels
             });
         }
         #endregion
-
-        [RelayCommand]
-        private void ResetFilter()
-        {
-            SelectedMuscleGroup = "All";
-            SearchText = string.Empty;
-        }
     }
 }
