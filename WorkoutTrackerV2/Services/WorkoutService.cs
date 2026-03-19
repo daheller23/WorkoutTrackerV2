@@ -349,5 +349,21 @@ namespace WorkoutTrackerV2.Services
                 .FirstOrDefaultAsync();
         }
         #endregion
+
+        #region "SAVE EXERCISE ASYNC"
+        public async Task<int> SaveExerciseAsync(Exercise exercise)
+        {
+            await InitializeAsync();
+            if (exercise.Id == 0)
+            {
+                var result = await _database.InsertAsync(exercise);
+                _exerciseCache = null; // Invalidate cache
+                return result;
+            }
+            var updateResult = await _database.UpdateAsync(exercise);
+            _exerciseCache = null; // Invalidate cache
+            return updateResult;
+        }
+        #endregion
     }
 }

@@ -19,6 +19,9 @@ namespace WorkoutTrackerV2.ViewModels
         private List<Exercise> _allExercises = [];
         #endregion
 
+        [RelayCommand]
+        private static Task CreateExercise() => Shell.Current.GoToAsync(Routes.CreateExercise);
+
         #region "PARTIAL METHODS"
         partial void OnSearchTextChanged(string value)
         {
@@ -34,13 +37,6 @@ namespace WorkoutTrackerV2.ViewModels
         private async Task LoadExercises()
         {
             if (IsLoading) return;
-
-            if (_allExercises.Count > 0)
-            {
-                FilterExercises();
-                return;
-            }
-
             try
             {
                 IsLoading = true;

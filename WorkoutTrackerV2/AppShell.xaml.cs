@@ -20,6 +20,7 @@ namespace WorkoutTrackerV2
             Routing.RegisterRoute(Routes.ExerciseProgress, typeof(ExerciseProgressView));
             Routing.RegisterRoute(Routes.TemplatePicker, typeof(TemplatePickerView));
             Routing.RegisterRoute(Routes.PersonalRecords, typeof(PersonalRecordsView));
+            Routing.RegisterRoute(Routes.CreateExercise, typeof(CreateExerciseView));
         }
     }
 }
