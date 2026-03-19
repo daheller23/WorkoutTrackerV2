@@ -140,42 +140,65 @@
                     </Grid>
                 </StackLayout>
 
+                <!-- Summary Stats Row -->
+                <Grid ColumnDefinitions="*,*,*" ColumnSpacing="12">
+                    <StackLayout BackgroundColor="#F0F7FF" Padding="12,16" Spacing="4">
+                        <Label Text="📊" FontSize="18" HorizontalOptions="Center"/>
+                        <Label Text="{Binding TotalSets}"
+                               FontSize="18" FontAttributes="Bold" TextColor="#1F77F0" HorizontalOptions="Center"/>
+                        <Label Text="sets" FontSize="9" TextColor="#1F77F0" HorizontalOptions="Center"/>
+                    </StackLayout>
+                    <StackLayout Grid.Column="1" BackgroundColor="#F1F8F1" Padding="12,16" Spacing="4">
+                        <Label Text="💪" FontSize="18" HorizontalOptions="Center"/>
+                        <Label Text="{Binding TotalReps}"
+                               FontSize="18" FontAttributes="Bold" TextColor="#4CAF50" HorizontalOptions="Center"/>
+                        <Label Text="reps" FontSize="9" TextColor="#4CAF50" HorizontalOptions="Center"/>
+                    </StackLayout>
+                    <StackLayout Grid.Column="2" BackgroundColor="#FFF8E1" Padding="12,16" Spacing="4">
+                        <Label Text="🏆" FontSize="18" HorizontalOptions="Center"/>
+                        <Label Text="{Binding MaxWeight, StringFormat='{0:F0}'}"
+                               FontSize="18" FontAttributes="Bold" TextColor="#FF9800" HorizontalOptions="Center"/>
+                        <Label Text="{Binding WeightUnitLabel, StringFormat='max {0}'}"
+                               FontSize="9" TextColor="#FF9800" HorizontalOptions="Center"/>
+                    </StackLayout>
+                </Grid>
+
                 <!-- Combined Chart -->
                 <StackLayout BackgroundColor="#FFFFFF" Padding="16" Spacing="12">
                     <Grid ColumnDefinitions="*,Auto">
                         <Label Grid.Column="0"
-                            Text="TOP EXERCISE PROGRESS"
-                            FontSize="11"
-                            FontAttributes="Bold"
-                            TextColor="#999999"
-                            CharacterSpacing="1"
-                            VerticalOptions="Center"/>
+                               Text="TOP EXERCISE PROGRESS"
+                               FontSize="11"
+                               FontAttributes="Bold"
+                               TextColor="#999999"
+                               CharacterSpacing="1"
+                               VerticalOptions="Center"/>
                         <Label Grid.Column="1"
-                           Text="{Binding TopExerciseName}"
-                           FontSize="11"
-                           FontAttributes="Bold"
-                           TextColor="#1F77F0"
-                           VerticalOptions="Center"/>
+                               Text="{Binding TopExerciseName}"
+                               FontSize="11"
+                               FontAttributes="Bold"
+                               TextColor="#1F77F0"
+                               VerticalOptions="Center"/>
                     </Grid>
                     <microcharts:ChartView Chart="{Binding CombinedChart}"
-                          HeightRequest="220"/>
+                                          HeightRequest="220"/>
                     <!-- Chart Legend -->
                     <FlexLayout Wrap="Wrap"
-                        JustifyContent="Start"
-                        AlignItems="Start"
-                        BindableLayout.ItemsSource="{Binding Exercises}">
+                                JustifyContent="Start"
+                                AlignItems="Start"
+                                BindableLayout.ItemsSource="{Binding Exercises}">
                         <BindableLayout.ItemTemplate>
                             <DataTemplate x:DataType="models:ExerciseProgress">
                                 <StackLayout Orientation="Horizontal" Spacing="6" Margin="0,4,16,0">
                                     <BoxView WidthRequest="12"
-                                        HeightRequest="12"
-                                        CornerRadius="2"
-                                        BackgroundColor="{Binding ChartColor}"
-                                        VerticalOptions="Center"/>
+                                             HeightRequest="12"
+                                             CornerRadius="2"
+                                             BackgroundColor="{Binding ChartColor}"
+                                             VerticalOptions="Center"/>
                                     <Label Text="{Binding ExerciseName}"
-                                        FontSize="11"
-                                        TextColor="#666666"
-                                        VerticalOptions="Center"/>
+                                           FontSize="11"
+                                           TextColor="#666666"
+                                           VerticalOptions="Center"/>
                                 </StackLayout>
                             </DataTemplate>
                         </BindableLayout.ItemTemplate>
@@ -203,8 +226,7 @@
                                     <Border.StrokeShape>
                                         <RoundRectangle CornerRadius="8"/>
                                     </Border.StrokeShape>
-                                    <Grid ColumnDefinitions="6,Auto,*,Auto,Auto"
-                                          ColumnSpacing="0">
+                                    <Grid ColumnDefinitions="6,Auto,*,Auto,Auto" ColumnSpacing="0">
                                         <Grid.GestureRecognizers>
                                             <TapGestureRecognizer
                                                 Command="{Binding Source={RelativeSource AncestorType={x:Type vm:MuscleGroupProgressViewModel}}, Path=SelectExerciseCommand}"
@@ -231,7 +253,7 @@
                                                    FontSize="11"
                                                    TextColor="#999999"/>
                                         </StackLayout>
-                                        <!-- Max Weight -->
+                                        <!-- Max Weight + Improvement -->
                                         <StackLayout Grid.Column="3" Spacing="2" HorizontalOptions="End"
                                                      VerticalOptions="Center" Padding="0,14,8,14">
                                             <Label Text="MAX" FontSize="9" TextColor="#999999"
@@ -241,6 +263,12 @@
                                                    TextColor="#1F77F0" HorizontalOptions="End"/>
                                             <Label Text="{Binding Source={RelativeSource AncestorType={x:Type vm:MuscleGroupProgressViewModel}}, Path=WeightUnitLabel}"
                                                    FontSize="10" TextColor="#999999" HorizontalOptions="End"/>
+                                            <Label Text="{Binding ImprovementLabel}"
+                                                   FontSize="10"
+                                                   FontAttributes="Bold"
+                                                   TextColor="#4CAF50"
+                                                   HorizontalOptions="End"
+                                                   IsVisible="{Binding HasImprovement}"/>
                                         </StackLayout>
                                         <!-- Arrow -->
                                         <Label Grid.Column="4"

@@ -28,6 +28,9 @@ namespace WorkoutTrackerV2.ViewModels
         [ObservableProperty] private int _selectedDays = 30;
         [ObservableProperty] private string _weightUnitLabel = "lbs";
         [ObservableProperty] private string _topExerciseName = string.Empty;
+        [ObservableProperty] private int _totalSets;
+        [ObservableProperty] private int _totalReps;
+        [ObservableProperty] private double _maxWeight;
         #endregion
 
         #region "PARTIAL METHODS"
@@ -68,15 +71,31 @@ namespace WorkoutTrackerV2.ViewModels
 
                 var progress = await analyticsService.GetProgressForMuscleGroupAsync(MuscleGroup, SelectedDays);
 
-                // Assign chart colors by index
+                // Assign chart colors and improvement delta by index
                 for (int i = 0; i < progress.Count; i++)
+                {
                     progress[i].ChartColor = ChartColors[i % ChartColors.Length];
+
+                    var diff = progress[i].LatestMaxWeight - progress[i].EarliestMaxWeight;
+                    if (diff != 0 && progress[i].EarliestMaxWeight > 0)
+                    {
+                        var sign = diff > 0 ? "↑" : "↓";
+                        progress[i].ImprovementLabel = $"{sign} {Math.Abs(diff):F0} {settingsService.WeightUnit}";
+                        progress[i].HasImprovement = true;
+                    }
+                }
 
                 // Set top exercise name for chart label
                 var top = progress.OrderByDescending(e => e.MaxWeight).FirstOrDefault();
                 TopExerciseName = top?.ExerciseName ?? string.Empty;
 
                 Exercises = new ObservableCollection<ExerciseProgress>(progress);
+
+                // Summary stats
+                TotalSets = progress.Sum(e => e.Sets.Count);
+                TotalReps = progress.Sum(e => e.TotalReps);
+                MaxWeight = progress.Count > 0 ? progress.Max(e => e.MaxWeight) : 0;
+
                 BuildCombinedChart();
             }
             catch (Exception ex)
@@ -111,7 +130,6 @@ namespace WorkoutTrackerV2.ViewModels
         {
             if (Exercises.Count == 0) return;
 
-            // Use the top exercise (highest max weight) as the primary trend line
             var topExercise = Exercises
                 .OrderByDescending(e => e.MaxWeight)
                 .FirstOrDefault();
