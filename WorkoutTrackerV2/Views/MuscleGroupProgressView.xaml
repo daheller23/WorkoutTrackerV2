@@ -203,6 +203,11 @@
                             </DataTemplate>
                         </BindableLayout.ItemTemplate>
                     </FlexLayout>
+                    <Label Text="Chart shows top exercise only"
+                           FontSize="10"
+                           TextColor="#C0C0C0"
+                           FontAttributes="Italic"
+                           HorizontalOptions="End"/>
                 </StackLayout>
 
                 <!-- Exercise List -->
@@ -214,10 +219,23 @@
                            CharacterSpacing="1"/>
                     <CollectionView ItemsSource="{Binding Exercises}" SelectionMode="None">
                         <CollectionView.EmptyView>
-                            <StackLayout Padding="20,40" Spacing="8" HorizontalOptions="Center">
+                            <StackLayout Padding="20,40" Spacing="12" HorizontalOptions="Center" VerticalOptions="Center">
                                 <Label Text="📊" FontSize="40" HorizontalOptions="Center"/>
                                 <Label Text="No data for this period"
-                                       FontSize="13" TextColor="#999999" HorizontalOptions="Center"/>
+                                       FontSize="14" FontAttributes="Bold" TextColor="#999999" HorizontalOptions="Center"/>
+                                <Label Text="Try selecting a longer time period"
+                                       FontSize="12" TextColor="#D0D0D0" HorizontalOptions="Center"/>
+                                <Button Text="View All Time"
+                                        Command="{Binding SetTimePeriodCommand}"
+                                        CommandParameter="0"
+                                        BackgroundColor="#1F77F0"
+                                        TextColor="#FFFFFF"
+                                        FontAttributes="Bold"
+                                        FontSize="13"
+                                        Padding="20,10"
+                                        CornerRadius="20"
+                                        BorderWidth="0"
+                                        HorizontalOptions="Center"/>
                             </StackLayout>
                         </CollectionView.EmptyView>
                         <CollectionView.ItemTemplate>
@@ -266,7 +284,7 @@
                                             <Label Text="{Binding ImprovementLabel}"
                                                    FontSize="10"
                                                    FontAttributes="Bold"
-                                                   TextColor="#4CAF50"
+                                                   TextColor="{Binding ImprovementColor}"
                                                    HorizontalOptions="End"
                                                    IsVisible="{Binding HasImprovement}"/>
                                         </StackLayout>

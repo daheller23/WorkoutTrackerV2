@@ -81,6 +81,7 @@ namespace WorkoutTrackerV2.ViewModels
                     {
                         var sign = diff > 0 ? "↑" : "↓";
                         progress[i].ImprovementLabel = $"{sign} {Math.Abs(diff):F0} {settingsService.WeightUnit}";
+                        progress[i].ImprovementColor = diff > 0 ? "#4CAF50" : "#FF6B6B";
                         progress[i].HasImprovement = true;
                     }
                 }
