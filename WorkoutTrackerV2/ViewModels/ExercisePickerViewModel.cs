@@ -78,11 +78,13 @@ namespace WorkoutTrackerV2.ViewModels
                     e.Name.Contains(SearchText, StringComparison.OrdinalIgnoreCase) ||
                     e.MuscleGroup.Contains(SearchText, StringComparison.OrdinalIgnoreCase));
 
-            // Sort recent to top when showing All with no search
+            // Sort recent to top when showing All with no search, otherwise alphabetical
             if (SelectedMuscleGroup == "All" && string.IsNullOrWhiteSpace(SearchText))
                 filtered = filtered
                     .OrderByDescending(e => _recentExerciseIds.Contains(e.Id))
                     .ThenBy(e => e.Name);
+            else
+                filtered = filtered.OrderBy(e => e.Name);
 
             var result = filtered.ToList();
 
@@ -150,17 +152,26 @@ namespace WorkoutTrackerV2.ViewModels
         [RelayCommand]
         private async Task DeleteExercise(Exercise exercise)
         {
-            if (!exercise.IsCustom) return;
-
-            bool confirmed = await Shell.Current.DisplayAlertAsync(
-                "Delete Exercise",
-                $"Are you sure you want to delete '{exercise.Name}'? This cannot be undone.",
-                "Yes", "No");
-
-            if (!confirmed) return;
-
             try
             {
+                var history = await workoutService.GetExerciseHistoryAsync(exercise.Id, 0);
+                if (history.Count > 0)
+                {
+                    bool proceed = await Shell.Current.DisplayAlertAsync(
+                        "Exercise In Use",
+                        $"'{exercise.Name}' has been used in {history.Count} sets across your workout history. Deleting it will not remove those sets but they will lose their exercise reference. Continue?",
+                        "Delete Anyway", "Cancel");
+                    if (!proceed) return;
+                }
+                else
+                {
+                    bool confirmed = await Shell.Current.DisplayAlertAsync(
+                        "Delete Exercise",
+                        $"Are you sure you want to delete '{exercise.Name}'? This cannot be undone.",
+                        "Yes", "No");
+                    if (!confirmed) return;
+                }
+
                 await workoutService.DeleteExerciseAsync(exercise.Id);
                 _allExercises.Remove(exercise);
                 FilterExercises();
