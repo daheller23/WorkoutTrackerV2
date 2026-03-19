@@ -6,8 +6,15 @@ using WorkoutTrackerV2.Services;
 
 namespace WorkoutTrackerV2.ViewModels
 {
-    public partial class AnalyticsViewModel(IWorkoutService workoutService, IAnalyticsService analyticsService) : BaseViewModel
+    public partial class AnalyticsViewModel(
+        IWorkoutService workoutService,
+        IAnalyticsService analyticsService,
+        ISettingsService settingsService) : BaseViewModel
     {
+        #region "PRIVATE VARIABLES"
+        private bool _insightGenerated = false;
+        #endregion
+
         #region "OBSERVABLE PROPERTIES"
         [ObservableProperty] private List<DailyStats> _dailyStats = [];
         [ObservableProperty] private ObservableCollection<ExerciseProgress> _topExercises = [];
@@ -28,10 +35,16 @@ namespace WorkoutTrackerV2.ViewModels
         [ObservableProperty] private string _bestWeekLabel = string.Empty;
         [ObservableProperty] private double _bestWeekVolume;
         [ObservableProperty] private string _bestWeekMuscleGroups = string.Empty;
+        [ObservableProperty] private string _weightUnitLabel = "lbs";
         #endregion
 
         #region "PARTIAL METHODS"
-        partial void OnSelectedDaysChanged(int value) => LoadAnalyticsCommand.Execute(null);
+        partial void OnSelectedDaysChanged(int value)
+        {
+            _insightGenerated = false;
+            LoadAnalyticsCommand.Execute(null);
+        }
+
         partial void OnHeatmapMonthChanged(DateTime value)
         {
             HeatmapTitle = value.ToString("MMMM yyyy");
@@ -86,6 +99,8 @@ namespace WorkoutTrackerV2.ViewModels
             try
             {
                 IsLoading = true;
+
+                WeightUnitLabel = settingsService.WeightUnit;
 
                 var statsTask = analyticsService.GetDailyStatsAsync(SelectedDays);
                 var strengthTask = analyticsService.GetStrengthProgressAsync(SelectedDays);
@@ -146,10 +161,13 @@ namespace WorkoutTrackerV2.ViewModels
         #region "GENERATE INSIGHT"
         private void GenerateInsight()
         {
+            if (_insightGenerated) return;
+
             if (DailyStats.Count == 0)
             {
                 InsightEmoji = "🚀";
                 InsightMessage = "Start logging workouts to see your personalized insights here!";
+                _insightGenerated = true;
                 return;
             }
 
@@ -219,6 +237,8 @@ namespace WorkoutTrackerV2.ViewModels
                 InsightEmoji = "💡";
                 InsightMessage = "Consistency matters more than perfection. Every workout counts!";
             }
+
+            _insightGenerated = true;
         }
         #endregion
 
@@ -248,7 +268,6 @@ namespace WorkoutTrackerV2.ViewModels
                 BestWeekVolume = bestWeek.Volume;
                 BestWeekLabel = $"Week of {bestWeek.WeekStart:MMM d} — {bestWeek.Workouts} {(bestWeek.Workouts == 1 ? "workout" : "workouts")}";
 
-                // Find muscle groups trained that week
                 var weekEnd = bestWeek.WeekStart.AddDays(7);
                 var muscleGroups = MuscleGroupProgress
                     .Where(m => m.Exercises.Any(e => e.Sets

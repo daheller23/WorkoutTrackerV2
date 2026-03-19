@@ -136,7 +136,7 @@
                         <StackLayout Grid.Row="0" Grid.Column="0" BackgroundColor="#1F77F0" Padding="16,16,16,12" Spacing="4">
                             <Label Text="VOLUME" FontSize="10" TextColor="#FFFFFF" FontAttributes="Bold" CharacterSpacing="1" Opacity="0.8"/>
                             <Label Text="{Binding TotalVolumeLifted, StringFormat='{0:F0}'}" FontSize="28" FontAttributes="Bold" TextColor="#FFFFFF"/>
-                            <Label Text="total lbs lifted" FontSize="10" TextColor="#FFFFFF" Opacity="0.8"/>
+                            <Label Text="{Binding WeightUnitLabel, StringFormat='total {0} lifted'}" FontSize="10" TextColor="#FFFFFF" Opacity="0.8"/>
                             <controls:SparklineView Data="{Binding VolumeSparkline}" LineColor="#FFFFFF" BackgroundColorHex="#1F77F0" HeightRequest="44" Margin="0,4,0,0"/>
                         </StackLayout>
                         <StackLayout Grid.Row="0" Grid.Column="1" BackgroundColor="#4CAF50" Padding="16,16,16,12" Spacing="4">
@@ -171,9 +171,14 @@
                            FontSize="14"
                            FontAttributes="Bold"
                            TextColor="#1F77F0"/>
-                    <Label Text="{Binding BestWeekVolume, StringFormat='{0:F0} lbs total volume'}"
-                           FontSize="12"
-                           TextColor="#999999"/>
+                    <StackLayout Orientation="Horizontal" Spacing="4">
+                        <Label Text="{Binding BestWeekVolume, StringFormat='{0:F0}'}"
+                               FontSize="12"
+                               TextColor="#999999"/>
+                        <Label Text="{Binding WeightUnitLabel, StringFormat='total {0} volume'}"
+                               FontSize="12"
+                               TextColor="#999999"/>
+                    </StackLayout>
                     <Label Text="{Binding BestWeekMuscleGroups}"
                            FontSize="11"
                            TextColor="#999999"
@@ -313,14 +318,19 @@
                                                FontSize="14"
                                                FontAttributes="Bold"
                                                TextColor="#000000"/>
-                                        <Label FontSize="11" TextColor="#999999">
-                                            <Label.Text>
-                                                <MultiBinding StringFormat="{}{0} exercises · Max {1:F0} lbs">
-                                                    <Binding Path="Exercises.Count"/>
-                                                    <Binding Path="LatestMaxWeight"/>
-                                                </MultiBinding>
-                                            </Label.Text>
-                                        </Label>
+                                        <StackLayout Orientation="Horizontal" Spacing="4">
+                                            <Label FontSize="11" TextColor="#999999">
+                                                <Label.Text>
+                                                    <MultiBinding StringFormat="{}{0} exercises · Max {1:F0}">
+                                                        <Binding Path="Exercises.Count"/>
+                                                        <Binding Path="LatestMaxWeight"/>
+                                                    </MultiBinding>
+                                                </Label.Text>
+                                            </Label>
+                                            <Label Text="{Binding Source={RelativeSource AncestorType={x:Type vm:AnalyticsViewModel}}, Path=WeightUnitLabel}"
+                                                   FontSize="11"
+                                                   TextColor="#999999"/>
+                                        </StackLayout>
                                     </StackLayout>
                                     <Label Grid.Column="2"
                                            Text="→"
