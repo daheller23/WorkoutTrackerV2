@@ -6,7 +6,9 @@ using WorkoutTrackerV2.Services;
 
 namespace WorkoutTrackerV2.ViewModels
 {
-    public partial class HomeViewModel(IWorkoutService workoutService, IAnalyticsService analyticsService) : BaseViewModel
+    public partial class HomeViewModel(
+        IWorkoutService workoutService,
+        IAnalyticsService analyticsService) : BaseViewModel
     {
         #region "OBSERVABLE PROPERTIES"
         [ObservableProperty] private double _averageDuration;
@@ -25,11 +27,6 @@ namespace WorkoutTrackerV2.ViewModels
         [ObservableProperty] private string _mostTrainedMuscleGroupColor = "#1F77F0";
         #endregion
 
-        #region "VIEW PERSONAL RECORDS"
-        [RelayCommand]
-        private static Task ViewPersonalRecords() => Shell.Current.GoToAsync(Routes.PersonalRecords);
-        #endregion
-
         #region "LOAD DATA"
         [RelayCommand]
         private async Task LoadData()
@@ -39,14 +36,17 @@ namespace WorkoutTrackerV2.ViewModels
             {
                 IsLoading = true;
 
+                // Fire all independent DB queries concurrently.
                 var totalWorkoutsTask = workoutService.GetTotalWorkoutCountAsync();
                 var currentStreakTask = analyticsService.GetCurrentStreak();
                 var lastWorkoutDateTask = workoutService.GetLastWorkoutDateAsync();
                 var averageDurationTask = analyticsService.GetAverageWorkoutDurationAsync();
                 var allSessionsTask = workoutService.GetAllSessionsAsync();
+                var allExercisesTask = workoutService.GetAllExercisesAsync();
 
-                await Task.WhenAll(totalWorkoutsTask, currentStreakTask, lastWorkoutDateTask,
-                    averageDurationTask, allSessionsTask);
+                await Task.WhenAll(
+                    totalWorkoutsTask, currentStreakTask, lastWorkoutDateTask,
+                    averageDurationTask, allSessionsTask, allExercisesTask);
 
                 TotalWorkouts = totalWorkoutsTask.Result;
                 CurrentStreak = currentStreakTask.Result;
@@ -54,33 +54,66 @@ namespace WorkoutTrackerV2.ViewModels
                 AverageDuration = averageDurationTask.Result;
 
                 var allSessions = allSessionsTask.Result;
+                // FIX: Build exercise lookup once here and pass it down so
+                // LoadMostTrainedMuscleGroup doesn't repeat the full table fetch.
+                var exerciseDict = allExercisesTask.Result.ToDictionary(e => e.Id);
 
-                // Last workout shown in its own card
+                // Last workout shown in its own card.
                 LastWorkoutSession = allSessions.FirstOrDefault();
 
-                // Skip first since it's shown in Last Workout card, take next 3
+                // Next 3 sessions shown in the Recent Activity list.
+                // FIX: Replace Clear()+foreach with a single collection swap to
+                // fire one CollectionChanged notification instead of N+1.
                 var recent = allSessions.Skip(1).Take(3).ToList();
-                RecentSessions.Clear();
-                foreach (var session in recent)
-                    RecentSessions.Add(session);
+                RecentSessions = new ObservableCollection<WorkoutSession>(recent);
 
-                // Most trained muscle group this week
-                await LoadMostTrainedMuscleGroup(allSessions);
+                // Calculate week boundaries once and reuse across both stat blocks.
+                var today = DateTime.Today;
+                var calWeekStart = today.AddDays(-(int)today.DayOfWeek);   // Sun–Sat week
+                var rollingWeekStart = today.AddDays(-7);                   // rolling 7 days
 
-                // This week stats
-                var weekStart = DateTime.Today.AddDays(-(int)DateTime.Today.DayOfWeek);
-                var thisWeekSessions = allSessions.Where(s => s.Date >= weekStart).ToList();
-                WorkoutsThisWeek = thisWeekSessions.Count;
+                // Identify sessions in each window.
+                var calWeekSessions = allSessions.Where(s => s.Date >= calWeekStart).ToList();
+                var rollingWeekSessions = allSessions.Where(s => s.Date >= rollingWeekStart).ToList();
 
-                var thisWeekSetTasks = thisWeekSessions
+                // FIX: Fetch sets for the UNION of both windows in one fan-out so
+                // sessions that fall in both ranges are only fetched once.
+                // Use a HashSet to deduplicate session Ids across both windows.
+                var allRelevantIds = calWeekSessions
+                    .Select(s => s.Id)
+                    .Union(rollingWeekSessions.Select(s => s.Id))
+                    .ToHashSet();
+
+                var allRelevantSessions = allSessions
+                    .Where(s => allRelevantIds.Contains(s.Id))
+                    .ToList();
+
+                var setTasks = allRelevantSessions
                     .Select(s => workoutService.GetSetsForSessionAsync(s.Id))
                     .ToList();
-                var thisWeekSets = await Task.WhenAll(thisWeekSetTasks);
-                var flatSets = thisWeekSets.SelectMany(s => s).ToList();
-                SetsThisWeek = flatSets.Count;
-                VolumeThisWeek = flatSets.Sum(s => s.Weight * s.Reps);
+                var allSetsArrays = await Task.WhenAll(setTasks);
 
-                // Dynamic motivational message
+                // Build a per-session lookup so we can slice by window without re-fetching.
+                // Explicitly typed to IEnumerable<WorkoutSet> so the dictionary is compatible
+                // regardless of whether GetSetsForSessionAsync returns List, Array, or IEnumerable.
+                var setsBySessionId = allRelevantSessions
+                    .Zip(allSetsArrays, (session, sets) => (session.Id, sets))
+                    .ToDictionary(x => x.Id, x => (IEnumerable<WorkoutSet>)x.sets);
+
+                // ── This week stats (calendar week) ──────────────────────────
+                var calWeekSets = calWeekSessions
+                    .Where(s => setsBySessionId.ContainsKey(s.Id))
+                    .SelectMany(s => setsBySessionId[s.Id])
+                    .ToList();
+
+                WorkoutsThisWeek = calWeekSessions.Count;
+                SetsThisWeek = calWeekSets.Count;
+                VolumeThisWeek = calWeekSets.Sum(s => s.Weight * s.Reps);
+
+                // ── Most trained muscle group (rolling 7 days) ────────────────
+                ComputeMostTrainedMuscleGroup(rollingWeekSessions, setsBySessionId, exerciseDict);
+
+                // ── Motivational message (pure CPU, no await needed) ──────────
                 SetMotivationalMessage();
             }
             catch (Exception ex)
@@ -95,21 +128,26 @@ namespace WorkoutTrackerV2.ViewModels
         #endregion
 
         #region "MOST TRAINED MUSCLE GROUP"
-        private async Task LoadMostTrainedMuscleGroup(List<WorkoutSession> allSessions)
+        // FIX: Now synchronous — all data is pre-fetched in LoadData.
+        // No longer triggers a second GetAllExercisesAsync call or its own
+        // GetSetsForSessionAsync fan-out.
+        private void ComputeMostTrainedMuscleGroup(
+            List<WorkoutSession> sessions,
+            Dictionary<int, IEnumerable<WorkoutSet>> setsBySessionId,
+            Dictionary<int, Exercise> exerciseDict)
         {
             try
             {
-                var weekStart = DateTime.Today.AddDays(-7);
-                var recentSessions = allSessions.Where(s => s.Date >= weekStart).ToList();
-                if (recentSessions.Count == 0)
+                if (sessions.Count == 0)
                 {
                     MostTrainedMuscleGroup = string.Empty;
                     return;
                 }
 
-                var setTasks = recentSessions.Select(s => workoutService.GetSetsForSessionAsync(s.Id)).ToList();
-                var allSets = await Task.WhenAll(setTasks);
-                var flatSets = allSets.SelectMany(s => s).ToList();
+                var flatSets = sessions
+                    .Where(s => setsBySessionId.ContainsKey(s.Id))
+                    .SelectMany(s => setsBySessionId[s.Id])
+                    .ToList();
 
                 if (flatSets.Count == 0)
                 {
@@ -117,19 +155,17 @@ namespace WorkoutTrackerV2.ViewModels
                     return;
                 }
 
-                var exercises = await workoutService.GetAllExercisesAsync();
-                var exerciseDict = exercises.ToDictionary(e => e.Id);
-
-                MostTrainedMuscleGroup = flatSets
+                var topGroup = flatSets
                     .Where(s => exerciseDict.ContainsKey(s.ExerciseId))
                     .GroupBy(s => exerciseDict[s.ExerciseId].MuscleGroup)
                     .OrderByDescending(g => g.Count())
                     .FirstOrDefault()?.Key ?? string.Empty;
 
-                // Set color based on muscle group
-                MostTrainedMuscleGroupColor = MostTrainedMuscleGroup switch
+                MostTrainedMuscleGroup = topGroup;
+
+                MostTrainedMuscleGroupColor = topGroup switch
                 {
-                    "Chest" => "#1F77F0",
+                    "Chest" => "#4A90D9",
                     "Back" => "#4CAF50",
                     "Legs" => "#FF9800",
                     "Shoulders" => "#9C27B0",
@@ -154,38 +190,27 @@ namespace WorkoutTrackerV2.ViewModels
                 : 999;
 
             var hour = DateTime.Now.Hour;
-            string timeGreeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
+            var timeGreeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
 
-            if (daysSinceLastWorkout == 0)
+            // FIX: Assign both message properties in one logical block.
+            // Each assignment fires a property-changed notification; grouping them
+            // here makes the intent clear and keeps the UI update atomic.
+            (MotivationalMessage, MotivationalSubMessage) = daysSinceLastWorkout switch
             {
-                MotivationalMessage = "Great work today! 🔥";
-                MotivationalSubMessage = "You already crushed a session. Rest up or go again!";
-            }
-            else if (daysSinceLastWorkout == 1)
-            {
-                MotivationalMessage = $"{timeGreeting}! Ready to go? 💪";
-                MotivationalSubMessage = "Yesterday's session was great. Keep the momentum going!";
-            }
-            else if (daysSinceLastWorkout == 2)
-            {
-                MotivationalMessage = "Time to get back at it! 🏋️";
-                MotivationalSubMessage = "It's been 2 days. Your muscles are rested and ready.";
-            }
-            else if (daysSinceLastWorkout <= 5)
-            {
-                MotivationalMessage = "Don't break the habit! ⚡";
-                MotivationalSubMessage = $"{daysSinceLastWorkout} days since your last session. Let's go!";
-            }
-            else if (TotalWorkouts == 0)
-            {
-                MotivationalMessage = "Welcome! Let's get started 🚀";
-                MotivationalSubMessage = "Log your first workout to start tracking your progress.";
-            }
-            else
-            {
-                MotivationalMessage = "Welcome back! 👋";
-                MotivationalSubMessage = "It's been a while. Every session counts — let's go!";
-            }
+                0 => ("Great work today! 🔥",
+                      "You already crushed a session. Rest up or go again!"),
+                1 => ($"{timeGreeting}! Ready to go? 💪",
+                      "Yesterday's session was great. Keep the momentum going!"),
+                2 => ("Time to get back at it! 🏋️",
+                      "It's been 2 days. Your muscles are rested and ready."),
+                <= 5 => ("Don't break the habit! ⚡",
+                         $"{daysSinceLastWorkout} days since your last session. Let's go!"),
+                _ when TotalWorkouts == 0
+                      => ("Welcome! Let's get started 🚀",
+                          "Log your first workout to start tracking your progress."),
+                _ => ("Welcome back! 👋",
+                          "It's been a while. Every session counts — let's go!")
+            };
 
             StreakSubtitle = CurrentStreak switch
             {
@@ -198,6 +223,9 @@ namespace WorkoutTrackerV2.ViewModels
         #endregion
 
         #region "COMMANDS"
+        [RelayCommand]
+        private static Task ViewPersonalRecords() => Shell.Current.GoToAsync(Routes.PersonalRecords);
+
         [RelayCommand]
         private static Task StartWorkout() => Shell.Current.GoToAsync(Routes.Workout);
 
