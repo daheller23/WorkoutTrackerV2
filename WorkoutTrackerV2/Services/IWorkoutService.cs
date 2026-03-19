@@ -27,5 +27,7 @@ namespace WorkoutTrackerV2.Services
         Task ClearAllDataAsync();
         Task<WorkoutSession?> GetSessionAsync(int id);
         Task<int> SaveExerciseAsync(Exercise exercise);
+        Task DeleteExerciseAsync(int id);
+        Task<List<int>> GetRecentExerciseIdsAsync(int days);
     }
 }

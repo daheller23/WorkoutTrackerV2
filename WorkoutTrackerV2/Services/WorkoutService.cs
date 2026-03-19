@@ -1,5 +1,4 @@
-﻿
-using SQLite;
+﻿using SQLite;
 using WorkoutTrackerV2.Models;
 
 namespace WorkoutTrackerV2.Services
@@ -8,7 +7,7 @@ namespace WorkoutTrackerV2.Services
     {
         #region "PRIVATE VARIABLES"
         private readonly string _dbPath;
-        private readonly SemaphoreSlim _initLock = new(1, 1); // To avoid race condition if InitializeAsync is called from multiple threads simultaneuously
+        private readonly SemaphoreSlim _initLock = new(1, 1);
         private SQLiteAsyncConnection _database = null!;
         private const string DbFileName = "workout_tracker.db3";
         private bool _initialized = false;
@@ -23,18 +22,12 @@ namespace WorkoutTrackerV2.Services
         #region "INITIALIZE ASYNC"
         public async Task InitializeAsync()
         {
-            if (_initialized)
-            {
-                return;
-            }
+            if (_initialized) return;
 
             await _initLock.WaitAsync();
             try
             {
-                if (_initialized)
-                {
-                    return;
-                }
+                if (_initialized) return;
 
                 _database = new SQLiteAsyncConnection(_dbPath);
                 await _database.CreateTableAsync<Exercise>();
@@ -45,9 +38,8 @@ namespace WorkoutTrackerV2.Services
 
                 int exerciseCount = await _database.Table<Exercise>().CountAsync();
                 if (exerciseCount == 0)
-                {
                     await SeedDefaultExercises();
-                }              
+
                 _initialized = true;
             }
             finally
@@ -151,7 +143,7 @@ namespace WorkoutTrackerV2.Services
         }
         #endregion
 
-        #region "DELETE SESSION ASYNC WITH WORKOUT SESSION"
+        #region "DELETE SESSION ASYNC"
         public async Task<int> DeleteSessionAsync(WorkoutSession session)
         {
             await InitializeAsync();
@@ -159,11 +151,20 @@ namespace WorkoutTrackerV2.Services
         }
         #endregion
 
-        #region "DELETE SET ASYNC WITH WORKOUT SET"
+        #region "DELETE SET ASYNC"
         public async Task<int> DeleteSetAsync(WorkoutSet set)
         {
             await InitializeAsync();
             return await _database.DeleteAsync(set);
+        }
+        #endregion
+
+        #region "DELETE EXERCISE ASYNC"
+        public async Task DeleteExerciseAsync(int id)
+        {
+            await InitializeAsync();
+            await _database.DeleteAsync<Exercise>(id);
+            _exerciseCache = null;
         }
         #endregion
 
@@ -176,7 +177,7 @@ namespace WorkoutTrackerV2.Services
         }
         #endregion
 
-        #region "GET ALL SESSION ASYNC"
+        #region "GET ALL SESSIONS ASYNC"
         public async Task<List<WorkoutSession>> GetAllSessionsAsync()
         {
             await InitializeAsync();
@@ -201,6 +202,18 @@ namespace WorkoutTrackerV2.Services
                 .Where(x => x.ExerciseId == exerciseId && x.CreatedDate >= startDate)
                 .OrderBy(x => x.CreatedDate)
                 .ToListAsync();
+        }
+        #endregion
+
+        #region "GET RECENT EXERCISE IDS ASYNC"
+        public async Task<List<int>> GetRecentExerciseIdsAsync(int days)
+        {
+            await InitializeAsync();
+            var startDate = DateTime.Now.AddDays(-days);
+            var sets = await _database.Table<WorkoutSet>()
+                .Where(s => s.CreatedDate >= startDate)
+                .ToListAsync();
+            return sets.Select(s => s.ExerciseId).Distinct().ToList();
         }
         #endregion
 
@@ -245,6 +258,32 @@ namespace WorkoutTrackerV2.Services
         }
         #endregion
 
+        #region "GET SESSION ASYNC"
+        public async Task<WorkoutSession?> GetSessionAsync(int id)
+        {
+            await InitializeAsync();
+            return await _database.Table<WorkoutSession>()
+                .Where(s => s.Id == id)
+                .FirstOrDefaultAsync();
+        }
+        #endregion
+
+        #region "SAVE EXERCISE ASYNC"
+        public async Task<int> SaveExerciseAsync(Exercise exercise)
+        {
+            await InitializeAsync();
+            if (exercise.Id == 0)
+            {
+                var result = await _database.InsertAsync(exercise);
+                _exerciseCache = null;
+                return result;
+            }
+            var updateResult = await _database.UpdateAsync(exercise);
+            _exerciseCache = null;
+            return updateResult;
+        }
+        #endregion
+
         #region "SAVE SESSION ASYNC"
         public async Task<int> SaveSessionAsync(WorkoutSession session)
         {
@@ -264,9 +303,7 @@ namespace WorkoutTrackerV2.Services
         {
             await InitializeAsync();
             if (set.Id == 0)
-            {
                 return await _database.InsertAsync(set);
-            }
             return await _database.UpdateAsync(set);
         }
         #endregion
@@ -309,9 +346,7 @@ namespace WorkoutTrackerV2.Services
         {
             await InitializeAsync();
             if (set.Id == 0)
-            {
                 return await _database.InsertAsync(set);
-            }            
             return await _database.UpdateAsync(set);
         }
         #endregion
@@ -337,32 +372,6 @@ namespace WorkoutTrackerV2.Services
             await _database.DeleteAllAsync<WorkoutSession>();
             await _database.DeleteAllAsync<WorkoutTemplate>();
             await _database.DeleteAllAsync<WorkoutTemplateSet>();
-        }
-        #endregion
-
-        #region "GET SESSION ASYNC"
-        public async Task<WorkoutSession?> GetSessionAsync(int id)
-        {
-            await InitializeAsync();
-            return await _database.Table<WorkoutSession>()
-                .Where(s => s.Id == id)
-                .FirstOrDefaultAsync();
-        }
-        #endregion
-
-        #region "SAVE EXERCISE ASYNC"
-        public async Task<int> SaveExerciseAsync(Exercise exercise)
-        {
-            await InitializeAsync();
-            if (exercise.Id == 0)
-            {
-                var result = await _database.InsertAsync(exercise);
-                _exerciseCache = null; // Invalidate cache
-                return result;
-            }
-            var updateResult = await _database.UpdateAsync(exercise);
-            _exerciseCache = null; // Invalidate cache
-            return updateResult;
         }
         #endregion
     }

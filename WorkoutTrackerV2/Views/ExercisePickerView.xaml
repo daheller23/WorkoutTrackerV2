@@ -104,6 +104,28 @@
                     <Label Text="All" FontSize="12" FontAttributes="Bold"
                            TextColor="{Binding SelectedMuscleGroup, Converter={StaticResource MuscleGroupFilterTextColorConverter}, ConverterParameter=All}"/>
                 </Border>
+                <Border BackgroundColor="{Binding SelectedMuscleGroup, Converter={StaticResource MuscleGroupFilterColorConverter}, ConverterParameter=Recent}"
+                        StrokeThickness="0" Padding="14,6">
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="14"/>
+                    </Border.StrokeShape>
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Command="{Binding FilterByMuscleGroupCommand}" CommandParameter="Recent"/>
+                    </Border.GestureRecognizers>
+                    <Label Text="🕐 Recent" FontSize="12" FontAttributes="Bold"
+                           TextColor="{Binding SelectedMuscleGroup, Converter={StaticResource MuscleGroupFilterTextColorConverter}, ConverterParameter=Recent}"/>
+                </Border>
+                <Border BackgroundColor="{Binding SelectedMuscleGroup, Converter={StaticResource MuscleGroupFilterColorConverter}, ConverterParameter=Custom}"
+                        StrokeThickness="0" Padding="14,6">
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="14"/>
+                    </Border.StrokeShape>
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Command="{Binding FilterByMuscleGroupCommand}" CommandParameter="Custom"/>
+                    </Border.GestureRecognizers>
+                    <Label Text="⭐ Custom" FontSize="12" FontAttributes="Bold"
+                           TextColor="{Binding SelectedMuscleGroup, Converter={StaticResource MuscleGroupFilterTextColorConverter}, ConverterParameter=Custom}"/>
+                </Border>
                 <Border BackgroundColor="{Binding SelectedMuscleGroup, Converter={StaticResource MuscleGroupFilterColorConverter}, ConverterParameter=Chest}"
                         StrokeThickness="0" Padding="14,6">
                     <Border.StrokeShape>
@@ -199,7 +221,7 @@
             </CollectionView.EmptyView>
             <CollectionView.ItemTemplate>
                 <DataTemplate x:DataType="models:Exercise">
-                    <Grid ColumnDefinitions="6,*,Auto"
+                    <Grid ColumnDefinitions="6,*,Auto,Auto"
                           BackgroundColor="#FFFFFF"
                           Margin="20,0,20,8"
                           ColumnSpacing="0">
@@ -208,10 +230,12 @@
                                 Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ExercisePickerViewModel}}, Path=SelectExerciseCommand}"
                                 CommandParameter="{Binding .}"/>
                         </Grid.GestureRecognizers>
+                        <!-- Muscle Group Color Bar -->
                         <BoxView Grid.Column="0"
                                  BackgroundColor="{Binding MuscleGroup, Converter={StaticResource MuscleGroupColorConverter}}"
                                  HorizontalOptions="Fill"
                                  VerticalOptions="Fill"/>
+                        <!-- Exercise Info -->
                         <StackLayout Grid.Column="1" Spacing="3" Padding="14,14,8,14" VerticalOptions="Center">
                             <Label Text="{Binding Name}"
                                    FontSize="14"
@@ -225,9 +249,27 @@
                                        TextColor="{Binding MuscleGroup, Converter={StaticResource MuscleGroupColorConverter}}"
                                        FontAttributes="Bold"
                                        VerticalOptions="Center"/>
+                                <Label Text="⭐ Custom"
+                                       FontSize="10"
+                                       TextColor="#999999"
+                                       VerticalOptions="Center"
+                                       IsVisible="{Binding IsCustom}"/>
                             </StackLayout>
                         </StackLayout>
-                        <Label Grid.Column="2"
+                        <!-- Delete button for custom exercises -->
+                        <Button Grid.Column="2"
+                                Text="🗑"
+                                Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ExercisePickerViewModel}}, Path=DeleteExerciseCommand}"
+                                CommandParameter="{Binding .}"
+                                BackgroundColor="Transparent"
+                                TextColor="#FF6B6B"
+                                FontSize="16"
+                                Padding="8"
+                                BorderWidth="0"
+                                IsVisible="{Binding IsCustom}"
+                                VerticalOptions="Center"/>
+                        <!-- Add button -->
+                        <Label Grid.Column="3"
                                Text="+"
                                FontSize="22"
                                FontAttributes="Bold"

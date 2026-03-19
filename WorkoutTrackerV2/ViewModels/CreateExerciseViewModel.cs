@@ -77,7 +77,8 @@ namespace WorkoutTrackerV2.ViewModels
                 {
                     Name = ExerciseName.Trim(),
                     MuscleGroup = SelectedMuscleGroup,
-                    CreatedDate = DateTime.Now
+                    CreatedDate = DateTime.Now,
+                    IsCustom = true
                 };
 
                 await workoutService.SaveExerciseAsync(exercise);
