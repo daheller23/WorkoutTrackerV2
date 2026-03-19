@@ -160,5 +160,12 @@ namespace WorkoutTrackerV2.ViewModels
             });
         }
         #endregion
+
+        [RelayCommand]
+        private void ResetFilter()
+        {
+            SelectedMuscleGroup = "All";
+            SearchText = string.Empty;
+        }
     }
 }
