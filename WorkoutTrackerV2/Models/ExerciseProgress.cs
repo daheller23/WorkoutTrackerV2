@@ -13,6 +13,7 @@
         public double EarliestMaxWeight { get; set; }
         public double LatestMaxWeight { get; set; }
         public bool IsTrending => LatestMaxWeight >= EarliestMaxWeight;
+        public string ChartColor { get; set; } = "#1F77F0";
     }
 
     public class ProgressPoint

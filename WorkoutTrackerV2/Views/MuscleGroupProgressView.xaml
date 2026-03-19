@@ -13,32 +13,40 @@
         <converters:BoolToTrendConverter x:Key="BoolToTrendConverter"/>
         <converters:DaysToColorConverter x:Key="DaysToColorConverter"/>
         <converters:DaysToTextColorConverter x:Key="DaysToTextColorConverter"/>
+        <converters:MuscleGroupColorConverter x:Key="MuscleGroupColorConverter"/>
     </ContentPage.Resources>
 
+    <Shell.NavBarIsVisible>False</Shell.NavBarIsVisible>
     <Shell.BackButtonBehavior>
         <BackButtonBehavior IsVisible="False" IsEnabled="False"/>
     </Shell.BackButtonBehavior>
 
     <Grid RowDefinitions="Auto,*" RowSpacing="0">
 
-        <!-- Header -->
-        <StackLayout Grid.Row="0" BackgroundColor="#FFFFFF" Padding="24,16,24,24" Spacing="4">
-            <Button Text="← Back"
-                    Command="{Binding GoBackCommand}"
-                    BackgroundColor="Transparent"
-                    TextColor="#1F77F0"
-                    FontSize="14"
-                    Padding="0"
-                    HorizontalOptions="Start"/>
-            <Label Text="{Binding MuscleGroup}"
-                   FontSize="32"
-                   FontAttributes="Bold"
-                   TextColor="#1F77F0"
-                   CharacterSpacing="0.5"/>
-            <Label Text="Strength progress over time"
-                   FontSize="13"
-                   TextColor="#999999"/>
-        </StackLayout>
+        <!-- Header with muscle group color accent -->
+        <Grid Grid.Row="0" ColumnDefinitions="8,*" ColumnSpacing="0" BackgroundColor="#FFFFFF">
+            <BoxView Grid.Column="0"
+                     BackgroundColor="{Binding MuscleGroup, Converter={StaticResource MuscleGroupColorConverter}}"
+                     HorizontalOptions="Fill"
+                     VerticalOptions="Fill"/>
+            <StackLayout Grid.Column="1" Padding="20,16,24,24" Spacing="4">
+                <Button Text="← Back"
+                        Command="{Binding GoBackCommand}"
+                        BackgroundColor="Transparent"
+                        TextColor="#1F77F0"
+                        FontSize="14"
+                        Padding="0"
+                        HorizontalOptions="Start"/>
+                <Label Text="{Binding MuscleGroup}"
+                       FontSize="32"
+                       FontAttributes="Bold"
+                       TextColor="{Binding MuscleGroup, Converter={StaticResource MuscleGroupColorConverter}}"
+                       CharacterSpacing="0.5"/>
+                <Label Text="Strength progress over time"
+                       FontSize="13"
+                       TextColor="#999999"/>
+            </StackLayout>
+        </Grid>
 
         <ScrollView Grid.Row="1">
             <StackLayout Padding="20,24" Spacing="20">
@@ -50,8 +58,21 @@
                            FontAttributes="Bold"
                            TextColor="#999999"
                            CharacterSpacing="1"/>
-                    <Grid ColumnDefinitions="*,*,*,*,*" ColumnSpacing="8">
+                    <Grid ColumnDefinitions="*,*,*,*,*,*" ColumnSpacing="6">
                         <Border Grid.Column="0"
+                                BackgroundColor="{Binding SelectedDays, Converter={StaticResource DaysToColorConverter}, ConverterParameter=0}"
+                                StrokeThickness="0">
+                            <Border.StrokeShape>
+                                <RoundRectangle CornerRadius="20"/>
+                            </Border.StrokeShape>
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding SetTimePeriodCommand}" CommandParameter="0"/>
+                            </Border.GestureRecognizers>
+                            <Label Text="All" FontSize="11" FontAttributes="Bold"
+                                   TextColor="{Binding SelectedDays, Converter={StaticResource DaysToTextColorConverter}, ConverterParameter=0}"
+                                   HorizontalOptions="Center" Padding="0,8"/>
+                        </Border>
+                        <Border Grid.Column="1"
                                 BackgroundColor="{Binding SelectedDays, Converter={StaticResource DaysToColorConverter}, ConverterParameter=7}"
                                 StrokeThickness="0">
                             <Border.StrokeShape>
@@ -60,11 +81,11 @@
                             <Border.GestureRecognizers>
                                 <TapGestureRecognizer Command="{Binding SetTimePeriodCommand}" CommandParameter="7"/>
                             </Border.GestureRecognizers>
-                            <Label Text="7d" FontSize="12" FontAttributes="Bold"
+                            <Label Text="7d" FontSize="11" FontAttributes="Bold"
                                    TextColor="{Binding SelectedDays, Converter={StaticResource DaysToTextColorConverter}, ConverterParameter=7}"
                                    HorizontalOptions="Center" Padding="0,8"/>
                         </Border>
-                        <Border Grid.Column="1"
+                        <Border Grid.Column="2"
                                 BackgroundColor="{Binding SelectedDays, Converter={StaticResource DaysToColorConverter}, ConverterParameter=14}"
                                 StrokeThickness="0">
                             <Border.StrokeShape>
@@ -73,11 +94,11 @@
                             <Border.GestureRecognizers>
                                 <TapGestureRecognizer Command="{Binding SetTimePeriodCommand}" CommandParameter="14"/>
                             </Border.GestureRecognizers>
-                            <Label Text="14d" FontSize="12" FontAttributes="Bold"
+                            <Label Text="14d" FontSize="11" FontAttributes="Bold"
                                    TextColor="{Binding SelectedDays, Converter={StaticResource DaysToTextColorConverter}, ConverterParameter=14}"
                                    HorizontalOptions="Center" Padding="0,8"/>
                         </Border>
-                        <Border Grid.Column="2"
+                        <Border Grid.Column="3"
                                 BackgroundColor="{Binding SelectedDays, Converter={StaticResource DaysToColorConverter}, ConverterParameter=30}"
                                 StrokeThickness="0">
                             <Border.StrokeShape>
@@ -86,11 +107,11 @@
                             <Border.GestureRecognizers>
                                 <TapGestureRecognizer Command="{Binding SetTimePeriodCommand}" CommandParameter="30"/>
                             </Border.GestureRecognizers>
-                            <Label Text="30d" FontSize="12" FontAttributes="Bold"
+                            <Label Text="30d" FontSize="11" FontAttributes="Bold"
                                    TextColor="{Binding SelectedDays, Converter={StaticResource DaysToTextColorConverter}, ConverterParameter=30}"
                                    HorizontalOptions="Center" Padding="0,8"/>
                         </Border>
-                        <Border Grid.Column="3"
+                        <Border Grid.Column="4"
                                 BackgroundColor="{Binding SelectedDays, Converter={StaticResource DaysToColorConverter}, ConverterParameter=60}"
                                 StrokeThickness="0">
                             <Border.StrokeShape>
@@ -99,11 +120,11 @@
                             <Border.GestureRecognizers>
                                 <TapGestureRecognizer Command="{Binding SetTimePeriodCommand}" CommandParameter="60"/>
                             </Border.GestureRecognizers>
-                            <Label Text="60d" FontSize="12" FontAttributes="Bold"
+                            <Label Text="60d" FontSize="11" FontAttributes="Bold"
                                    TextColor="{Binding SelectedDays, Converter={StaticResource DaysToTextColorConverter}, ConverterParameter=60}"
                                    HorizontalOptions="Center" Padding="0,8"/>
                         </Border>
-                        <Border Grid.Column="4"
+                        <Border Grid.Column="5"
                                 BackgroundColor="{Binding SelectedDays, Converter={StaticResource DaysToColorConverter}, ConverterParameter=90}"
                                 StrokeThickness="0">
                             <Border.StrokeShape>
@@ -112,7 +133,7 @@
                             <Border.GestureRecognizers>
                                 <TapGestureRecognizer Command="{Binding SetTimePeriodCommand}" CommandParameter="90"/>
                             </Border.GestureRecognizers>
-                            <Label Text="90d" FontSize="12" FontAttributes="Bold"
+                            <Label Text="90d" FontSize="11" FontAttributes="Bold"
                                    TextColor="{Binding SelectedDays, Converter={StaticResource DaysToTextColorConverter}, ConverterParameter=90}"
                                    HorizontalOptions="Center" Padding="0,8"/>
                         </Border>
@@ -121,13 +142,44 @@
 
                 <!-- Combined Chart -->
                 <StackLayout BackgroundColor="#FFFFFF" Padding="16" Spacing="12">
-                    <Label Text="OVERALL PROGRESS"
+                    <Grid ColumnDefinitions="*,Auto">
+                        <Label Grid.Column="0"
+                            Text="TOP EXERCISE PROGRESS"
+                            FontSize="11"
+                            FontAttributes="Bold"
+                            TextColor="#999999"
+                            CharacterSpacing="1"
+                            VerticalOptions="Center"/>
+                        <Label Grid.Column="1"
+                           Text="{Binding TopExerciseName}"
                            FontSize="11"
                            FontAttributes="Bold"
-                           TextColor="#999999"
-                           CharacterSpacing="1"/>
+                           TextColor="#1F77F0"
+                           VerticalOptions="Center"/>
+                    </Grid>
                     <microcharts:ChartView Chart="{Binding CombinedChart}"
-                                          HeightRequest="220"/>
+                          HeightRequest="220"/>
+                    <!-- Chart Legend -->
+                    <FlexLayout Wrap="Wrap"
+                        JustifyContent="Start"
+                        AlignItems="Start"
+                        BindableLayout.ItemsSource="{Binding Exercises}">
+                        <BindableLayout.ItemTemplate>
+                            <DataTemplate x:DataType="models:ExerciseProgress">
+                                <StackLayout Orientation="Horizontal" Spacing="6" Margin="0,4,16,0">
+                                    <BoxView WidthRequest="12"
+                                        HeightRequest="12"
+                                        CornerRadius="2"
+                                        BackgroundColor="{Binding ChartColor}"
+                                        VerticalOptions="Center"/>
+                                    <Label Text="{Binding ExerciseName}"
+                                        FontSize="11"
+                                        TextColor="#666666"
+                                        VerticalOptions="Center"/>
+                                </StackLayout>
+                            </DataTemplate>
+                        </BindableLayout.ItemTemplate>
+                    </FlexLayout>
                 </StackLayout>
 
                 <!-- Exercise List -->
@@ -142,54 +194,63 @@
                             <StackLayout Padding="20,40" Spacing="8" HorizontalOptions="Center">
                                 <Label Text="📊" FontSize="40" HorizontalOptions="Center"/>
                                 <Label Text="No data for this period"
-                                       FontSize="13"
-                                       TextColor="#999999"
-                                       HorizontalOptions="Center"/>
+                                       FontSize="13" TextColor="#999999" HorizontalOptions="Center"/>
                             </StackLayout>
                         </CollectionView.EmptyView>
                         <CollectionView.ItemTemplate>
                             <DataTemplate x:DataType="models:ExerciseProgress">
-                                <Grid ColumnDefinitions="Auto,*,Auto,Auto"
-                                      ColumnSpacing="12"
-                                      Padding="16,14"
-                                      BackgroundColor="#FFFFFF"
-                                      Margin="0,0,0,2">
-                                    <Grid.GestureRecognizers>
-                                        <TapGestureRecognizer
-                                            Command="{Binding Source={RelativeSource AncestorType={x:Type vm:MuscleGroupProgressViewModel}}, Path=SelectExerciseCommand}"
-                                            CommandParameter="{Binding .}"/>
-                                    </Grid.GestureRecognizers>
-                                    <Label Grid.Column="0"
-                                           Text="{Binding IsTrending, Converter={StaticResource BoolToTrendConverter}}"
-                                           FontSize="20"
-                                           VerticalOptions="Center"/>
-                                    <StackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
-                                        <Label Text="{Binding ExerciseName}"
-                                               FontSize="14"
-                                               FontAttributes="Bold"
-                                               TextColor="#000000"/>
-                                        <Label Text="{Binding TotalReps, StringFormat='{0} total reps'}"
-                                               FontSize="11"
-                                               TextColor="#999999"/>
-                                    </StackLayout>
-                                    <StackLayout Grid.Column="2" Spacing="2" HorizontalOptions="End" VerticalOptions="Center">
-                                        <Label Text="MAX"
-                                               FontSize="9"
-                                               TextColor="#999999"
-                                               HorizontalOptions="End"
-                                               CharacterSpacing="0.5"/>
-                                        <Label Text="{Binding LatestMaxWeight, StringFormat='{0:F0} lbs'}"
-                                               FontSize="13"
-                                               FontAttributes="Bold"
+                                <Border BackgroundColor="#FFFFFF" StrokeThickness="0" Margin="0,0,0,8">
+                                    <Border.StrokeShape>
+                                        <RoundRectangle CornerRadius="8"/>
+                                    </Border.StrokeShape>
+                                    <Grid ColumnDefinitions="6,Auto,*,Auto,Auto"
+                                          ColumnSpacing="0">
+                                        <Grid.GestureRecognizers>
+                                            <TapGestureRecognizer
+                                                Command="{Binding Source={RelativeSource AncestorType={x:Type vm:MuscleGroupProgressViewModel}}, Path=SelectExerciseCommand}"
+                                                CommandParameter="{Binding .}"/>
+                                        </Grid.GestureRecognizers>
+                                        <!-- Color Bar -->
+                                        <BoxView Grid.Column="0"
+                                                 BackgroundColor="{Binding ChartColor}"
+                                                 HorizontalOptions="Fill"
+                                                 VerticalOptions="Fill"/>
+                                        <!-- Trend -->
+                                        <Label Grid.Column="1"
+                                               Text="{Binding IsTrending, Converter={StaticResource BoolToTrendConverter}}"
+                                               FontSize="20"
+                                               VerticalOptions="Center"
+                                               Padding="12,14,8,14"/>
+                                        <!-- Name + Reps -->
+                                        <StackLayout Grid.Column="2" Spacing="2" VerticalOptions="Center" Padding="0,14,8,14">
+                                            <Label Text="{Binding ExerciseName}"
+                                                   FontSize="14"
+                                                   FontAttributes="Bold"
+                                                   TextColor="#000000"/>
+                                            <Label Text="{Binding TotalReps, StringFormat='{0} total reps'}"
+                                                   FontSize="11"
+                                                   TextColor="#999999"/>
+                                        </StackLayout>
+                                        <!-- Max Weight -->
+                                        <StackLayout Grid.Column="3" Spacing="2" HorizontalOptions="End"
+                                                     VerticalOptions="Center" Padding="0,14,8,14">
+                                            <Label Text="MAX" FontSize="9" TextColor="#999999"
+                                                   HorizontalOptions="End" CharacterSpacing="0.5"/>
+                                            <Label Text="{Binding LatestMaxWeight, StringFormat='{0:F0}'}"
+                                                   FontSize="13" FontAttributes="Bold"
+                                                   TextColor="#1F77F0" HorizontalOptions="End"/>
+                                            <Label Text="{Binding Source={RelativeSource AncestorType={x:Type vm:MuscleGroupProgressViewModel}}, Path=WeightUnitLabel}"
+                                                   FontSize="10" TextColor="#999999" HorizontalOptions="End"/>
+                                        </StackLayout>
+                                        <!-- Arrow -->
+                                        <Label Grid.Column="4"
+                                               Text="→"
+                                               FontSize="18"
                                                TextColor="#1F77F0"
-                                               HorizontalOptions="End"/>
-                                    </StackLayout>
-                                    <Label Grid.Column="3"
-                                           Text="→"
-                                           FontSize="18"
-                                           TextColor="#1F77F0"
-                                           VerticalOptions="Center"/>
-                                </Grid>
+                                               VerticalOptions="Center"
+                                               Padding="0,0,16,0"/>
+                                    </Grid>
+                                </Border>
                             </DataTemplate>
                         </CollectionView.ItemTemplate>
                     </CollectionView>
