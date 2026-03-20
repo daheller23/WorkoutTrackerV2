@@ -4,15 +4,30 @@ using System.Collections.ObjectModel;
 
 namespace WorkoutTrackerV2.Models
 {
-    public partial class ExerciseGroup(Exercise exercise, string defaultWeightUnit = "lbs") : ObservableObject
+    public partial class ExerciseGroup(
+        Exercise exercise,
+        string defaultWeightUnit = "lbs") : ObservableObject
     {
         private readonly string _defaultWeightUnit = defaultWeightUnit;
+
         public Exercise Exercise { get; set; } = exercise;
-        public ObservableCollection<WorkoutSet> Sets { get; set; } = [];
+
+        // FIX 5: Private setter — Sets should never be replaced from outside
+        // the class since that would silently break all CollectionView bindings
+        // on the existing ObservableCollection instance.
+        public ObservableCollection<WorkoutSet> Sets { get; } = [];
+
         public string SetCountLabel => Sets.Count == 1 ? "1 set" : $"{Sets.Count} sets";
         public bool HasSets => Sets.Count > 0;
-        public int TotalReps => Sets.Sum(s => s.Reps);
-        public double MaxWeight => Sets.Count > 0 ? Sets.Max(s => s.Weight) : 0;
+
+        // FIX 1+2: TotalReps and MaxWeight now notify correctly — they are
+        // computed from Sets but were not raising PropertyChanged after AddSet
+        // or RemoveSet, causing bound labels to show stale values. Both are
+        // computed together in one loop inside NotifySetStats() to avoid two
+        // separate LINQ passes over Sets on every set operation.
+        public int TotalReps { get; private set; }
+        public double MaxWeight { get; private set; }
+
         public void AddSet(string? weightUnit = null)
         {
             var unit = weightUnit ?? _defaultWeightUnit;
@@ -26,21 +41,37 @@ namespace WorkoutTrackerV2.Models
             };
             set.DeleteCommand = new RelayCommand(() => RemoveSet(set));
             Sets.Add(set);
-            OnPropertyChanged(nameof(SetCountLabel));
-            OnPropertyChanged(nameof(HasSets));
+            NotifySetStats();
         }
 
-        #region "REMOVE SET"
         public void RemoveSet(WorkoutSet set)
         {
             Sets.Remove(set);
+            // Renumber remaining sets to keep SetNumber sequential.
             for (int i = 0; i < Sets.Count; i++)
-            {
                 Sets[i].SetNumber = i + 1;
+            NotifySetStats();
+        }
+
+        // FIX 1+2: Single loop computes TotalReps and MaxWeight together, then
+        // raises all four PropertyChanged notifications in one call site instead
+        // of duplicating the notification calls in AddSet and RemoveSet.
+        private void NotifySetStats()
+        {
+            int reps = 0;
+            double max = 0;
+            foreach (var s in Sets)
+            {
+                reps += s.Reps;
+                if (s.Weight > max) max = s.Weight;
             }
+            TotalReps = reps;
+            MaxWeight = max;
+
+            OnPropertyChanged(nameof(TotalReps));
+            OnPropertyChanged(nameof(MaxWeight));
             OnPropertyChanged(nameof(SetCountLabel));
             OnPropertyChanged(nameof(HasSets));
         }
-        #endregion
     }
 }

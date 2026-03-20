@@ -1,32 +1,39 @@
 using WorkoutTrackerV2.ViewModels;
-namespace WorkoutTrackerV2.Views
+
+namespace WorkoutTrackerV2.Views;
+
+public partial class ExercisePickerView : ContentPage
 {
-    public partial class ExercisePickerView : ContentPage
+    private bool _isFirstAppear = true;
+
+    public ExercisePickerView(ExercisePickerViewModel viewModel)
     {
-        private readonly ExercisePickerViewModel _vm;
-        private bool _isFirstAppear = true;
+        InitializeComponent();
+        BindingContext = viewModel;
+    }
 
-        public ExercisePickerView(ExercisePickerViewModel viewModel)
+    protected override void OnAppearing()
+    {
+        base.OnAppearing();
+
+        if (BindingContext is not ExercisePickerViewModel vm) return;
+
+        if (_isFirstAppear)
         {
-            InitializeComponent();
-            _vm = viewModel;
-            BindingContext = viewModel;
+            _isFirstAppear = false;
+            _ = vm.LoadExercisesCommand.ExecuteAsync(null);
         }
-
-        protected override void OnAppearing()
+        else
         {
-            base.OnAppearing();
-            if (_isFirstAppear)
-            {
-                _isFirstAppear = false;
-                _vm.LoadExercisesCommand.Execute(null);
-            }
-            else
-            {
-                // Returning from CreateExercise — reset filter and reload
-                _vm.ResetFilterCommand.Execute(null);
-                _vm.LoadExercisesCommand.Execute(null);
-            }
+            // Returning from CreateExercise — reset search/filter state first
+            // so the newly created exercise is visible, then reload.
+            // ResetFilter is called synchronously (it's not async) before
+            // LoadExercises so the filter state is clean before the DB fetch.
+            // Note: LoadExercises will call ScheduleFilter at the end, so the
+            // intermediate ScheduleFilter fired by ResetFilter will be cancelled
+            // and replaced — this is harmless but expected.
+            vm.ResetFilterCommand.Execute(null);
+            _ = vm.LoadExercisesCommand.ExecuteAsync(null);
         }
     }
 }

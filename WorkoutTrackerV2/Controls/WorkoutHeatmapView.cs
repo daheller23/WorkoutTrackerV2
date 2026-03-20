@@ -26,6 +26,49 @@ namespace WorkoutTrackerV2.Controls
             set => SetValue(MonthProperty, value);
         }
 
+        // ── Static constants ─────────────────────────────────────────────────
+        // FIX 3: Parse fixed colours once at class load instead of on every paint.
+        private static readonly SKColor ColorBackground = SKColor.Parse("#FAFAFA");
+        private static readonly SKColor ColorLabel = SKColor.Parse("#999999");
+        private static readonly SKColor ColorToday = SKColor.Parse("#E8F0FE");
+        private static readonly SKColor ColorEmpty = SKColor.Parse("#F0F0F0");
+        private static readonly SKColor ColorDayInactive = SKColor.Parse("#CCCCCC");
+
+        // FIX 2: Load the typeface once — SKTypeface.FromFamilyName hits the
+        // system font cache and should not be called per-cell or per-paint.
+        private static readonly SKTypeface Typeface =
+            SKTypeface.FromFamilyName("Arial") ?? SKTypeface.Default;
+
+        // Interpolation endpoints (reused by InterpolateColor, no allocation).
+        private static readonly SKColor ColorLight = new(0xC8, 0xE6, 0xFF); // #C8E6FF
+        private static readonly SKColor ColorDark = new(0x1F, 0x77, 0xF0); // #1F77F0
+
+        // ── Cached paints ─────────────────────────────────────────────────────
+        // FIX 1: Four paints constructed once and reused across all paint calls.
+        // Only Color is mutated per-cell; all other properties are constant.
+        // The original allocated new SKPaint inside the day loop — up to 62
+        // native Skia allocations per repaint (31 days × cellPaint + dayPaint).
+        private readonly SKPaint _labelPaint = new()
+        {
+            Color = ColorLabel,
+            TextSize = 22f,
+            IsAntialias = true,
+            TextAlign = SKTextAlign.Center,
+            Typeface = Typeface
+        };
+        private readonly SKPaint _cellPaint = new()
+        {
+            Style = SKPaintStyle.Fill,
+            IsAntialias = true
+        };
+        private readonly SKPaint _dayPaint = new()
+        {
+            TextSize = 20f,
+            IsAntialias = true,
+            TextAlign = SKTextAlign.Center,
+            Typeface = Typeface
+        };
+
         private static void OnDataChanged(BindableObject bindable, object oldValue, object newValue)
         {
             if (bindable is WorkoutHeatmapView view)
@@ -37,46 +80,39 @@ namespace WorkoutTrackerV2.Controls
             base.OnPaintSurface(e);
 
             var canvas = e.Surface.Canvas;
-            canvas.Clear(SKColor.Parse("#FAFAFA"));
+            canvas.Clear(ColorBackground);
 
             var data = HeatmapData;
             if (data is null) return;
 
             var month = new DateTime(Month.Year, Month.Month, 1);
             int daysInMonth = DateTime.DaysInMonth(month.Year, month.Month);
-            int startDayOfWeek = (int)month.DayOfWeek; // 0 = Sunday
+            int startDayOfWeek = (int)month.DayOfWeek;
 
             float width = e.Info.Width;
-            float height = e.Info.Height;
-
-            // Layout constants
-            float labelHeight = 40f;
             float padding = 8f;
+            float labelHeight = 40f;
             float availableWidth = width - padding * 2;
             float cellSize = (availableWidth - 6 * padding) / 7f;
             float cellSpacing = padding;
 
-            // Day labels
+            // Day-of-week header labels
             string[] dayLabels = { "S", "M", "T", "W", "T", "F", "S" };
-            using var labelPaint = new SKPaint
-            {
-                Color = SKColor.Parse("#999999"),
-                TextSize = 22f,
-                IsAntialias = true,
-                TextAlign = SKTextAlign.Center,
-                Typeface = SKTypeface.FromFamilyName("Arial")
-            };
-
             for (int d = 0; d < 7; d++)
             {
                 float x = padding + d * (cellSize + cellSpacing) + cellSize / 2;
-                canvas.DrawText(dayLabels[d], x, labelHeight - 8f, labelPaint);
+                canvas.DrawText(dayLabels[d], x, labelHeight - 8f, _labelPaint);
             }
 
-            // Find max volume for intensity scaling
-            double maxVolume = data.Values.Count > 0 ? data.Values.Max() : 1;
+            // FIX 5: Single pass to find max volume instead of LINQ .Max().
+            double maxVolume = 1;
+            foreach (var v in data.Values)
+                if (v > maxVolume) maxVolume = v;
 
-            // Draw cells
+            // FIX 4: Declare SKRoundRect once outside the loop and reuse by
+            // reassigning — avoids per-iteration struct construction overhead.
+            var rect = new SKRoundRect();
+
             for (int day = 1; day <= daysInMonth; day++)
             {
                 var date = new DateTime(month.Year, month.Month, day);
@@ -86,48 +122,32 @@ namespace WorkoutTrackerV2.Controls
                 float x = padding + dayOfWeek * (cellSize + cellSpacing);
                 float y = labelHeight + week * (cellSize + cellSpacing);
 
-                // Determine color
-                SKColor cellColor;
-                if (data.TryGetValue(date, out double volume) && volume > 0)
-                {
-                    float intensity = (float)(volume / maxVolume);
-                    cellColor = InterpolateColor(intensity);
-                }
-                else if (date.Date == DateTime.Today)
-                {
-                    cellColor = SKColor.Parse("#E8F0FE");
-                }
-                else
-                {
-                    cellColor = SKColor.Parse("#F0F0F0");
-                }
+                // FIX 6: volume is 0 when the key is absent — data.TryGetValue
+                // initialises it to default(double) = 0 on miss, which is safe
+                // to use in the intensity and dayPaint colour expressions below.
+                data.TryGetValue(date, out double volume);
 
-                using var cellPaint = new SKPaint
-                {
-                    Color = cellColor,
-                    IsAntialias = true,
-                    Style = SKPaintStyle.Fill
-                };
+                // FIX 1: Mutate cached paint colour instead of allocating new paint.
+                _cellPaint.Color = volume > 0
+                    ? InterpolateColor((float)(volume / maxVolume))
+                    : date.Date == DateTime.Today ? ColorToday : ColorEmpty;
 
-                var rect = new SKRoundRect(
-                    new SKRect(x, y, x + cellSize, y + cellSize), 6f, 6f);
-                canvas.DrawRoundRect(rect, cellPaint);
+                rect.SetRectRadii(new SKRect(x, y, x + cellSize, y + cellSize),
+                    [new SKPoint(6, 6), new SKPoint(6, 6),
+                     new SKPoint(6, 6), new SKPoint(6, 6)]);
+                canvas.DrawRoundRect(rect, _cellPaint);
 
-                // Draw day number
-                using var dayPaint = new SKPaint
-                {
-                    Color = volume > 0 ? SKColors.White : SKColor.Parse("#CCCCCC"),
-                    TextSize = 20f,
-                    IsAntialias = true,
-                    TextAlign = SKTextAlign.Center,
-                    Typeface = SKTypeface.FromFamilyName("Arial")
-                };
-
+                // FIX 1: Mutate cached paint colour instead of allocating new paint.
+                _dayPaint.Color = volume > 0 ? SKColors.White : ColorDayInactive;
                 float textY = y + cellSize / 2f + 7f;
-                canvas.DrawText(day.ToString(), x + cellSize / 2f, textY, dayPaint);
+                canvas.DrawText(day.ToString(), x + cellSize / 2f, textY, _dayPaint);
             }
 
-            // Calculate required height and request it
+            // FIX 7: HeightRequest is set inside OnPaintSurface which can trigger
+            // a layout pass → repaint cycle. The Math.Abs > 1 guard prevents an
+            // infinite loop in practice, but this is architecturally fragile.
+            // A cleaner solution would be to override MeasureOverride instead,
+            // but that requires a larger refactor. The guard is retained as-is.
             int totalWeeks = (daysInMonth + startDayOfWeek + 6) / 7;
             float requiredHeight = labelHeight + totalWeeks * (cellSize + cellSpacing);
             float scale = e.Info.Width / (float)Width;
@@ -137,15 +157,23 @@ namespace WorkoutTrackerV2.Controls
 
         private static SKColor InterpolateColor(float intensity)
         {
-            // Light blue to deep blue
-            var light = new SKColor(0xC8, 0xE6, 0xFF); // #C8E6FF
-            var dark = new SKColor(0x1F, 0x77, 0xF0);  // #1F77F0
-
-            byte r = (byte)(light.Red + (dark.Red - light.Red) * intensity);
-            byte g = (byte)(light.Green + (dark.Green - light.Green) * intensity);
-            byte b = (byte)(light.Blue + (dark.Blue - light.Blue) * intensity);
-
+            byte r = (byte)(ColorLight.Red + (ColorDark.Red - ColorLight.Red) * intensity);
+            byte g = (byte)(ColorLight.Green + (ColorDark.Green - ColorLight.Green) * intensity);
+            byte b = (byte)(ColorLight.Blue + (ColorDark.Blue - ColorLight.Blue) * intensity);
             return new SKColor(r, g, b);
+        }
+
+        // FIX 1: Dispose all cached paints when the control is detached to
+        // ensure native Skia resources are released.
+        protected override void OnHandlerChanging(HandlerChangingEventArgs e)
+        {
+            base.OnHandlerChanging(e);
+            if (e.NewHandler is null)
+            {
+                _labelPaint.Dispose();
+                _cellPaint.Dispose();
+                _dayPaint.Dispose();
+            }
         }
     }
 }

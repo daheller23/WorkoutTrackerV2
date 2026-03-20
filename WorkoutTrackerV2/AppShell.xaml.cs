@@ -8,10 +8,11 @@ namespace WorkoutTrackerV2
         {
             InitializeComponent();
 
-            Routing.RegisterRoute(Routes.Home, typeof(HomeView));
-            Routing.RegisterRoute(Routes.Workout, typeof(AddWorkoutView));
-            Routing.RegisterRoute(Routes.History, typeof(WorkoutHistoryView));
-            Routing.RegisterRoute(Routes.Analytics, typeof(AnalyticsView));
+            // FIX 1: Routes.Home, Workout, History, and Analytics are NOT registered
+            // here because they are declared as ShellContent Route= in AppShell.xaml.
+            // Shell registers those routes automatically — explicit registration would
+            // cause a duplicate route conflict. Only modal/detail routes that are NOT
+            // ShellContent tabs need to be registered here.
             Routing.RegisterRoute(Routes.WorkoutDetail, typeof(WorkoutDetailView));
             Routing.RegisterRoute(Routes.EditWorkout, typeof(EditWorkoutView));
             Routing.RegisterRoute(Routes.Settings, typeof(SettingsView));

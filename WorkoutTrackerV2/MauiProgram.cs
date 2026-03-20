@@ -12,6 +12,7 @@ namespace WorkoutTrackerV2
         public static MauiApp CreateMauiApp()
         {
             var builder = MauiApp.CreateBuilder();
+
             builder
                 .UseMauiApp<App>()
                 .UseSkiaSharp()
@@ -26,37 +27,71 @@ namespace WorkoutTrackerV2
             builder.Logging.AddDebug();
 #endif
 
-            builder.Services.AddSingleton<HomeViewModel>();
-            builder.Services.AddSingleton<HomeView>();
-            builder.Services.AddSingleton<AddWorkoutViewModel>();
-            builder.Services.AddSingleton<AddWorkoutView>();
-            builder.Services.AddSingleton<WorkoutHistoryViewModel>();
-            builder.Services.AddSingleton<WorkoutHistoryView>();
-            builder.Services.AddSingleton<AnalyticsViewModel>();
-            builder.Services.AddSingleton<AnalyticsView>();
-            builder.Services.AddSingleton<IWorkoutService, WorkoutService>();
-            builder.Services.AddSingleton<IAnalyticsService, AnalyticsService>();
-            builder.Services.AddTransient<WorkoutDetailView>();
-            builder.Services.AddTransient<WorkoutDetailViewModel>();
-            builder.Services.AddTransient<EditWorkoutView>();
-            builder.Services.AddTransient<EditWorkoutViewModel>();
-            builder.Services.AddTransient<SettingsView>();
-            builder.Services.AddTransient<SettingsViewModel>();
-            builder.Services.AddTransient<ExercisePickerView>();
-            builder.Services.AddTransient<ExercisePickerViewModel>();
-            builder.Services.AddTransient<MuscleGroupProgressView>();
-            builder.Services.AddTransient<MuscleGroupProgressViewModel>();
-            builder.Services.AddTransient<ExerciseProgressView>();
-            builder.Services.AddTransient<ExerciseProgressViewModel>();
-            builder.Services.AddTransient<TemplatePickerView>();
-            builder.Services.AddTransient<TemplatePickerViewModel>();
-            builder.Services.AddSingleton<ITemplateService, TemplateService>();
-            builder.Services.AddSingleton<ISettingsService, SettingsService>();
-            builder.Services.AddTransient<PersonalRecordsView>();
-            builder.Services.AddTransient<PersonalRecordsViewModel>();
-            builder.Services.AddTransient<CreateExerciseView>();
-            builder.Services.AddTransient<CreateExerciseViewModel>();
-            builder.Services.AddSingleton<AppShell>();
+            var s = builder.Services;
+
+            // ── Services (Singleton — shared state, DB connection, caches) ────
+            s.AddSingleton<IWorkoutService, WorkoutService>();
+            s.AddSingleton<IAnalyticsService, AnalyticsService>();
+            s.AddSingleton<ITemplateService, TemplateService>();
+            s.AddSingleton<ISettingsService, SettingsService>();
+
+            // ── Shell ─────────────────────────────────────────────────────────
+            s.AddSingleton<AppShell>();
+
+            // ── Tab pages (Singleton — always resident, cheap to keep alive) ──
+            // Home and its VM are singletons because the Home tab is always
+            // resident and its data refreshes on every OnAppearing anyway.
+            s.AddSingleton<HomeViewModel>();
+            s.AddSingleton<HomeView>();
+
+            // FIX 1: AddWorkout changed from Singleton to Transient.
+            // The VM holds mutable workout state (ExerciseGroups, WorkoutName,
+            // Notes, times). As a Singleton this state persisted across sessions —
+            // returning to the tab after saving showed the previous workout's data.
+            s.AddTransient<AddWorkoutViewModel>();
+            s.AddTransient<AddWorkoutView>();
+
+            // FIX 2: WorkoutHistory changed from Singleton to Transient.
+            // The VM holds _allSessions which grows unboundedly as a Singleton.
+            // Transient ensures a clean load on each navigation and avoids holding
+            // the full session list in memory when History isn't visible.
+            s.AddTransient<WorkoutHistoryViewModel>();
+            s.AddTransient<WorkoutHistoryView>();
+
+            // FIX 3: Analytics changed from Singleton to Transient.
+            // Computed analytics data (sparklines, muscle group progress, daily
+            // stats) held forever as a Singleton is unnecessary — the page reloads
+            // on every OnAppearing regardless. Transient keeps memory usage flat.
+            s.AddTransient<AnalyticsViewModel>();
+            s.AddTransient<AnalyticsView>();
+
+            // ── Detail / modal pages (Transient — fresh state each navigation) ─
+            s.AddTransient<WorkoutDetailViewModel>();
+            s.AddTransient<WorkoutDetailView>();
+
+            s.AddTransient<EditWorkoutViewModel>();
+            s.AddTransient<EditWorkoutView>();
+
+            s.AddTransient<SettingsViewModel>();
+            s.AddTransient<SettingsView>();
+
+            s.AddTransient<ExercisePickerViewModel>();
+            s.AddTransient<ExercisePickerView>();
+
+            s.AddTransient<MuscleGroupProgressViewModel>();
+            s.AddTransient<MuscleGroupProgressView>();
+
+            s.AddTransient<ExerciseProgressViewModel>();
+            s.AddTransient<ExerciseProgressView>();
+
+            s.AddTransient<TemplatePickerViewModel>();
+            s.AddTransient<TemplatePickerView>();
+
+            s.AddTransient<PersonalRecordsViewModel>();
+            s.AddTransient<PersonalRecordsView>();
+
+            s.AddTransient<CreateExerciseViewModel>();
+            s.AddTransient<CreateExerciseView>();
 
             return builder.Build();
         }

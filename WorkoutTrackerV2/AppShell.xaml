@@ -4,7 +4,7 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:views="clr-namespace:WorkoutTrackerV2.Views"
-    Title="WorkoutTrackerV2"
+    Title="Workout Tracker"
     Shell.BackgroundColor="#FFFFFF"
     Shell.ForegroundColor="#1F77F0"
     Shell.TitleColor="#1F77F0"
@@ -13,24 +13,32 @@
     Shell.TabBarTitleColor="#1F77F0"
     Shell.TabBarUnselectedColor="#999999">
 
+    <!--
+        ContentTemplate uses DataTemplate for lazy instantiation — each tab page
+        is constructed only on first visit, not at app startup. Do not change to
+        direct Content= references or all four pages would be built at launch.
+
+        Routes declared here (Home, Workout, History, Analytics) are registered
+        by Shell automatically — they must NOT also be registered in AppShell.xaml.cs
+        or a duplicate route conflict occurs.
+    -->
     <TabBar>
         <ShellContent
             Title="🏠 Home"
             Route="Home"
-            ContentTemplate="{DataTemplate views:HomeView}" />
+            ContentTemplate="{DataTemplate views:HomeView}"/>
         <ShellContent
             Title="🏋️ Workout"
-            ContentTemplate="{DataTemplate views:AddWorkoutView}"
-            Route="Workout" />
+            Route="Workout"
+            ContentTemplate="{DataTemplate views:AddWorkoutView}"/>
         <ShellContent
             Title="📋 History"
-            ContentTemplate="{DataTemplate views:WorkoutHistoryView}"
-            Route="History" />
+            Route="History"
+            ContentTemplate="{DataTemplate views:WorkoutHistoryView}"/>
         <ShellContent
             Title="📊 Analytics"
-            ContentTemplate="{DataTemplate views:AnalyticsView}"
-            Route="Analytics" />
+            Route="Analytics"
+            ContentTemplate="{DataTemplate views:AnalyticsView}"/>
     </TabBar>
-
 
 </Shell>
