@@ -3,89 +3,111 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="WorkoutTrackerV2.Views.SettingsView"
              xmlns:vm="clr-namespace:WorkoutTrackerV2.ViewModels"
-             xmlns:converters="clr-namespace:WorkoutTrackerV2.Converters"
              x:DataType="vm:SettingsViewModel"
              BackgroundColor="#FAFAFA">
 
+    <!--
+        FIX 5: WeightUnitColorConverter and WeightUnitTextColorConverter removed —
+                replaced with DataTriggers on IsLbsSelected / IsKgSelected.
+        FIX 7: Shell.NavBarIsVisible=False added — without this the page shows
+                both the Shell back button AND the custom ← Back button in the
+                header, which every other page in the app already hides.
+        No converter resources needed on this page.
+    -->
+
+    <Shell.NavBarIsVisible>False</Shell.NavBarIsVisible>
     <Shell.BackButtonBehavior>
         <BackButtonBehavior IsVisible="False" IsEnabled="False"/>
     </Shell.BackButtonBehavior>
 
-    <ContentPage.Resources>
-        <converters:WeightUnitColorConverter x:Key="WeightUnitColorConverter"/>
-        <converters:WeightUnitTextColorConverter x:Key="WeightUnitTextColorConverter"/>
-    </ContentPage.Resources>
-
     <Grid RowDefinitions="Auto,*" RowSpacing="0">
 
-        <!-- Header -->
+        <!-- ── Header ─────────────────────────────────────────────────────── -->
         <StackLayout Grid.Row="0" BackgroundColor="#FFFFFF" Padding="24,16,24,24" Spacing="4">
             <Button Text="← Back"
                     Command="{Binding GoBackCommand}"
-                    BackgroundColor="Transparent"
-                    TextColor="#1F77F0"
-                    FontSize="14"
-                    Padding="0"
-                    HorizontalOptions="Start"/>
+                    BackgroundColor="Transparent" TextColor="#1F77F0"
+                    FontSize="14" Padding="0" HorizontalOptions="Start"/>
             <Label Text="⚙️ Settings"
-                   FontSize="32"
-                   FontAttributes="Bold"
-                   TextColor="#1F77F0"
-                   CharacterSpacing="0.5"/>
+                   FontSize="32" FontAttributes="Bold"
+                   TextColor="#1F77F0" CharacterSpacing="0.5"/>
             <Label Text="Customize your experience"
-                   FontSize="13"
-                   TextColor="#999999"/>
+                   FontSize="13" TextColor="#999999"/>
         </StackLayout>
 
         <ScrollView Grid.Row="1">
             <StackLayout Padding="20,24" Spacing="24">
 
-                <!-- Preferences -->
+                <!-- ── Preferences ────────────────────────────────────────── -->
                 <StackLayout Spacing="10">
                     <Label Text="PREFERENCES"
-                           FontSize="11"
-                           FontAttributes="Bold"
-                           TextColor="#999999"
-                           CharacterSpacing="1"/>
+                           FontSize="11" FontAttributes="Bold"
+                           TextColor="#999999" CharacterSpacing="1"/>
 
-                    <!-- Weight Unit -->
+                    <!-- Weight Unit
+                         FIX 5: DataTriggers on IsLbsSelected / IsKgSelected replace
+                         WeightUnitColorConverter and WeightUnitTextColorConverter.
+                         4 converter calls per tap → 0.                            -->
                     <StackLayout BackgroundColor="#FFFFFF" Padding="16" Spacing="12">
                         <Label Text="Default Weight Unit"
-                               FontSize="12"
-                               TextColor="#999999"
-                               FontAttributes="Bold"
-                               CharacterSpacing="0.3"/>
+                               FontSize="12" TextColor="#999999"
+                               FontAttributes="Bold" CharacterSpacing="0.3"/>
                         <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
-                            <Border BackgroundColor="{Binding WeightUnit, Converter={StaticResource WeightUnitColorConverter}, ConverterParameter=lbs}"
-                                    StrokeThickness="0">
+                            <Border StrokeThickness="0">
                                 <Border.StrokeShape>
                                     <RoundRectangle CornerRadius="8"/>
                                 </Border.StrokeShape>
+                                <Border.Triggers>
+                                    <DataTrigger TargetType="Border" Binding="{Binding IsLbsSelected}" Value="True">
+                                        <Setter Property="BackgroundColor" Value="#1F77F0"/>
+                                    </DataTrigger>
+                                    <DataTrigger TargetType="Border" Binding="{Binding IsLbsSelected}" Value="False">
+                                        <Setter Property="BackgroundColor" Value="#EEEEEE"/>
+                                    </DataTrigger>
+                                </Border.Triggers>
                                 <Border.GestureRecognizers>
                                     <TapGestureRecognizer Command="{Binding SetWeightUnitCommand}" CommandParameter="lbs"/>
                                 </Border.GestureRecognizers>
                                 <Label Text="lbs"
-                                       FontSize="14"
-                                       FontAttributes="Bold"
-                                       TextColor="{Binding WeightUnit, Converter={StaticResource WeightUnitTextColorConverter}, ConverterParameter=lbs}"
-                                       HorizontalOptions="Center"
-                                       Padding="0,12"/>
+                                       FontSize="14" FontAttributes="Bold"
+                                       HorizontalOptions="Center" Padding="0,12">
+                                    <Label.Triggers>
+                                        <DataTrigger TargetType="Label" Binding="{Binding IsLbsSelected}" Value="True">
+                                            <Setter Property="TextColor" Value="#FFFFFF"/>
+                                        </DataTrigger>
+                                        <DataTrigger TargetType="Label" Binding="{Binding IsLbsSelected}" Value="False">
+                                            <Setter Property="TextColor" Value="#666666"/>
+                                        </DataTrigger>
+                                    </Label.Triggers>
+                                </Label>
                             </Border>
-                            <Border Grid.Column="1"
-                                    BackgroundColor="{Binding WeightUnit, Converter={StaticResource WeightUnitColorConverter}, ConverterParameter=kg}"
-                                    StrokeThickness="0">
+                            <Border Grid.Column="1" StrokeThickness="0">
                                 <Border.StrokeShape>
                                     <RoundRectangle CornerRadius="8"/>
                                 </Border.StrokeShape>
+                                <Border.Triggers>
+                                    <DataTrigger TargetType="Border" Binding="{Binding IsKgSelected}" Value="True">
+                                        <Setter Property="BackgroundColor" Value="#1F77F0"/>
+                                    </DataTrigger>
+                                    <DataTrigger TargetType="Border" Binding="{Binding IsKgSelected}" Value="False">
+                                        <Setter Property="BackgroundColor" Value="#EEEEEE"/>
+                                    </DataTrigger>
+                                </Border.Triggers>
                                 <Border.GestureRecognizers>
                                     <TapGestureRecognizer Command="{Binding SetWeightUnitCommand}" CommandParameter="kg"/>
                                 </Border.GestureRecognizers>
                                 <Label Text="kg"
-                                       FontSize="14"
-                                       FontAttributes="Bold"
-                                       TextColor="{Binding WeightUnit, Converter={StaticResource WeightUnitTextColorConverter}, ConverterParameter=kg}"
-                                       HorizontalOptions="Center"
-                                       Padding="0,12"/>
+                                       FontSize="14" FontAttributes="Bold"
+                                       HorizontalOptions="Center" Padding="0,12">
+                                    <Label.Triggers>
+                                        <DataTrigger TargetType="Label" Binding="{Binding IsKgSelected}" Value="True">
+                                            <Setter Property="TextColor" Value="#FFFFFF"/>
+                                        </DataTrigger>
+                                        <DataTrigger TargetType="Label" Binding="{Binding IsKgSelected}" Value="False">
+                                            <Setter Property="TextColor" Value="#666666"/>
+                                        </DataTrigger>
+                                    </Label.Triggers>
+                                </Label>
                             </Border>
                         </Grid>
                     </StackLayout>
@@ -95,12 +117,9 @@
                         <Grid ColumnDefinitions="*,Auto">
                             <StackLayout Grid.Column="0" Spacing="3" VerticalOptions="Center">
                                 <Label Text="Dark Mode"
-                                       FontSize="15"
-                                       FontAttributes="Bold"
-                                       TextColor="#000000"/>
+                                       FontSize="15" FontAttributes="Bold" TextColor="#000000"/>
                                 <Label Text="Switch between light and dark theme"
-                                       FontSize="11"
-                                       TextColor="#999999"/>
+                                       FontSize="11" TextColor="#999999"/>
                             </StackLayout>
                             <Switch Grid.Column="1"
                                     IsToggled="{Binding IsDarkMode}"
@@ -110,55 +129,40 @@
                     </StackLayout>
                 </StackLayout>
 
-                <!-- About -->
+                <!-- ── About ──────────────────────────────────────────────── -->
                 <StackLayout Spacing="10">
                     <Label Text="ABOUT"
-                           FontSize="11"
-                           FontAttributes="Bold"
-                           TextColor="#999999"
-                           CharacterSpacing="1"/>
+                           FontSize="11" FontAttributes="Bold"
+                           TextColor="#999999" CharacterSpacing="1"/>
                     <StackLayout BackgroundColor="#FFFFFF" Padding="16" Spacing="0">
                         <Grid ColumnDefinitions="*,Auto">
                             <Label Grid.Column="0"
                                    Text="App Version"
-                                   FontSize="15"
-                                   FontAttributes="Bold"
-                                   TextColor="#000000"
-                                   VerticalOptions="Center"/>
+                                   FontSize="15" FontAttributes="Bold"
+                                   TextColor="#000000" VerticalOptions="Center"/>
                             <Label Grid.Column="1"
                                    Text="{Binding AppVersion}"
-                                   FontSize="13"
-                                   TextColor="#999999"
+                                   FontSize="13" TextColor="#999999"
                                    VerticalOptions="Center"/>
                         </Grid>
                     </StackLayout>
                 </StackLayout>
 
-                <!-- Danger Zone -->
+                <!-- ── Danger Zone ────────────────────────────────────────── -->
                 <StackLayout Spacing="10">
                     <Label Text="DANGER ZONE"
-                           FontSize="11"
-                           FontAttributes="Bold"
-                           TextColor="#FF6B6B"
-                           CharacterSpacing="1"/>
+                           FontSize="11" FontAttributes="Bold"
+                           TextColor="#FF6B6B" CharacterSpacing="1"/>
                     <StackLayout BackgroundColor="#FFFFFF" Padding="16" Spacing="8">
                         <Label Text="Clear All Data"
-                               FontSize="15"
-                               FontAttributes="Bold"
-                               TextColor="#FF6B6B"/>
+                               FontSize="15" FontAttributes="Bold" TextColor="#FF6B6B"/>
                         <Label Text="Permanently delete all workouts, sets and history. This cannot be undone."
-                               FontSize="12"
-                               TextColor="#999999"
-                               LineBreakMode="WordWrap"/>
+                               FontSize="12" TextColor="#999999" LineBreakMode="WordWrap"/>
                         <Button Text="Clear All Data"
                                 Command="{Binding ClearAllDataCommand}"
-                                BackgroundColor="#FF6B6B"
-                                TextColor="#FFFFFF"
-                                FontAttributes="Bold"
-                                FontSize="14"
-                                Padding="0,12"
-                                CornerRadius="8"
-                                BorderWidth="0"
+                                BackgroundColor="#FF6B6B" TextColor="#FFFFFF"
+                                FontAttributes="Bold" FontSize="14"
+                                Padding="0,12" CornerRadius="8" BorderWidth="0"
                                 Margin="0,4,0,0"/>
                     </StackLayout>
                 </StackLayout>

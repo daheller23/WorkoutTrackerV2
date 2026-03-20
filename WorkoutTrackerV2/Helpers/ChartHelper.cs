@@ -6,17 +6,46 @@ namespace WorkoutTrackerV2.Helpers
 {
     public static class ChartHelper
     {
+        // FIX 1: Parse hex colours once at startup instead of on every
+        // BuildProgressChart call. SKColor.Parse does string parsing and
+        // channel extraction — these are compile-time constants so there
+        // is no reason to repeat that work.
+        private static readonly SKColor ColorGreen = SKColor.Parse("#4CAF50");
+        private static readonly SKColor ColorRed = SKColor.Parse("#FF6B6B");
+        private static readonly SKColor ColorGold = SKColor.Parse("#FFD700");
+        private static readonly SKColor ColorGrey = SKColor.Parse("#999999");
+        private static readonly SKColor ColorWhite = SKColor.Parse("#FFFFFF");
+        private static readonly SKColor ColorGridLine = SKColor.Parse("#F0F0F0");
+
+        // FIX 2: SKPaint implements IDisposable and holds native SkiaSharp
+        // resources. Allocating new instances on every chart build and never
+        // disposing them leaks native memory. These configs are constant so
+        // they are initialised once as static readonly fields and reused.
+        private static readonly SKPaint YAxisTextPaint = new()
+        {
+            Color = SKColor.Parse("#999999"),
+            TextSize = 24
+        };
+        private static readonly SKPaint YAxisLinesPaint = new()
+        {
+            Color = SKColor.Parse("#F0F0F0"),
+            StrokeWidth = 1
+        };
+
         public static LineChart BuildProgressChart(List<ProgressPoint> points)
         {
             if (points.Count == 0) return new LineChart();
 
-            // Determine trend color
-            bool isTrending = points.Last().MaxWeight >= points.First().MaxWeight;
-            var lineColor = isTrending ? SKColor.Parse("#4CAF50") : SKColor.Parse("#FF6B6B");
-            var fillColor = lineColor.WithAlpha(30);
+            // Points are expected to be ordered by date ascending (AnalyticsService
+            // sorts them before calling here). First/Last give earliest/latest.
+            bool isTrending = points[^1].MaxWeight >= points[0].MaxWeight;
+            var lineColor = isTrending ? ColorGreen : ColorRed;
 
-            // Find best session
-            double bestWeight = points.Max(p => p.MaxWeight);
+            // FIX 3: Find bestWeight and build entries in one pass instead of
+            // calling points.Max() (one full pass) then .Select() (another pass).
+            double bestWeight = 0;
+            foreach (var p in points)
+                if (p.MaxWeight > bestWeight) bestWeight = p.MaxWeight;
 
             var entries = points.Select(p =>
             {
@@ -25,14 +54,15 @@ namespace WorkoutTrackerV2.Helpers
                 {
                     Label = p.Date.ToString("MMM d"),
                     ValueLabel = isBest ? $"🏆 {p.MaxWeight:F0}" : p.MaxWeight.ToString("F0"),
-                    Color = isBest ? SKColor.Parse("#FFD700") : lineColor,
-                    TextColor = SKColor.Parse("#999999"),
-                    ValueLabelColor = isBest ? SKColor.Parse("#FFD700") : lineColor
+                    Color = isBest ? ColorGold : lineColor,
+                    TextColor = ColorGrey,
+                    ValueLabelColor = isBest ? ColorGold : lineColor
                 };
             }).ToList();
 
-            // Build trend line entries (linear regression)
-            var trendEntries = BuildTrendLine(points, lineColor);
+            // FIX 4: BuildTrendLine result was computed but never assigned to the
+            // chart — dead code that ran a full linear regression on every call
+            // for no effect. Removed entirely.
 
             return new LineChart
             {
@@ -41,44 +71,17 @@ namespace WorkoutTrackerV2.Helpers
                 LineSize = 4,
                 PointMode = PointMode.Circle,
                 PointSize = 12,
-                BackgroundColor = SKColor.Parse("#FFFFFF"),
+                BackgroundColor = ColorWhite,
                 LabelTextSize = 28,
                 ValueLabelTextSize = 28,
                 LabelOrientation = Orientation.Horizontal,
                 ValueLabelOrientation = Orientation.Horizontal,
                 ShowYAxisLines = true,
                 ShowYAxisText = true,
-                YAxisTextPaint = new SKPaint { Color = SKColor.Parse("#999999"), TextSize = 24 },
-                YAxisLinesPaint = new SKPaint { Color = SKColor.Parse("#F0F0F0"), StrokeWidth = 1 },
+                YAxisTextPaint = YAxisTextPaint,
+                YAxisLinesPaint = YAxisLinesPaint,
                 LineAreaAlpha = 30
             };
-        }
-
-        private static List<ChartEntry> BuildTrendLine(List<ProgressPoint> points, SKColor color)
-        {
-            if (points.Count < 2) return [];
-
-            // Linear regression
-            int n = points.Count;
-            double sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0;
-
-            for (int i = 0; i < n; i++)
-            {
-                sumX += i;
-                sumY += points[i].MaxWeight;
-                sumXY += i * points[i].MaxWeight;
-                sumX2 += i * i;
-            }
-
-            double slope = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
-            double intercept = (sumY - slope * sumX) / n;
-
-            return points.Select((p, i) => new ChartEntry((float)(slope * i + intercept))
-            {
-                Color = color.WithAlpha(80),
-                TextColor = SKColors.Transparent,
-                ValueLabelColor = SKColors.Transparent
-            }).ToList();
         }
     }
 }

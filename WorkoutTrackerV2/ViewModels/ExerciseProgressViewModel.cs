@@ -9,33 +9,18 @@ namespace WorkoutTrackerV2.ViewModels
     [QueryProperty(nameof(Exercise), "Exercise")]
     public partial class ExerciseProgressViewModel : BaseViewModel
     {
-        #region "OBSERVABLE PROPERTIES"
         [ObservableProperty] private ExerciseProgress? _exercise;
         [ObservableProperty] private LineChart? _chart;
-        #endregion
 
-        #region "ON EXERCISE CHANGED"
         partial void OnExerciseChanged(ExerciseProgress? value)
         {
-            if (value is null)
-            {
-                return;
-            }
-            BuildChart(value);
+            if (value is null || value.Points.Count == 0) return;
+            // FIX: BuildChart inlined — it was a one-liner wrapper with no
+            // other callers, so the extra method and indirection are removed.
+            Chart = ChartHelper.BuildProgressChart(value.Points);
         }
-        #endregion
 
-        #region "GO BACK"
         [RelayCommand]
         private static Task GoBack() => Shell.Current.GoToAsync(Routes.Back);
-        #endregion
-
-        #region "BUILD CHART"
-        private void BuildChart(ExerciseProgress exercise)
-        {
-            if (exercise.Points.Count == 0) return;
-            Chart = ChartHelper.BuildProgressChart(exercise.Points);
-        }
-        #endregion
     }
 }

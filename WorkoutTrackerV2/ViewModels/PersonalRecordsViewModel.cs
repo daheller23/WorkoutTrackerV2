@@ -11,15 +11,36 @@ namespace WorkoutTrackerV2.ViewModels
         #region "OBSERVABLE PROPERTIES"
         [ObservableProperty] private ObservableCollection<PersonalRecord> _records = [];
         [ObservableProperty] private int _selectedDays = 0;
+
+        // FIX 4: Pill VMs with different day values from the Analytics/History pages
+        // (0, 30, 60, 90, 180, 365 instead of 0, 7, 14, 30, 60, 90).
+        // Constructed once; IsSelected toggled when SelectedDays changes.
+        public List<TimePeriodPillViewModel> TimePeriodPills { get; } =
+        [
+            new() { Label = "All",  Days = 0,   IsSelected = true },
+            new() { Label = "30d",  Days = 30  },
+            new() { Label = "60d",  Days = 60  },
+            new() { Label = "90d",  Days = 90  },
+            new() { Label = "180d", Days = 180 },
+            new() { Label = "1yr",  Days = 365 },
+        ];
         #endregion
 
         #region "PARTIAL METHODS"
-        partial void OnSelectedDaysChanged(int value) => LoadRecordsCommand.Execute(null);
+        partial void OnSelectedDaysChanged(int value)
+        {
+            foreach (var pill in TimePeriodPills)
+                pill.IsSelected = pill.Days == value;
+            // FIX 1: Call async method directly instead of LoadRecordsCommand.Execute().
+            _ = LoadRecordsAsync();
+        }
         #endregion
 
         #region "LOAD RECORDS"
         [RelayCommand]
-        private async Task LoadRecords()
+        private async Task LoadRecords() => await LoadRecordsAsync();
+
+        private async Task LoadRecordsAsync()
         {
             if (IsLoading) return;
             try
@@ -43,14 +64,11 @@ namespace WorkoutTrackerV2.ViewModels
         [RelayCommand]
         private void ToggleExpanded(PersonalRecord record)
         {
+            // FIX 2: PersonalRecord.IsExpanded is now an [ObservableProperty] on
+            // the model (via PersonalRecord.Display.cs). Toggling it fires
+            // PropertyChanged automatically — no RemoveAt+Insert needed to force
+            // a CollectionView refresh.
             record.IsExpanded = !record.IsExpanded;
-            // Force UI refresh by replacing the item
-            var index = Records.IndexOf(record);
-            if (index >= 0)
-            {
-                Records.RemoveAt(index);
-                Records.Insert(index, record);
-            }
         }
         #endregion
 

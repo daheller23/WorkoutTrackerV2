@@ -6,7 +6,9 @@ using WorkoutTrackerV2.Services;
 
 namespace WorkoutTrackerV2.ViewModels
 {
-    public partial class TemplatePickerViewModel(IWorkoutService workoutService, ITemplateService templateService) : BaseViewModel
+    public partial class TemplatePickerViewModel(
+        IWorkoutService workoutService,
+        ITemplateService templateService) : BaseViewModel
     {
         [ObservableProperty] private ObservableCollection<WorkoutTemplate> _templates = [];
 
@@ -33,7 +35,11 @@ namespace WorkoutTrackerV2.ViewModels
         [RelayCommand]
         private async Task SelectTemplate(WorkoutTemplate template)
         {
-            templateService.PendingTemplate = template; 
+            // PendingTemplateSets is intentionally left empty here — AddWorkoutView
+            // detects an empty set list and calls LoadFromTemplateCommand, which
+            // fetches the sets from the DB. This avoids a DB call on this page
+            // for templates the user may not end up selecting.
+            templateService.PendingTemplate = template;
             await Shell.Current.GoToAsync("..");
         }
 
@@ -44,7 +50,6 @@ namespace WorkoutTrackerV2.ViewModels
                 "Delete Template",
                 $"Are you sure you want to delete '{template.Name}'?",
                 "Yes", "No");
-
             if (!confirmed) return;
 
             try

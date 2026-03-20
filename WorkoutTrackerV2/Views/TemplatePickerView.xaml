@@ -13,25 +13,20 @@
 
     <Grid RowDefinitions="Auto,*" RowSpacing="0">
 
-        <!-- Header -->
+        <!-- ── Header ─────────────────────────────────────────────────────── -->
         <StackLayout Grid.Row="0" BackgroundColor="#FFFFFF" Padding="24,16,24,24" Spacing="4">
             <Button Text="← Back"
                     Command="{Binding CancelCommand}"
-                    BackgroundColor="Transparent"
-                    TextColor="#1F77F0"
-                    FontSize="14"
-                    Padding="0"
-                    HorizontalOptions="Start"/>
+                    BackgroundColor="Transparent" TextColor="#1F77F0"
+                    FontSize="14" Padding="0" HorizontalOptions="Start"/>
             <Label Text="Templates"
-                   FontSize="32"
-                   FontAttributes="Bold"
-                   TextColor="#1F77F0"
-                   CharacterSpacing="0.5"/>
+                   FontSize="32" FontAttributes="Bold"
+                   TextColor="#1F77F0" CharacterSpacing="0.5"/>
             <Label Text="Select a template to load"
-                   FontSize="13"
-                   TextColor="#999999"/>
+                   FontSize="13" TextColor="#999999"/>
         </StackLayout>
 
+        <!-- ── Template List ──────────────────────────────────────────────── -->
         <CollectionView Grid.Row="1"
                         ItemsSource="{Binding Templates}"
                         SelectionMode="None">
@@ -39,51 +34,48 @@
                 <StackLayout Padding="40,80" Spacing="16" HorizontalOptions="Center">
                     <Label Text="📋" FontSize="48" HorizontalOptions="Center"/>
                     <Label Text="No templates yet"
-                           FontSize="16"
-                           FontAttributes="Bold"
-                           TextColor="#999999"
+                           FontSize="16" FontAttributes="Bold" TextColor="#999999"
                            HorizontalOptions="Center"/>
                     <Label Text="Save a workout as a template from the Log Workout page"
-                           FontSize="12"
-                           TextColor="#D0D0D0"
-                           HorizontalOptions="Center"
-                           HorizontalTextAlignment="Center"/>
+                           FontSize="12" TextColor="#D0D0D0"
+                           HorizontalOptions="Center" HorizontalTextAlignment="Center"/>
                 </StackLayout>
             </CollectionView.EmptyView>
             <CollectionView.ItemTemplate>
                 <DataTemplate x:DataType="models:WorkoutTemplate">
                     <Grid ColumnDefinitions="*,Auto"
-                      Padding="20,14"
-                      BackgroundColor="#FFFFFF"
-                      Margin="0,0,0,2">
+                          Padding="20,14"
+                          BackgroundColor="#FFFFFF"
+                          Margin="0,0,0,2">
                         <Grid.GestureRecognizers>
                             <TapGestureRecognizer
                                 Command="{Binding Source={RelativeSource AncestorType={x:Type vm:TemplatePickerViewModel}}, Path=SelectTemplateCommand}"
                                 CommandParameter="{Binding .}"/>
                         </Grid.GestureRecognizers>
 
-                        <!-- Template Info -->
-                        <StackLayout Grid.Column="0" Spacing="3" VerticalOptions="Center">
-                            <Label Text="{Binding Name}"
-                               FontSize="15"
-                               FontAttributes="Bold"
-                               TextColor="#000000"/>
-                            <Label Text="{Binding CreatedDate, StringFormat='Created {0:MMM d, yyyy}'}"
-                               FontSize="11"
-                               TextColor="#999999"/>
-                        </StackLayout>
+                        <!--
+                            FIX 4: Grid replaces StackLayout for the two labels —
+                            single measure pass instead of two per item.
+                        -->
+                        <Grid Grid.Column="0"
+                              RowDefinitions="Auto,Auto"
+                              RowSpacing="3"
+                              VerticalOptions="Center">
+                            <Label Grid.Row="0"
+                                   Text="{Binding Name}"
+                                   FontSize="15" FontAttributes="Bold" TextColor="#000000"/>
+                            <Label Grid.Row="1"
+                                   Text="{Binding CreatedDate, StringFormat='Created {0:MMM d, yyyy}'}"
+                                   FontSize="11" TextColor="#999999"/>
+                        </Grid>
 
-                        <!-- Delete Button -->
                         <Button Grid.Column="1"
-                            Text="✕"
-                            Command="{Binding Source={RelativeSource AncestorType={x:Type vm:TemplatePickerViewModel}}, Path=DeleteTemplateCommand}"
-                            CommandParameter="{Binding .}"
-                            BackgroundColor="Transparent"
-                            TextColor="#FF6B6B"
-                            FontSize="16"
-                            Padding="8"
-                            BorderWidth="0"
-                            VerticalOptions="Center"/>
+                                Text="✕"
+                                Command="{Binding Source={RelativeSource AncestorType={x:Type vm:TemplatePickerViewModel}}, Path=DeleteTemplateCommand}"
+                                CommandParameter="{Binding .}"
+                                BackgroundColor="Transparent" TextColor="#FF6B6B"
+                                FontSize="16" Padding="8" BorderWidth="0"
+                                VerticalOptions="Center"/>
                     </Grid>
                 </DataTemplate>
             </CollectionView.ItemTemplate>
