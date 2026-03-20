@@ -20,6 +20,7 @@ namespace WorkoutTrackerV2.Services
         Task<List<WorkoutSet>> GetAllSetsAsync(int days = 0);
         Task<List<WorkoutSet>> GetExerciseHistoryAsync(int exerciseId, int days = 30);
         Task<int> SaveSetAsync(WorkoutSet set);
+        Task SaveAllSetsAsync(List<WorkoutSet> sets);
         Task<int> DeleteSetAsync(WorkoutSet set);
         Task DeleteSetAsync(int id);
 
@@ -37,6 +38,7 @@ namespace WorkoutTrackerV2.Services
         Task<int> SaveTemplateAsync(WorkoutTemplate template);
         Task<List<WorkoutTemplateSet>> GetTemplateSetsAsync(int templateId);
         Task<int> SaveTemplateSetAsync(WorkoutTemplateSet set);
+        Task SaveAllTemplateSetsAsync(List<WorkoutTemplateSet> sets);
         Task DeleteTemplateAsync(int templateId);
 
         // Admin

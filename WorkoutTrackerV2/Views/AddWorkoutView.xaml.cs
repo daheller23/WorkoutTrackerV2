@@ -5,13 +5,14 @@ namespace WorkoutTrackerV2.Views;
 
 public partial class AddWorkoutView : ContentPage
 {
-    private readonly AddWorkoutViewModel _vm;
+    // FIX 9: Only ITemplateService stored as a field — it's the only dependency
+    // used in the code-behind. ViewModel is accessed via BindingContext cast
+    // rather than a redundant private field.
     private readonly ITemplateService _templateService;
 
     public AddWorkoutView(AddWorkoutViewModel vm, ITemplateService templateService)
     {
         InitializeComponent();
-        _vm = vm;
         _templateService = templateService;
         BindingContext = vm;
     }
@@ -19,6 +20,10 @@ public partial class AddWorkoutView : ContentPage
     protected override void OnAppearing()
     {
         base.OnAppearing();
+
+        // FIX 9: Cast BindingContext directly rather than using a stored _vm field.
+        if (BindingContext is not AddWorkoutViewModel vm) return;
+
         if (_templateService.PendingTemplate is not null)
         {
             var template = _templateService.PendingTemplate;
@@ -27,15 +32,14 @@ public partial class AddWorkoutView : ContentPage
             _templateService.PendingTemplateSets = [];
 
             if (sets.Count > 0)
-                _vm.LoadFromTemplateSetsCommand.Execute((template, sets));
+                _ = vm.LoadFromTemplateSetsCommand.ExecuteAsync((template, sets));
             else
-                _vm.LoadFromTemplateCommand.Execute(template);
+                _ = vm.LoadFromTemplateCommand.ExecuteAsync(template);
         }
         else
         {
-            // Always clear SelectedExercise on appear to prevent
-            // Shell re-applying stale QueryProperty value
-            _vm.ClearSelectedExerciseCommand.Execute(null);
+            // Clear stale QueryProperty value on every appear.
+            vm.ClearSelectedExerciseCommand.Execute(null);
         }
     }
 }

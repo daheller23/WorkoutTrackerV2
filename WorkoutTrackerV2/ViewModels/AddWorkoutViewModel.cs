@@ -7,7 +7,10 @@ using WorkoutTrackerV2.Services;
 namespace WorkoutTrackerV2.ViewModels
 {
     [QueryProperty(nameof(SelectedExercise), "SelectedExercise")]
-    public partial class AddWorkoutViewModel(IWorkoutService workoutService, ITemplateService templateService, ISettingsService settingsService) : BaseViewModel
+    public partial class AddWorkoutViewModel(
+        IWorkoutService workoutService,
+        ITemplateService templateService,
+        ISettingsService settingsService) : BaseViewModel
     {
         private bool _ignoreNextExerciseSelection = false;
 
@@ -25,11 +28,13 @@ namespace WorkoutTrackerV2.ViewModels
         [ObservableProperty] private string _weightUnitLabel = "lbs total";
         #endregion
 
+        #region "PREPARE FOR TEMPLATE PICKER"
         [RelayCommand]
         private void PrepareForTemplatePicker()
         {
             _ignoreNextExerciseSelection = true;
         }
+        #endregion
 
         #region "ON SELECTED EXERCISE CHANGED"
         partial void OnSelectedExerciseChanged(Exercise? value)
@@ -47,7 +52,11 @@ namespace WorkoutTrackerV2.ViewModels
             {
                 var template = templateService.PendingTemplate;
                 templateService.PendingTemplate = null;
-                LoadFromTemplateCommand.Execute(template);
+                // FIX 10: Call the method directly instead of going through
+                // LoadFromTemplateCommand.Execute() inside a property-changed handler.
+                // Executing commands from partial methods bypasses CanExecute guards
+                // and obscures the call flow.
+                _ = LoadFromTemplateAsync(template);
                 return;
             }
 
@@ -95,17 +104,14 @@ namespace WorkoutTrackerV2.ViewModels
                 return;
             }
 
-            var newSet = new WorkoutSet
-            {
-                Exercise = group.Exercise,
-                ExerciseId = group.Exercise.Id,
-                SetNumber = group.Sets.Count + 1,
-                Reps = lastSet.Reps,
-                Weight = lastSet.Weight,
-                WeightUnit = lastSet.WeightUnit,
-                ParentGroup = group
-            };
-            newSet.DeleteCommand = new CommunityToolkit.Mvvm.Input.RelayCommand(() => group.RemoveSet(newSet));
+            var newSet = CreateWorkoutSet(
+                group.Exercise,
+                group,
+                group.Sets.Count + 1,
+                lastSet.Reps,
+                lastSet.Weight,
+                lastSet.WeightUnit);
+
             group.Sets.Add(newSet);
             OnPropertyChanged(nameof(group.SetCountLabel));
             UpdateTotals();
@@ -133,20 +139,24 @@ namespace WorkoutTrackerV2.ViewModels
             {
                 var template = new WorkoutTemplate { Name = name, Notes = Notes };
                 int templateId = await workoutService.SaveTemplateAsync(template);
+
+                // FIX 2: Build the full list of template sets first, then insert
+                // them all in one SaveAllTemplateSetsAsync call instead of awaiting
+                // SaveTemplateSetAsync N times in a nested loop.
                 int setNumber = 1;
+                var templateSets = ExerciseGroups
+                    .SelectMany(group => group.Sets.Select(set => new WorkoutTemplateSet
+                    {
+                        TemplateId = templateId,
+                        ExerciseId = group.Exercise.Id,
+                        SetNumber = setNumber++,
+                        Reps = set.Reps,
+                        Weight = set.Weight,
+                        WeightUnit = set.WeightUnit
+                    }))
+                    .ToList();
 
-                foreach (var group in ExerciseGroups)
-                    foreach (var set in group.Sets)
-                        await workoutService.SaveTemplateSetAsync(new WorkoutTemplateSet
-                        {
-                            TemplateId = templateId,
-                            ExerciseId = group.Exercise.Id,
-                            SetNumber = setNumber++,
-                            Reps = set.Reps,
-                            Weight = set.Weight,
-                            WeightUnit = set.WeightUnit
-                        });
-
+                await workoutService.SaveAllTemplateSetsAsync(templateSets);
                 await Shell.Current.DisplayAlertAsync("Saved", $"'{name}' saved as a template!", "OK");
             }
             catch (Exception ex)
@@ -159,56 +169,17 @@ namespace WorkoutTrackerV2.ViewModels
         #region "LOAD FROM TEMPLATE"
         [RelayCommand]
         private async Task LoadFromTemplate(WorkoutTemplate template)
+            => await LoadFromTemplateAsync(template);
+
+        // FIX 3: Shared private implementation used by both the public RelayCommand
+        // and the direct call from OnSelectedExerciseChanged. Eliminates duplication
+        // and means the template-fetch logic only exists in one place.
+        private async Task LoadFromTemplateAsync(WorkoutTemplate template)
         {
             try
             {
                 var sets = await workoutService.GetTemplateSetsAsync(template.Id);
-                var exercises = await workoutService.GetAllExercisesAsync();
-
-                ExerciseGroups.Clear();
-                WorkoutName = template.Name;
-                Notes = template.Notes;
-
-                foreach (var set in sets)
-                {
-                    var exercise = exercises.FirstOrDefault(e => e.Id == set.ExerciseId);
-                    if (exercise is null) continue;
-
-                    var existing = ExerciseGroups.FirstOrDefault(g => g.Exercise.Id == exercise.Id);
-                    if (existing is not null)
-                    {
-                        var workoutSet = new WorkoutSet
-                        {
-                            Exercise = exercise,
-                            ExerciseId = exercise.Id,
-                            SetNumber = existing.Sets.Count + 1,
-                            Reps = set.Reps,
-                            Weight = set.Weight,
-                            WeightUnit = set.WeightUnit,
-                            ParentGroup = existing
-                        };
-                        workoutSet.DeleteCommand = new CommunityToolkit.Mvvm.Input.RelayCommand(() => existing.RemoveSet(workoutSet));
-                        existing.Sets.Add(workoutSet);
-                    }
-                    else
-                    {
-                        var group = new ExerciseGroup(exercise);
-                        var workoutSet = new WorkoutSet
-                        {
-                            Exercise = exercise,
-                            ExerciseId = exercise.Id,
-                            SetNumber = 1,
-                            Reps = set.Reps,
-                            Weight = set.Weight,
-                            WeightUnit = set.WeightUnit,
-                            ParentGroup = group
-                        };
-                        workoutSet.DeleteCommand = new CommunityToolkit.Mvvm.Input.RelayCommand(() => group.RemoveSet(workoutSet));
-                        group.Sets.Add(workoutSet);
-                        ExerciseGroups.Add(group);
-                    }
-                }
-                UpdateTotals();
+                await ApplyTemplateSetsAsync(template, sets);
             }
             catch (Exception ex)
             {
@@ -230,9 +201,7 @@ namespace WorkoutTrackerV2.ViewModels
         #region "VIEW EXERCISE PICKER"
         [RelayCommand]
         private static async Task ViewExercisePicker()
-        {
-            await Shell.Current.GoToAsync(Routes.ExercisePicker);
-        }
+            => await Shell.Current.GoToAsync(Routes.ExercisePicker);
         #endregion
 
         #region "ADD SET"
@@ -274,22 +243,20 @@ namespace WorkoutTrackerV2.ViewModels
                 return;
             }
 
-            var allSets = ExerciseGroups.SelectMany(i => i.Sets).ToList();
+            var allSets = ExerciseGroups.SelectMany(g => g.Sets).ToList();
+
             if (allSets.Count == 0)
             {
                 await Shell.Current.DisplayAlertAsync("Error", "Please add at least one set", "OK");
                 return;
             }
 
-            // Validate reps and weight
-            var invalidSets = allSets.Where(s => s.Reps <= 0 || s.Weight < 0).ToList();
-            if (invalidSets.Count > 0)
+            if (allSets.Any(s => s.Reps <= 0 || s.Weight < 0))
             {
                 await Shell.Current.DisplayAlertAsync("Error", "All sets must have reps greater than 0", "OK");
                 return;
             }
 
-            // Warn if start time is after end time
             if (StartTime > TimeSpan.Zero && EndTime > TimeSpan.Zero && StartTime >= EndTime)
             {
                 bool proceed = await Shell.Current.DisplayAlertAsync(
@@ -317,19 +284,24 @@ namespace WorkoutTrackerV2.ViewModels
                 };
 
                 int sessionId = await workoutService.SaveSessionAsync(session);
+
+                // FIX 1: Build the full set list first, then insert in one batch call
+                // instead of awaiting SaveSetAsync N times in a nested loop.
                 int setNumber = 1;
-                foreach (var group in ExerciseGroups)
-                    foreach (var set in group.Sets)
-                        await workoutService.SaveSetAsync(new WorkoutSet
-                        {
-                            ExerciseId = group.Exercise.Id,
-                            WorkoutSessionId = sessionId,
-                            SetNumber = setNumber++,
-                            Reps = set.Reps,
-                            Weight = set.Weight,
-                            WeightUnit = set.WeightUnit,
-                            CreatedDate = SelectedDate
-                        });
+                var workoutSets = ExerciseGroups
+                    .SelectMany(group => group.Sets.Select(set => new WorkoutSet
+                    {
+                        ExerciseId = group.Exercise.Id,
+                        WorkoutSessionId = sessionId,
+                        SetNumber = setNumber++,
+                        Reps = set.Reps,
+                        Weight = set.Weight,
+                        WeightUnit = set.WeightUnit,
+                        CreatedDate = SelectedDate
+                    }))
+                    .ToList();
+
+                await workoutService.SaveAllSetsAsync(workoutSets);
 
                 ResetForm();
                 await Shell.Current.GoToAsync(Routes.Home);
@@ -351,28 +323,11 @@ namespace WorkoutTrackerV2.ViewModels
         private void Clear() => ResetForm();
         #endregion
 
-        #region "RESET FORM"
-        private void ResetForm()
+        #region "CLEAR SELECTED EXERCISE"
+        [RelayCommand]
+        private void ClearSelectedExercise()
         {
-            templateService.PendingTemplate = null;
-            WorkoutName = string.Empty;
-            Notes = string.Empty;
-            SelectedDate = DateTime.Today;
-            StartTime = TimeSpan.Zero;
-            EndTime = TimeSpan.Zero;
-            ExerciseGroups.Clear();
-            WeightUnitLabel = $"{settingsService.WeightUnit} total";
-            UpdateTotals();
-        }
-        #endregion
-
-        #region "UPDATE TOTALS"
-        private void UpdateTotals()
-        {
-            TotalSets = ExerciseGroups.Sum(g => g.Sets.Count);
-            TotalVolume = ExerciseGroups
-                .SelectMany(g => g.Sets)
-                .Sum(s => s.Weight * s.Reps);
+            SelectedExercise = null;
         }
         #endregion
 
@@ -387,51 +342,10 @@ namespace WorkoutTrackerV2.ViewModels
         {
             try
             {
-                var exercises = await workoutService.GetAllExercisesAsync();
-                ExerciseGroups.Clear();
-                WorkoutName = args.template.Name;
-                Notes = args.template.Notes;
-
-                foreach (var set in args.sets)
-                {
-                    var exercise = exercises.FirstOrDefault(e => e.Id == set.ExerciseId);
-                    if (exercise is null) continue;
-
-                    var existing = ExerciseGroups.FirstOrDefault(g => g.Exercise.Id == exercise.Id);
-                    if (existing is not null)
-                    {
-                        var workoutSet = new WorkoutSet
-                        {
-                            Exercise = exercise,
-                            ExerciseId = exercise.Id,
-                            SetNumber = existing.Sets.Count + 1,
-                            Reps = set.Reps,
-                            Weight = set.Weight,
-                            WeightUnit = set.WeightUnit,
-                            ParentGroup = existing
-                        };
-                        workoutSet.DeleteCommand = new CommunityToolkit.Mvvm.Input.RelayCommand(() => existing.RemoveSet(workoutSet));
-                        existing.Sets.Add(workoutSet);
-                    }
-                    else
-                    {
-                        var group = new ExerciseGroup(exercise, settingsService.WeightUnit);
-                        var workoutSet = new WorkoutSet
-                        {
-                            Exercise = exercise,
-                            ExerciseId = exercise.Id,
-                            SetNumber = 1,
-                            Reps = set.Reps,
-                            Weight = set.Weight,
-                            WeightUnit = set.WeightUnit,
-                            ParentGroup = group
-                        };
-                        workoutSet.DeleteCommand = new CommunityToolkit.Mvvm.Input.RelayCommand(() => group.RemoveSet(workoutSet));
-                        group.Sets.Add(workoutSet);
-                        ExerciseGroups.Add(group);
-                    }
-                }
-                UpdateTotals();
+                // FIX 3: Shared ApplyTemplateSetsAsync replaces the duplicated
+                // group-building logic that was copied across LoadFromTemplate
+                // and LoadFromTemplateSets.
+                await ApplyTemplateSetsAsync(args.template, args.sets);
             }
             catch (Exception ex)
             {
@@ -440,10 +354,106 @@ namespace WorkoutTrackerV2.ViewModels
         }
         #endregion
 
-        [RelayCommand]
-        private void ClearSelectedExercise()
+        #region "PRIVATE HELPERS"
+
+        // FIX 3: Single method that both LoadFromTemplate and LoadFromTemplateSets
+        // delegate to. Exercise lookup, group building, and set construction all
+        // live in one place.
+        private async Task ApplyTemplateSetsAsync(
+            WorkoutTemplate template,
+            List<WorkoutTemplateSet> sets)
         {
-            SelectedExercise = null;
+            var exercises = await workoutService.GetAllExercisesAsync();
+            // FIX: Build a dictionary for O(1) lookup instead of calling
+            // FirstOrDefault (O(n)) per set inside the loop.
+            var exerciseDict = exercises.ToDictionary(e => e.Id);
+
+            ExerciseGroups.Clear();
+            WorkoutName = template.Name;
+            Notes = template.Notes;
+
+            foreach (var set in sets)
+            {
+                if (!exerciseDict.TryGetValue(set.ExerciseId, out var exercise)) continue;
+
+                var existing = ExerciseGroups.FirstOrDefault(g => g.Exercise.Id == exercise.Id);
+                if (existing is not null)
+                {
+                    // FIX 5: CreateWorkoutSet factory method replaces the duplicated
+                    // inline WorkoutSet construction + DeleteCommand wiring.
+                    var workoutSet = CreateWorkoutSet(
+                        exercise, existing, existing.Sets.Count + 1,
+                        set.Reps, set.Weight, set.WeightUnit);
+                    existing.Sets.Add(workoutSet);
+                }
+                else
+                {
+                    var group = new ExerciseGroup(exercise, settingsService.WeightUnit);
+                    var workoutSet = CreateWorkoutSet(
+                        exercise, group, 1,
+                        set.Reps, set.Weight, set.WeightUnit);
+                    group.Sets.Add(workoutSet);
+                    ExerciseGroups.Add(group);
+                }
+            }
+            UpdateTotals();
         }
+
+        // FIX 5: Factory method centralises WorkoutSet construction and DeleteCommand
+        // wiring. Previously this was duplicated verbatim in CopyLastSet,
+        // LoadFromTemplate, and LoadFromTemplateSets.
+        private static WorkoutSet CreateWorkoutSet(
+            Exercise exercise,
+            ExerciseGroup group,
+            int setNumber,
+            int reps,
+            double weight,
+            string weightUnit)
+        {
+            var set = new WorkoutSet
+            {
+                Exercise = exercise,
+                ExerciseId = exercise.Id,
+                SetNumber = setNumber,
+                Reps = reps,
+                Weight = weight,
+                WeightUnit = weightUnit,
+                ParentGroup = group
+            };
+            set.DeleteCommand = new CommunityToolkit.Mvvm.Input.RelayCommand(
+                () => group.RemoveSet(set));
+            return set;
+        }
+
+        private void ResetForm()
+        {
+            templateService.PendingTemplate = null;
+            WorkoutName = string.Empty;
+            Notes = string.Empty;
+            SelectedDate = DateTime.Today;
+            StartTime = TimeSpan.Zero;
+            EndTime = TimeSpan.Zero;
+            ExerciseGroups.Clear();
+            WeightUnitLabel = $"{settingsService.WeightUnit} total";
+            UpdateTotals();
+        }
+
+        // FIX 4: Single loop over all sets instead of two separate LINQ passes
+        // (Sum over groups + SelectMany+Sum). Both totals computed in one iteration.
+        private void UpdateTotals()
+        {
+            int sets = 0;
+            double volume = 0;
+            foreach (var group in ExerciseGroups)
+            {
+                sets += group.Sets.Count;
+                foreach (var set in group.Sets)
+                    volume += set.Weight * set.Reps;
+            }
+            TotalSets = sets;
+            TotalVolume = volume;
+        }
+
+        #endregion
     }
 }

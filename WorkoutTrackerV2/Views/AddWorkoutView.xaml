@@ -4,23 +4,25 @@
              x:Class="WorkoutTrackerV2.Views.AddWorkoutView"
              xmlns:vm="clr-namespace:WorkoutTrackerV2.ViewModels"
              xmlns:models="clr-namespace:WorkoutTrackerV2.Models"
-             xmlns:converters="clr-namespace:WorkoutTrackerV2.Converters"
              x:DataType="vm:AddWorkoutViewModel"
              BackgroundColor="#FAFAFA">
 
+    <!--
+        FIX 7: MuscleGroupColorConverter removed — item template now binds to
+        Exercise.MuscleGroupColor (pre-computed property from Exercise.Display.cs).
+        FIX 8: CopyLastButtonColorConverter and CopyLastButtonTextColorConverter
+        removed — replaced with DataTriggers on HasSets in the item template.
+        No converter resources needed on this page.
+    -->
+
     <Shell.NavBarIsVisible>False</Shell.NavBarIsVisible>
 
-    <ContentPage.Resources>
-        <converters:MuscleGroupColorConverter x:Key="MuscleGroupColorConverter"/>
-        <converters:CopyLastButtonColorConverter x:Key="CopyLastButtonColorConverter"/>
-        <converters:CopyLastButtonTextColorConverter x:Key="CopyLastButtonTextColorConverter"/>
-    </ContentPage.Resources>
     <Grid RowDefinitions="*,Auto" RowSpacing="0">
 
         <ScrollView Grid.Row="0">
             <StackLayout Padding="20,24" Spacing="24">
 
-                <!-- Header -->
+                <!-- ── Header ──────────────────────────────────────────────── -->
                 <Grid ColumnDefinitions="*,Auto">
                     <StackLayout Grid.Column="0" Spacing="4">
                         <Label Text="Log Your Workout"
@@ -42,13 +44,11 @@
                             VerticalOptions="Start"/>
                 </Grid>
 
-                <!-- Workout Name -->
+                <!-- ── Workout Name ─────────────────────────────────────────── -->
                 <StackLayout Spacing="12" BackgroundColor="#FFFFFF" Padding="16">
                     <Label Text="Workout Name"
-                           FontSize="12"
-                           TextColor="#999999"
-                           FontAttributes="Bold"
-                           CharacterSpacing="0.3"/>
+                           FontSize="12" TextColor="#999999"
+                           FontAttributes="Bold" CharacterSpacing="0.3"/>
                     <Entry Text="{Binding WorkoutName}"
                            BackgroundColor="#F5F5F5"
                            TextColor="#000000"
@@ -57,13 +57,11 @@
                            FontSize="14"/>
                 </StackLayout>
 
-                <!-- Date & Time -->
+                <!-- ── Date & Time ──────────────────────────────────────────── -->
                 <StackLayout Spacing="12" BackgroundColor="#FFFFFF" Padding="16">
                     <Label Text="Date &amp; Time"
-                           FontSize="12"
-                           TextColor="#999999"
-                           FontAttributes="Bold"
-                           CharacterSpacing="0.3"/>
+                           FontSize="12" TextColor="#999999"
+                           FontAttributes="Bold" CharacterSpacing="0.3"/>
                     <DatePicker Date="{Binding SelectedDate}"
                                 BackgroundColor="#F5F5F5"
                                 TextColor="#000000"
@@ -83,48 +81,49 @@
                         </StackLayout>
                     </Grid>
                     <Label Text="{Binding DayName}"
-                           FontSize="15"
-                           FontAttributes="Bold"
-                           TextColor="#1F77F0"
-                           HorizontalOptions="Center"/>
+                           FontSize="15" FontAttributes="Bold"
+                           TextColor="#1F77F0" HorizontalOptions="Center"/>
                 </StackLayout>
 
-                <!-- Exercise Groups -->
+                <!-- ── Exercise Groups ──────────────────────────────────────── -->
                 <StackLayout Spacing="12">
                     <Label Text="EXERCISES"
-                           FontSize="11"
-                           FontAttributes="Bold"
-                           TextColor="#999999"
-                           CharacterSpacing="1"/>
+                           FontSize="11" FontAttributes="Bold"
+                           TextColor="#999999" CharacterSpacing="1"/>
 
                     <CollectionView ItemsSource="{Binding ExerciseGroups}"
                                     SelectionMode="None">
                         <CollectionView.EmptyView>
                             <Label Text="No exercises added yet"
-                                   FontSize="12"
-                                   TextColor="#D0D0D0"
-                                   HorizontalOptions="Center"
-                                   Margin="0,20"/>
+                                   FontSize="12" TextColor="#D0D0D0"
+                                   HorizontalOptions="Center" Margin="0,20"/>
                         </CollectionView.EmptyView>
                         <CollectionView.ItemTemplate>
                             <DataTemplate x:DataType="models:ExerciseGroup">
                                 <StackLayout Margin="0,0,0,12">
                                     <StackLayout BackgroundColor="#FFFFFF" Padding="0,0,0,12" Spacing="12">
 
-                                        <!-- Muscle Group Color Bar + Exercise Header -->
+                                        <!-- Exercise Header -->
                                         <Grid ColumnDefinitions="6,*,Auto,Auto" ColumnSpacing="12">
+                                            <!--
+                                                FIX 7: Binds to Exercise.MuscleGroupColor (pre-computed)
+                                                instead of running MuscleGroupColorConverter.
+                                            -->
                                             <BoxView Grid.Column="0"
-                                                     BackgroundColor="{Binding Exercise.MuscleGroup, Converter={StaticResource MuscleGroupColorConverter}}"
+                                                     BackgroundColor="{Binding Exercise.MuscleGroupColor}"
                                                      HorizontalOptions="Fill"
                                                      VerticalOptions="Fill"/>
-                                            <StackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center" Padding="0,12,0,0">
+                                            <StackLayout Grid.Column="1" Spacing="2"
+                                                         VerticalOptions="Center" Padding="0,12,0,0">
                                                 <Label Text="{Binding Exercise.Name}"
-                                                       FontSize="15"
-                                                       FontAttributes="Bold"
-                                                       TextColor="#000000"/>
+                                                       FontSize="15" FontAttributes="Bold" TextColor="#000000"/>
+                                                <!--
+                                                    FIX 7: TextColor binds to Exercise.MuscleGroupColor
+                                                    instead of running MuscleGroupColorConverter.
+                                                -->
                                                 <Label Text="{Binding Exercise.MuscleGroup}"
                                                        FontSize="11"
-                                                       TextColor="{Binding Exercise.MuscleGroup, Converter={StaticResource MuscleGroupColorConverter}}"/>
+                                                       TextColor="{Binding Exercise.MuscleGroupColor}"/>
                                             </StackLayout>
                                             <Border Grid.Column="2"
                                                     BackgroundColor="#F0F7FF"
@@ -136,9 +135,7 @@
                                                     <RoundRectangle CornerRadius="10"/>
                                                 </Border.StrokeShape>
                                                 <Label Text="{Binding SetCountLabel}"
-                                                       FontSize="11"
-                                                       FontAttributes="Bold"
-                                                       TextColor="#1F77F0"/>
+                                                       FontSize="11" FontAttributes="Bold" TextColor="#1F77F0"/>
                                             </Border>
                                             <Button Grid.Column="3"
                                                     Text="✕"
@@ -147,51 +144,43 @@
                                                     BackgroundColor="#FF6B6B"
                                                     TextColor="#FFFFFF"
                                                     FontSize="13"
-                                                    WidthRequest="36"
-                                                    HeightRequest="36"
-                                                    Padding="0"
-                                                    CornerRadius="6"
-                                                    BorderWidth="0"
-                                                    VerticalOptions="Center"
-                                                    Margin="0,12,12,0"/>
+                                                    WidthRequest="36" HeightRequest="36"
+                                                    Padding="0" CornerRadius="6" BorderWidth="0"
+                                                    VerticalOptions="Center" Margin="0,12,12,0"/>
                                         </Grid>
 
                                         <BoxView HeightRequest="0.5" Color="#F0F0F0" Margin="16,0"/>
 
                                         <!-- Table Header -->
-                                        <Grid ColumnDefinitions="30,*,*,80,36" ColumnSpacing="8" Margin="16,0"
-                                              IsVisible="{Binding HasSets}">
-                                            <Label Grid.Column="0" Text="Set" FontSize="11" TextColor="#999999" FontAttributes="Bold" HorizontalOptions="Center"/>
-                                            <Label Grid.Column="1" Text="Reps" FontSize="11" TextColor="#999999" FontAttributes="Bold" HorizontalOptions="Center"/>
+                                        <Grid ColumnDefinitions="30,*,*,80,36" ColumnSpacing="8"
+                                              Margin="16,0" IsVisible="{Binding HasSets}">
+                                            <Label Grid.Column="0" Text="Set"    FontSize="11" TextColor="#999999" FontAttributes="Bold" HorizontalOptions="Center"/>
+                                            <Label Grid.Column="1" Text="Reps"   FontSize="11" TextColor="#999999" FontAttributes="Bold" HorizontalOptions="Center"/>
                                             <Label Grid.Column="2" Text="Weight" FontSize="11" TextColor="#999999" FontAttributes="Bold" HorizontalOptions="Center"/>
-                                            <Label Grid.Column="3" Text="Unit" FontSize="11" TextColor="#999999" FontAttributes="Bold" HorizontalOptions="Center"/>
+                                            <Label Grid.Column="3" Text="Unit"   FontSize="11" TextColor="#999999" FontAttributes="Bold" HorizontalOptions="Center"/>
                                             <Label Grid.Column="4" Text=""/>
                                         </Grid>
 
-                                        <!-- Sets Rows -->
-                                        <StackLayout BindableLayout.ItemsSource="{Binding Sets}" Spacing="6" Margin="16,0">
+                                        <!-- Set Rows -->
+                                        <StackLayout BindableLayout.ItemsSource="{Binding Sets}"
+                                                     Spacing="6" Margin="16,0">
                                             <BindableLayout.EmptyView>
                                                 <Label Text="No sets yet — tap + Add Set to get started"
-                                                       FontSize="11"
-                                                       TextColor="#D0D0D0"
-                                                       HorizontalOptions="Center"
-                                                       Margin="0,4,0,4"/>
+                                                       FontSize="11" TextColor="#D0D0D0"
+                                                       HorizontalOptions="Center" Margin="0,4,0,4"/>
                                             </BindableLayout.EmptyView>
                                             <BindableLayout.ItemTemplate>
                                                 <DataTemplate x:DataType="models:WorkoutSet">
                                                     <Grid ColumnDefinitions="30,*,*,80,36" ColumnSpacing="8">
                                                         <Border Grid.Column="0"
                                                                 BackgroundColor="#F0F7FF"
-                                                                WidthRequest="28"
-                                                                HeightRequest="28"
-                                                                VerticalOptions="Center"
-                                                                StrokeThickness="0">
+                                                                WidthRequest="28" HeightRequest="28"
+                                                                VerticalOptions="Center" StrokeThickness="0">
                                                             <Border.StrokeShape>
                                                                 <RoundRectangle CornerRadius="6"/>
                                                             </Border.StrokeShape>
                                                             <Label Text="{Binding SetNumber}"
-                                                                   FontSize="12"
-                                                                   FontAttributes="Bold"
+                                                                   FontSize="12" FontAttributes="Bold"
                                                                    TextColor="#1F77F0"
                                                                    HorizontalOptions="Center"
                                                                    VerticalOptions="Center"/>
@@ -227,18 +216,19 @@
                                                                 Command="{Binding DeleteCommand}"
                                                                 BackgroundColor="Transparent"
                                                                 TextColor="#FF6B6B"
-                                                                FontSize="14"
-                                                                Padding="0"
-                                                                WidthRequest="36"
-                                                                HeightRequest="36"
-                                                                BorderWidth="0"
-                                                                VerticalOptions="Center"/>
+                                                                FontSize="14" Padding="0"
+                                                                WidthRequest="36" HeightRequest="36"
+                                                                BorderWidth="0" VerticalOptions="Center"/>
                                                     </Grid>
                                                 </DataTemplate>
                                             </BindableLayout.ItemTemplate>
                                         </StackLayout>
 
-                                        <!-- Add Set / Copy Last Set -->
+                                        <!-- Add Set / Copy Last Set
+                                             FIX 8: CopyLastButtonColorConverter and
+                                             CopyLastButtonTextColorConverter replaced with
+                                             DataTriggers on HasSets — zero converter calls
+                                             per render of this button pair.               -->
                                         <Grid ColumnDefinitions="*,*" ColumnSpacing="8" Margin="16,0">
                                             <Button Grid.Column="0"
                                                     Text="+ Add Set"
@@ -246,22 +236,27 @@
                                                     CommandParameter="{Binding .}"
                                                     BackgroundColor="#F0F7FF"
                                                     TextColor="#1F77F0"
-                                                    FontAttributes="Bold"
-                                                    FontSize="13"
-                                                    Padding="0,10"
-                                                    CornerRadius="8"
-                                                    BorderWidth="0"/>
+                                                    FontAttributes="Bold" FontSize="13"
+                                                    Padding="0,10" CornerRadius="8" BorderWidth="0"/>
                                             <Button Grid.Column="1"
                                                     Text="Copy Last"
                                                     Command="{Binding Source={RelativeSource AncestorType={x:Type vm:AddWorkoutViewModel}}, Path=CopyLastSetCommand}"
                                                     CommandParameter="{Binding .}"
-                                                    BackgroundColor="{Binding HasSets, Converter={StaticResource CopyLastButtonColorConverter}}"
-                                                    TextColor="{Binding HasSets, Converter={StaticResource CopyLastButtonTextColorConverter}}"
-                                                    FontAttributes="Bold"
-                                                    FontSize="13"
-                                                    Padding="0,10"
-                                                    CornerRadius="8"
-                                                    BorderWidth="0"/>
+                                                    FontAttributes="Bold" FontSize="13"
+                                                    Padding="0,10" CornerRadius="8" BorderWidth="0">
+                                                <Button.Triggers>
+                                                    <DataTrigger TargetType="Button"
+                                                                 Binding="{Binding HasSets}" Value="True">
+                                                        <Setter Property="BackgroundColor" Value="#F0F7FF"/>
+                                                        <Setter Property="TextColor"       Value="#1F77F0"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger TargetType="Button"
+                                                                 Binding="{Binding HasSets}" Value="False">
+                                                        <Setter Property="BackgroundColor" Value="#F5F5F5"/>
+                                                        <Setter Property="TextColor"       Value="#CCCCCC"/>
+                                                    </DataTrigger>
+                                                </Button.Triggers>
+                                            </Button>
                                         </Grid>
 
                                     </StackLayout>
@@ -270,25 +265,19 @@
                         </CollectionView.ItemTemplate>
                     </CollectionView>
 
-                    <!-- Add Exercise Button -->
                     <Button Text="+ Add Exercise"
                             Command="{Binding ViewExercisePickerCommand}"
                             BackgroundColor="#1F77F0"
                             TextColor="#FFFFFF"
-                            FontAttributes="Bold"
-                            FontSize="14"
-                            Padding="0,14"
-                            CornerRadius="10"
-                            BorderWidth="0"/>
+                            FontAttributes="Bold" FontSize="14"
+                            Padding="0,14" CornerRadius="10" BorderWidth="0"/>
                 </StackLayout>
 
-                <!-- Notes -->
+                <!-- ── Notes ───────────────────────────────────────────────── -->
                 <StackLayout Spacing="12" BackgroundColor="#FFFFFF" Padding="16">
                     <Label Text="Workout Notes"
-                           FontSize="12"
-                           TextColor="#999999"
-                           FontAttributes="Bold"
-                           CharacterSpacing="0.3"/>
+                           FontSize="12" TextColor="#999999"
+                           FontAttributes="Bold" CharacterSpacing="0.3"/>
                     <Editor Text="{Binding Notes}"
                             BackgroundColor="#F5F5F5"
                             TextColor="#000000"
@@ -301,7 +290,7 @@
             </StackLayout>
         </ScrollView>
 
-        <!-- Action Buttons -->
+        <!-- ── Action Buttons ──────────────────────────────────────────────── -->
         <Grid Grid.Row="1" RowDefinitions="Auto,Auto,Auto" RowSpacing="0" BackgroundColor="#FFFFFF">
 
             <!-- Live Volume Counter -->
@@ -324,48 +313,32 @@
                 <Button Grid.Column="0"
                         Text="📋 Load Template"
                         Command="{Binding OpenTemplatePickerCommand}"
-                        BackgroundColor="#F0F7FF"
-                        TextColor="#1F77F0"
-                        FontAttributes="Bold"
-                        FontSize="13"
-                        Padding="0,10"
-                        CornerRadius="8"
-                        BorderWidth="0"/>
+                        BackgroundColor="#F0F7FF" TextColor="#1F77F0"
+                        FontAttributes="Bold" FontSize="13"
+                        Padding="0,10" CornerRadius="8" BorderWidth="0"/>
                 <Button Grid.Column="1"
                         Text="💾 Save as Template"
                         Command="{Binding SaveAsTemplateCommand}"
-                        BackgroundColor="#F1F8F1"
-                        TextColor="#4CAF50"
-                        FontAttributes="Bold"
-                        FontSize="13"
-                        Padding="0,10"
-                        CornerRadius="8"
-                        BorderWidth="0"/>
+                        BackgroundColor="#F1F8F1" TextColor="#4CAF50"
+                        FontAttributes="Bold" FontSize="13"
+                        Padding="0,10" CornerRadius="8" BorderWidth="0"/>
             </Grid>
 
             <!-- Save / Clear -->
-            <Grid Grid.Row="2" ColumnDefinitions="*,*" ColumnSpacing="16" Padding="20" RowSpacing="0">
+            <Grid Grid.Row="2" ColumnDefinitions="*,*" ColumnSpacing="16" Padding="20">
                 <Button Grid.Column="0"
                         Text="Clear"
                         Command="{Binding ClearCommand}"
-                        BackgroundColor="Transparent"
-                        TextColor="#FF6B6B"
-                        FontAttributes="Bold"
-                        FontSize="14"
-                        Padding="0,14"
-                        CornerRadius="10"
-                        BorderWidth="1"
-                        BorderColor="#FF6B6B"/>
+                        BackgroundColor="Transparent" TextColor="#FF6B6B"
+                        FontAttributes="Bold" FontSize="14"
+                        Padding="0,14" CornerRadius="10"
+                        BorderWidth="1" BorderColor="#FF6B6B"/>
                 <Button Grid.Column="1"
                         Text="Save Workout"
                         Command="{Binding SaveWorkoutCommand}"
-                        BackgroundColor="#1F77F0"
-                        TextColor="#FFFFFF"
-                        FontAttributes="Bold"
-                        FontSize="14"
-                        Padding="0,14"
-                        CornerRadius="10"
-                        BorderWidth="0"/>
+                        BackgroundColor="#1F77F0" TextColor="#FFFFFF"
+                        FontAttributes="Bold" FontSize="14"
+                        Padding="0,14" CornerRadius="10" BorderWidth="0"/>
             </Grid>
 
         </Grid>

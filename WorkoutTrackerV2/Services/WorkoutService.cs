@@ -245,6 +245,14 @@ namespace WorkoutTrackerV2.Services
             return await _database.UpdateAsync(set);
         }
 
+        // FIX 1: Batch insert — saves all sets in one InsertAllAsync call
+        // instead of N sequential SaveSetAsync round-trips.
+        public async Task SaveAllSetsAsync(List<WorkoutSet> sets)
+        {
+            await EnsureInitializedAsync();
+            await _database.InsertAllAsync(sets);
+        }
+
         public async Task<int> DeleteSetAsync(WorkoutSet set)
         {
             await EnsureInitializedAsync();
@@ -345,6 +353,14 @@ namespace WorkoutTrackerV2.Services
             if (set.Id == 0)
                 return await _database.InsertAsync(set);
             return await _database.UpdateAsync(set);
+        }
+
+        // FIX 2: Batch insert — saves all template sets in one InsertAllAsync
+        // call instead of N sequential SaveTemplateSetAsync round-trips.
+        public async Task SaveAllTemplateSetsAsync(List<WorkoutTemplateSet> sets)
+        {
+            await EnsureInitializedAsync();
+            await _database.InsertAllAsync(sets);
         }
 
         public async Task DeleteTemplateAsync(int templateId)
