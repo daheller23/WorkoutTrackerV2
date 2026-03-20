@@ -1,4 +1,5 @@
-﻿using WorkoutTrackerV2.Services;
+﻿using Plugin.LocalNotification;
+using WorkoutTrackerV2.Services;
 
 namespace WorkoutTrackerV2
 {
@@ -15,6 +16,11 @@ namespace WorkoutTrackerV2
         protected override Window CreateWindow(IActivationState? activationState)
         {
             return new Window(new AppShell());
+        }
+        protected override async void OnStart()
+        {
+            base.OnStart();
+            await LocalNotificationCenter.Current.RequestNotificationPermission();
         }
 
     }

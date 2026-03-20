@@ -17,7 +17,7 @@
 
     <Shell.NavBarIsVisible>False</Shell.NavBarIsVisible>
 
-    <Grid RowDefinitions="*,Auto" RowSpacing="0">
+    <Grid RowDefinitions="*,Auto,Auto,Auto" RowSpacing="0">
 
         <ScrollView Grid.Row="0">
             <StackLayout Padding="20,24" Spacing="24">
@@ -151,14 +151,16 @@
 
                                         <BoxView HeightRequest="0.5" Color="#F0F0F0" Margin="16,0"/>
 
-                                        <!-- Table Header -->
-                                        <Grid ColumnDefinitions="30,*,*,80,36" ColumnSpacing="8"
+                                        <!-- Table Header — 6 columns matching set row:
+                                             Set | Reps | Weight | Unit | ⏱ | ✕ -->
+                                        <Grid ColumnDefinitions="30,*,*,80,36,36" ColumnSpacing="8"
                                               Margin="16,0" IsVisible="{Binding HasSets}">
                                             <Label Grid.Column="0" Text="Set"    FontSize="11" TextColor="#999999" FontAttributes="Bold" HorizontalOptions="Center"/>
                                             <Label Grid.Column="1" Text="Reps"   FontSize="11" TextColor="#999999" FontAttributes="Bold" HorizontalOptions="Center"/>
                                             <Label Grid.Column="2" Text="Weight" FontSize="11" TextColor="#999999" FontAttributes="Bold" HorizontalOptions="Center"/>
                                             <Label Grid.Column="3" Text="Unit"   FontSize="11" TextColor="#999999" FontAttributes="Bold" HorizontalOptions="Center"/>
-                                            <Label Grid.Column="4" Text=""/>
+                                            <Label Grid.Column="4" Text=""       FontSize="11"/>
+                                            <Label Grid.Column="5" Text=""       FontSize="11"/>
                                         </Grid>
 
                                         <!-- Set Rows -->
@@ -171,7 +173,7 @@
                                             </BindableLayout.EmptyView>
                                             <BindableLayout.ItemTemplate>
                                                 <DataTemplate x:DataType="models:WorkoutSet">
-                                                    <Grid ColumnDefinitions="30,*,*,80,36" ColumnSpacing="8">
+                                                    <Grid ColumnDefinitions="30,*,*,80,36,36" ColumnSpacing="8">
                                                         <Border Grid.Column="0"
                                                                 BackgroundColor="#F0F7FF"
                                                                 WidthRequest="28" HeightRequest="28"
@@ -211,7 +213,18 @@
                                                                 </x:Array>
                                                             </Picker.ItemsSource>
                                                         </Picker>
+                                                        <!-- Rest timer trigger — starts the default rest
+                                                             period for this set's exercise muscle group. -->
                                                         <Button Grid.Column="4"
+                                                                Text="⏱"
+                                                                Command="{Binding Source={RelativeSource AncestorType={x:Type vm:AddWorkoutViewModel}}, Path=StartRestTimerCommand}"
+                                                                CommandParameter="{Binding Exercise.MuscleGroup}"
+                                                                BackgroundColor="#F0F7FF"
+                                                                TextColor="#1F77F0"
+                                                                FontSize="14" Padding="0"
+                                                                WidthRequest="36" HeightRequest="36"
+                                                                BorderWidth="0" VerticalOptions="Center"/>
+                                                        <Button Grid.Column="5"
                                                                 Text="✕"
                                                                 Command="{Binding DeleteCommand}"
                                                                 BackgroundColor="Transparent"
@@ -290,42 +303,157 @@
             </StackLayout>
         </ScrollView>
 
-        <!-- ── Action Buttons ──────────────────────────────────────────────── -->
-        <Grid Grid.Row="1" RowDefinitions="Auto,Auto,Auto" RowSpacing="0" BackgroundColor="#FFFFFF">
+        <!-- ══════════════════════════════════════════════════════════════════
+             DOCKED PANEL — everything below this line is fixed to the bottom.
+             The strong top border + slightly darker background (#F2F4F7) makes
+             it read as a separate surface the page scrolls behind.
+             ══════════════════════════════════════════════════════════════════ -->
 
-            <!-- Live Volume Counter -->
-            <Grid Grid.Row="0" ColumnDefinitions="*,*" Padding="20,12,20,0" ColumnSpacing="12">
-                <StackLayout Grid.Column="0" Orientation="Horizontal" Spacing="6" HorizontalOptions="Center">
+        <!-- Hairline above timer bar — only visible when timer is active -->
+        <BoxView Grid.Row="1"
+                 HeightRequest="1"
+                 Color="#000000"
+                 Opacity="0.06"
+                 IsVisible="{Binding TimerViewModel.IsVisible}"/>
+
+        <!-- ── Rest Timer Bar (active state only) ────────────────────────── -->
+        <StackLayout Grid.Row="2"
+                     IsVisible="{Binding TimerViewModel.IsVisible}"
+                     BackgroundColor="#EEF4FF"
+                     Padding="20,10,20,10"
+                     Spacing="8">
+
+            <!-- Countdown + progress + controls -->
+            <Grid ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="10">
+                <Label Grid.Column="0"
+                       Text="{Binding TimerViewModel.RemainingLabel}"
+                       FontSize="26" FontAttributes="Bold"
+                       MinimumWidthRequest="64"
+                       VerticalOptions="Center">
+                    <Label.Triggers>
+                        <DataTrigger TargetType="Label"
+                                     Binding="{Binding TimerViewModel.IsFinished}" Value="True">
+                            <Setter Property="TextColor" Value="#4CAF50"/>
+                        </DataTrigger>
+                        <DataTrigger TargetType="Label"
+                                     Binding="{Binding TimerViewModel.IsFinished}" Value="False">
+                            <Setter Property="TextColor" Value="#1F77F0"/>
+                        </DataTrigger>
+                    </Label.Triggers>
+                </Label>
+                <ProgressBar Grid.Column="1"
+                             Progress="{Binding TimerViewModel.Progress}"
+                             ProgressColor="#1F77F0"
+                             VerticalOptions="Center"
+                             Margin="0,0,4,0"/>
+                <Button Grid.Column="2"
+                        Text="+30"
+                        Command="{Binding TimerViewModel.AddThirtyCommand}"
+                        BackgroundColor="#FFFFFF" TextColor="#1F77F0"
+                        FontSize="12" FontAttributes="Bold"
+                        WidthRequest="52" HeightRequest="36"
+                        Padding="0" CornerRadius="8" BorderWidth="0"
+                        VerticalOptions="Center"/>
+                <Button Grid.Column="3"
+                        Text="✕"
+                        Command="{Binding TimerViewModel.StopCommand}"
+                        BackgroundColor="Transparent" TextColor="#FF6B6B"
+                        FontSize="16"
+                        WidthRequest="36" HeightRequest="36"
+                        Padding="0" BorderWidth="0"
+                        VerticalOptions="Center"/>
+            </Grid>
+
+            <!-- Quick preset chips -->
+            <StackLayout Orientation="Horizontal" Spacing="8">
+                <Label Text="Quick:"
+                       FontSize="11" TextColor="#5A8FCC"
+                       VerticalOptions="Center"/>
+                <Button Text="1 min"
+                        Command="{Binding TimerViewModel.StartPresetCommand}"
+                        CommandParameter="60"
+                        BackgroundColor="#FFFFFF" TextColor="#1F77F0"
+                        FontSize="11" Padding="12,4"
+                        CornerRadius="12" BorderWidth="0"/>
+                <Button Text="90s"
+                        Command="{Binding TimerViewModel.StartPresetCommand}"
+                        CommandParameter="90"
+                        BackgroundColor="#FFFFFF" TextColor="#1F77F0"
+                        FontSize="11" Padding="12,4"
+                        CornerRadius="12" BorderWidth="0"/>
+                <Button Text="2 min"
+                        Command="{Binding TimerViewModel.StartPresetCommand}"
+                        CommandParameter="120"
+                        BackgroundColor="#FFFFFF" TextColor="#1F77F0"
+                        FontSize="11" Padding="12,4"
+                        CornerRadius="12" BorderWidth="0"/>
+                <Button Text="3 min"
+                        Command="{Binding TimerViewModel.StartPresetCommand}"
+                        CommandParameter="180"
+                        BackgroundColor="#FFFFFF" TextColor="#1F77F0"
+                        FontSize="11" Padding="12,4"
+                        CornerRadius="12" BorderWidth="0"/>
+            </StackLayout>
+
+        </StackLayout>
+
+        <!-- ── Action Buttons ──────────────────────────────────────────────── -->
+        <Grid Grid.Row="3"
+              RowDefinitions="Auto,Auto,Auto,Auto"
+              RowSpacing="0"
+              BackgroundColor="#F4F5F7">
+
+            <!-- Hairline separator — subtle elevation cue, not a hard border -->
+            <BoxView Grid.Row="0"
+                     HeightRequest="1"
+                     Color="#000000"
+                     Opacity="0.06"/>
+
+            <!-- Sets / Volume counter -->
+            <Grid Grid.Row="1" ColumnDefinitions="*,*"
+                  Padding="20,14,20,10" ColumnSpacing="12">
+                <StackLayout Grid.Column="0"
+                             Orientation="Horizontal" Spacing="6"
+                             HorizontalOptions="Center">
                     <Label Text="{Binding TotalSets}"
-                           FontSize="16" FontAttributes="Bold" TextColor="#1F77F0" VerticalOptions="Center"/>
-                    <Label Text="sets" FontSize="12" TextColor="#999999" VerticalOptions="Center"/>
+                           FontSize="16" FontAttributes="Bold"
+                           TextColor="#1F77F0" VerticalOptions="Center"/>
+                    <Label Text="sets"
+                           FontSize="12" TextColor="#888888"
+                           VerticalOptions="Center"/>
                 </StackLayout>
-                <StackLayout Grid.Column="1" Orientation="Horizontal" Spacing="6" HorizontalOptions="Center">
+                <StackLayout Grid.Column="1"
+                             Orientation="Horizontal" Spacing="6"
+                             HorizontalOptions="Center">
                     <Label Text="{Binding TotalVolume, StringFormat='{0:F0}'}"
-                           FontSize="16" FontAttributes="Bold" TextColor="#4CAF50" VerticalOptions="Center"/>
+                           FontSize="16" FontAttributes="Bold"
+                           TextColor="#4CAF50" VerticalOptions="Center"/>
                     <Label Text="{Binding WeightUnitLabel}"
-                           FontSize="12" TextColor="#999999" VerticalOptions="Center"/>
+                           FontSize="12" TextColor="#888888"
+                           VerticalOptions="Center"/>
                 </StackLayout>
             </Grid>
 
             <!-- Template Buttons -->
-            <Grid Grid.Row="1" ColumnDefinitions="*,*" ColumnSpacing="12" Padding="20,8,20,0">
+            <Grid Grid.Row="2" ColumnDefinitions="*,*"
+                  ColumnSpacing="12" Padding="20,0,20,10">
                 <Button Grid.Column="0"
                         Text="📋 Load Template"
                         Command="{Binding OpenTemplatePickerCommand}"
-                        BackgroundColor="#F0F7FF" TextColor="#1F77F0"
+                        BackgroundColor="#FFFFFF" TextColor="#1F77F0"
                         FontAttributes="Bold" FontSize="13"
                         Padding="0,10" CornerRadius="8" BorderWidth="0"/>
                 <Button Grid.Column="1"
                         Text="💾 Save as Template"
                         Command="{Binding SaveAsTemplateCommand}"
-                        BackgroundColor="#F1F8F1" TextColor="#4CAF50"
+                        BackgroundColor="#FFFFFF" TextColor="#4CAF50"
                         FontAttributes="Bold" FontSize="13"
                         Padding="0,10" CornerRadius="8" BorderWidth="0"/>
             </Grid>
 
             <!-- Save / Clear -->
-            <Grid Grid.Row="2" ColumnDefinitions="*,*" ColumnSpacing="16" Padding="20">
+            <Grid Grid.Row="3" ColumnDefinitions="*,*"
+                  ColumnSpacing="16" Padding="20,0,20,20">
                 <Button Grid.Column="0"
                         Text="Clear"
                         Command="{Binding ClearCommand}"

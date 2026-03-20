@@ -129,6 +129,25 @@
                     </StackLayout>
                 </StackLayout>
 
+                <!-- ── Notifications ─────────────────────────────────────── -->
+                <StackLayout Spacing="10">
+                    <Label Text="NOTIFICATIONS"
+                           FontSize="11" FontAttributes="Bold"
+                           TextColor="#999999" CharacterSpacing="1"/>
+                    <StackLayout BackgroundColor="#FFFFFF" Padding="16" Spacing="8">
+                        <Label Text="Rest Timer Background Alerts"
+                               FontSize="15" FontAttributes="Bold" TextColor="#000000"/>
+                        <Label Text="On some Android devices, battery optimisation blocks notifications when the screen is off. Tap below to disable it for this app so the rest timer alert always fires."
+                               FontSize="12" TextColor="#999999" LineBreakMode="WordWrap"/>
+                        <Button Text="Disable Battery Optimisation"
+                                Command="{Binding RequestBatteryExemptionCommand}"
+                                BackgroundColor="#F0F7FF" TextColor="#1F77F0"
+                                FontAttributes="Bold" FontSize="13"
+                                Padding="0,10" CornerRadius="8" BorderWidth="0"
+                                Margin="0,4,0,0"/>
+                    </StackLayout>
+                </StackLayout>
+
                 <!-- ── About ──────────────────────────────────────────────── -->
                 <StackLayout Spacing="10">
                     <Label Text="ABOUT"

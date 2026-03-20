@@ -10,9 +10,16 @@ namespace WorkoutTrackerV2.ViewModels
     public partial class AddWorkoutViewModel(
         IWorkoutService workoutService,
         ITemplateService templateService,
-        ISettingsService settingsService) : BaseViewModel
+        ISettingsService settingsService,
+        IRestTimerService restTimerService) : BaseViewModel
     {
         private bool _ignoreNextExerciseSelection = false;
+
+        // The timer VM is exposed here so the AddWorkoutView XAML can bind to
+        // it directly — the service is a singleton so the timer survives
+        // navigation to ExercisePicker and back.
+        public RestTimerViewModel TimerViewModel { get; } =
+            new RestTimerViewModel(restTimerService);
 
         #region "OBSERVABLE PROPERTIES"
         [ObservableProperty] private ObservableCollection<ExerciseGroup> _exerciseGroups = [];
@@ -62,11 +69,11 @@ namespace WorkoutTrackerV2.ViewModels
 
             var existing = ExerciseGroups.FirstOrDefault(g => g.Exercise.Id == value.Id);
             if (existing is not null)
-                existing.AddSet(settingsService.WeightUnit);
+                existing.AddSet(settingsService.WeightUnit, _ => UpdateTotals());
             else
             {
                 var group = new ExerciseGroup(value, settingsService.WeightUnit);
-                group.AddSet(settingsService.WeightUnit);
+                group.AddSet(settingsService.WeightUnit, _ => UpdateTotals());
                 ExerciseGroups.Add(group);
             }
             SelectedExercise = null;
@@ -99,21 +106,21 @@ namespace WorkoutTrackerV2.ViewModels
             var lastSet = group.Sets.LastOrDefault();
             if (lastSet is null)
             {
-                group.AddSet(settingsService.WeightUnit);
+                // No sets yet — just add a blank one.
+                group.AddSet(settingsService.WeightUnit, _ => UpdateTotals());
                 UpdateTotals();
                 return;
             }
 
-            var newSet = CreateWorkoutSet(
-                group.Exercise,
-                group,
-                group.Sets.Count + 1,
-                lastSet.Reps,
-                lastSet.Weight,
-                lastSet.WeightUnit);
-
-            group.Sets.Add(newSet);
-            OnPropertyChanged(nameof(group.SetCountLabel));
+            // FIX 1: Use group.AddSet() then overwrite Reps/Weight/WeightUnit
+            // so NotifySetStats() fires on the group and SetCountLabel updates.
+            // Previously used group.Sets.Add() directly which bypassed
+            // NotifySetStats entirely, leaving SetCountLabel stale.
+            group.AddSet(lastSet.WeightUnit, _ => UpdateTotals());
+            var newSet = group.Sets[^1];
+            newSet.Reps = lastSet.Reps;
+            newSet.Weight = lastSet.Weight;
+            newSet.WeightUnit = lastSet.WeightUnit;
             UpdateTotals();
         }
         #endregion
@@ -208,7 +215,7 @@ namespace WorkoutTrackerV2.ViewModels
         [RelayCommand]
         private void AddSet(ExerciseGroup group)
         {
-            group.AddSet(settingsService.WeightUnit);
+            group.AddSet(settingsService.WeightUnit, _ => UpdateTotals());
             UpdateTotals();
         }
         #endregion
@@ -395,6 +402,7 @@ namespace WorkoutTrackerV2.ViewModels
                         exercise, existing, existing.Sets.Count + 1,
                         set.Reps, set.Weight, set.WeightUnit);
                     existing.Sets.Add(workoutSet);
+                    existing.NotifySetStatsPublic();
                 }
                 else
                 {
@@ -403,16 +411,17 @@ namespace WorkoutTrackerV2.ViewModels
                         exercise, group, 1,
                         set.Reps, set.Weight, set.WeightUnit);
                     group.Sets.Add(workoutSet);
+                    group.NotifySetStatsPublic();
                     ExerciseGroups.Add(group);
                 }
             }
             UpdateTotals();
         }
 
-        // FIX 5: Factory method centralises WorkoutSet construction and DeleteCommand
-        // wiring. Previously this was duplicated verbatim in CopyLastSet,
-        // LoadFromTemplate, and LoadFromTemplateSets.
-        private static WorkoutSet CreateWorkoutSet(
+        // Factory method for sets created during template loading.
+        // Non-static so it can close over UpdateTotals() directly — avoids
+        // the RemoveSetCommand reference that failed because the method was static.
+        private WorkoutSet CreateWorkoutSet(
             Exercise exercise,
             ExerciseGroup group,
             int setNumber,
@@ -430,8 +439,15 @@ namespace WorkoutTrackerV2.ViewModels
                 WeightUnit = weightUnit,
                 ParentGroup = group
             };
-            set.DeleteCommand = new CommunityToolkit.Mvvm.Input.RelayCommand(
-                () => group.RemoveSet(set));
+            // Wire DeleteCommand as a direct closure: remove from the group
+            // (updates SetCountLabel) then call UpdateTotals (updates TotalSets).
+            set.DeleteCommand = new CommunityToolkit.Mvvm.Input.RelayCommand(() =>
+            {
+                group.RemoveSet(set);
+                if (group.Sets.Count == 0)
+                    ExerciseGroups.Remove(group);
+                UpdateTotals();
+            });
             return set;
         }
 
@@ -464,6 +480,16 @@ namespace WorkoutTrackerV2.ViewModels
             TotalVolume = volume;
         }
 
+        #endregion
+
+        #region "REST TIMER"
+        // Called from the set row "Rest" button — passes the exercise's muscle
+        // group so the service picks compound vs isolation default duration.
+        [RelayCommand]
+        private void StartRestTimer(string muscleGroup)
+        {
+            restTimerService.StartDefault(muscleGroup);
+        }
         #endregion
     }
 }

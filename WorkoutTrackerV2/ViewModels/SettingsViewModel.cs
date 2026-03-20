@@ -95,6 +95,51 @@ namespace WorkoutTrackerV2.ViewModels
         }
         #endregion
 
+        #region "REQUEST BATTERY OPTIMISATION EXEMPTION"
+        // Opens the system dialog asking the user to disable battery optimisation
+        // for this app. Required on Android for the rest timer notification to fire
+        // reliably when the screen is off. No-op on iOS.
+        [RelayCommand]
+        private async Task RequestBatteryExemption()
+        {
+#if ANDROID
+            if (!OperatingSystem.IsAndroidVersionAtLeast(23))
+            {
+                await Shell.Current.DisplayAlertAsync(
+                    "Not Required",
+                    "Battery optimisation exemption is not needed on this Android version.",
+                    "OK");
+                return;
+            }
+
+            var context = Android.App.Application.Context;
+            var pm = (Android.OS.PowerManager?)context.GetSystemService(
+                Android.Content.Context.PowerService);
+
+            if (pm is not null &&
+                pm.IsIgnoringBatteryOptimizations(context.PackageName))
+            {
+                await Shell.Current.DisplayAlertAsync(
+                    "Already Enabled",
+                    "Battery optimisation is already disabled for this app. The rest timer should work in the background.",
+                    "OK");
+                return;
+            }
+
+            var intent = new Android.Content.Intent(
+                Android.Provider.Settings.ActionRequestIgnoreBatteryOptimizations);
+            intent.SetData(Android.Net.Uri.Parse(
+                $"package:{context.PackageName}"));
+            Platform.CurrentActivity?.StartActivity(intent);
+#else
+            await Shell.Current.DisplayAlertAsync(
+                "Not Required",
+                "This setting is only needed on Android. On iOS, notifications work automatically.",
+                "OK");
+#endif
+        }
+        #endregion
+
         #region "GO BACK"
         [RelayCommand]
         private static Task GoBack() => Shell.Current.GoToAsync(Routes.Back);

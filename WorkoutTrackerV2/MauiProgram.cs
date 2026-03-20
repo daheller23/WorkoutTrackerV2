@@ -1,5 +1,6 @@
 ﻿using Microcharts.Maui;
 using Microsoft.Extensions.Logging;
+using Plugin.LocalNotification;
 using SkiaSharp.Views.Maui.Controls.Hosting;
 using WorkoutTrackerV2.Services;
 using WorkoutTrackerV2.ViewModels;
@@ -17,6 +18,19 @@ namespace WorkoutTrackerV2
                 .UseMauiApp<App>()
                 .UseSkiaSharp()
                 .UseMicrocharts()
+                .UseLocalNotification(config =>
+                {
+                    config.AddAndroid(android =>
+                    {
+                        android.AddChannel(new Plugin.LocalNotification.AndroidOption.NotificationChannelRequest
+                        {
+                            Id = "rest_timer",
+                            Name = "Rest Timer",
+                            Description = "Notifies you when your rest period is complete",
+                            Importance = Plugin.LocalNotification.AndroidOption.AndroidImportance.High
+                        });
+                    });
+                })
                 .ConfigureFonts(fonts =>
                 {
                     fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
@@ -30,6 +44,7 @@ namespace WorkoutTrackerV2
             var s = builder.Services;
 
             // ── Services (Singleton — shared state, DB connection, caches) ────
+            s.AddSingleton<IRestTimerService, RestTimerService>();
             s.AddSingleton<IWorkoutService, WorkoutService>();
             s.AddSingleton<IAnalyticsService, AnalyticsService>();
             s.AddSingleton<ITemplateService, TemplateService>();

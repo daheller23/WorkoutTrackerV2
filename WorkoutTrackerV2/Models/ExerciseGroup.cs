@@ -28,7 +28,12 @@ namespace WorkoutTrackerV2.Models
         public int TotalReps { get; private set; }
         public double MaxWeight { get; private set; }
 
-        public void AddSet(string? weightUnit = null)
+        // onDeleted is an optional callback injected by the ViewModel so that
+        // when a set's DeleteCommand fires it can call both group.RemoveSet (which
+        // updates SetCountLabel) AND ViewModel.UpdateTotals (which updates TotalSets).
+        // Without this, DeleteCommand only reached RemoveSet and TotalSets never
+        // decremented. ExerciseGroup intentionally has no direct ViewModel reference.
+        public void AddSet(string? weightUnit = null, Action<WorkoutSet>? onDeleted = null)
         {
             var unit = weightUnit ?? _defaultWeightUnit;
             var set = new WorkoutSet
@@ -39,7 +44,11 @@ namespace WorkoutTrackerV2.Models
                 WeightUnit = unit,
                 ParentGroup = this
             };
-            set.DeleteCommand = new RelayCommand(() => RemoveSet(set));
+            set.DeleteCommand = new RelayCommand(() =>
+            {
+                RemoveSet(set);
+                onDeleted?.Invoke(set);
+            });
             Sets.Add(set);
             NotifySetStats();
         }
@@ -56,6 +65,10 @@ namespace WorkoutTrackerV2.Models
         // FIX 1+2: Single loop computes TotalReps and MaxWeight together, then
         // raises all four PropertyChanged notifications in one call site instead
         // of duplicating the notification calls in AddSet and RemoveSet.
+        // Public overload used by AddWorkoutViewModel after template loading
+        // where sets are added via Sets.Add() directly rather than AddSet().
+        public void NotifySetStatsPublic() => NotifySetStats();
+
         private void NotifySetStats()
         {
             int reps = 0;
