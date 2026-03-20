@@ -14,8 +14,8 @@ namespace WorkoutTrackerV2.ViewModels
         ISettingsService settingsService) : BaseViewModel
     {
         #region "PRIVATE VARIABLES"
-        private bool _isInitialized = false;
-        private static readonly string[] ChartColors = [
+        private static readonly string[] ChartColors =
+        [
             "#1F77F0", "#4CAF50", "#FF9800", "#FF6B6B",
             "#9C27B0", "#00BCD4", "#FF5722", "#607D8B"
         ];
@@ -31,22 +31,56 @@ namespace WorkoutTrackerV2.ViewModels
         [ObservableProperty] private int _totalSets;
         [ObservableProperty] private int _totalReps;
         [ObservableProperty] private double _maxWeight;
+
+        // FIX 6: Pre-computed color string exposed as a property so the XAML header
+        // can bind directly instead of running MuscleGroupColorConverter twice.
+        [ObservableProperty] private string _muscleGroupColor = "#1F77F0";
+
+        // Reuses TimePeriodPillViewModel from AnalyticsViewModel — constructed once,
+        // IsSelected toggled when SelectedDays changes.
+        public List<TimePeriodPillViewModel> TimePeriodPills { get; } =
+        [
+            new() { Label = "All", Days = 0  },
+            new() { Label = "7d",  Days = 7  },
+            new() { Label = "14d", Days = 14 },
+            new() { Label = "30d", Days = 30, IsSelected = true },
+            new() { Label = "60d", Days = 60 },
+            new() { Label = "90d", Days = 90 },
+        ];
         #endregion
 
         #region "PARTIAL METHODS"
         partial void OnMuscleGroupChanged(string value)
         {
-            if (!string.IsNullOrEmpty(value))
+            if (string.IsNullOrEmpty(value)) return;
+
+            // FIX 6: Compute the color once when MuscleGroup is set.
+            MuscleGroupColor = value switch
             {
-                _isInitialized = true;
-                LoadDataCommand.Execute(null);
-            }
+                "Chest" => "#4A90D9",
+                "Back" => "#27AE60",
+                "Legs" => "#E67E22",
+                "Shoulders" => "#8E44AD",
+                "Arms" => "#E74C3C",
+                "Core" => "#5DADE2",
+                _ => "#1F77F0"
+            };
+
+            // FIX 1: Call async method directly instead of LoadDataCommand.Execute().
+            _ = LoadDataAsync();
         }
 
         partial void OnSelectedDaysChanged(int value)
         {
-            if (_isInitialized)
-                LoadDataCommand.Execute(null);
+            // FIX 4: Guard replaces the _isInitialized flag — same intent, no extra field.
+            if (string.IsNullOrEmpty(MuscleGroup)) return;
+
+            // Update pill selection state.
+            foreach (var pill in TimePeriodPills)
+                pill.IsSelected = pill.Days == value;
+
+            // FIX 1: Call async method directly.
+            _ = LoadDataAsync();
         }
         #endregion
 
@@ -61,7 +95,9 @@ namespace WorkoutTrackerV2.ViewModels
 
         #region "LOAD DATA"
         [RelayCommand]
-        private async Task LoadData()
+        private async Task LoadData() => await LoadDataAsync();
+
+        private async Task LoadDataAsync()
         {
             if (IsLoading) return;
             try
@@ -69,9 +105,10 @@ namespace WorkoutTrackerV2.ViewModels
                 IsLoading = true;
                 WeightUnitLabel = settingsService.WeightUnit;
 
-                var progress = await analyticsService.GetProgressForMuscleGroupAsync(MuscleGroup, SelectedDays);
+                var progress = await analyticsService.GetProgressForMuscleGroupAsync(
+                    MuscleGroup, SelectedDays);
 
-                // Assign chart colors and improvement delta by index
+                // Assign chart colors and improvement labels by index.
                 for (int i = 0; i < progress.Count; i++)
                 {
                     progress[i].ChartColor = ChartColors[i % ChartColors.Length];
@@ -86,18 +123,31 @@ namespace WorkoutTrackerV2.ViewModels
                     }
                 }
 
-                // Set top exercise name for chart label
-                var top = progress.OrderByDescending(e => e.MaxWeight).FirstOrDefault();
+                // FIX 3: Find top exercise once — reused for TopExerciseName and
+                // BuildCombinedChart instead of calling OrderByDescending twice.
+                var top = progress.Count > 0
+                    ? progress.OrderByDescending(e => e.MaxWeight).First()
+                    : null;
                 TopExerciseName = top?.ExerciseName ?? string.Empty;
 
                 Exercises = new ObservableCollection<ExerciseProgress>(progress);
 
-                // Summary stats
-                TotalSets = progress.Sum(e => e.Sets.Count);
-                TotalReps = progress.Sum(e => e.TotalReps);
-                MaxWeight = progress.Count > 0 ? progress.Max(e => e.MaxWeight) : 0;
+                // FIX 2: Single loop computes all three summary stats instead of
+                // three separate LINQ passes (Sum+Sum+Max) over the same list.
+                int sets = 0, reps = 0;
+                double maxWeight = 0;
+                foreach (var e in progress)
+                {
+                    sets += e.Sets.Count;
+                    reps += e.TotalReps;
+                    if (e.MaxWeight > maxWeight) maxWeight = e.MaxWeight;
+                }
+                TotalSets = sets;
+                TotalReps = reps;
+                MaxWeight = maxWeight;
 
-                BuildCombinedChart();
+                // FIX 3: Pass the already-found top exercise — no second sort needed.
+                BuildCombinedChart(top);
             }
             catch (Exception ex)
             {
@@ -127,17 +177,11 @@ namespace WorkoutTrackerV2.ViewModels
         #endregion
 
         #region "BUILD COMBINED CHART"
-        private void BuildCombinedChart()
+        // FIX 3: Accepts the pre-found top exercise instead of re-sorting Exercises.
+        private void BuildCombinedChart(ExerciseProgress? topExercise)
         {
-            if (Exercises.Count == 0) return;
-
-            var topExercise = Exercises
-                .OrderByDescending(e => e.MaxWeight)
-                .FirstOrDefault();
-
-            if (topExercise?.Points.Count == 0) return;
-
-            CombinedChart = ChartHelper.BuildProgressChart(topExercise!.Points);
+            if (topExercise?.Points.Count == 0 || topExercise is null) return;
+            CombinedChart = ChartHelper.BuildProgressChart(topExercise.Points);
         }
         #endregion
     }

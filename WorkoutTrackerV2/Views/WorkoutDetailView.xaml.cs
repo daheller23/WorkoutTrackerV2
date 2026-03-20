@@ -1,21 +1,21 @@
 using WorkoutTrackerV2.ViewModels;
-namespace WorkoutTrackerV2.Views
+
+namespace WorkoutTrackerV2.Views;
+
+public partial class WorkoutDetailView : ContentPage
 {
-    public partial class WorkoutDetailView : ContentPage
+    public WorkoutDetailView(WorkoutDetailViewModel viewModel)
     {
-        private readonly WorkoutDetailViewModel _vm;
+        InitializeComponent();
+        BindingContext = viewModel;
+    }
 
-        public WorkoutDetailView(WorkoutDetailViewModel viewModel)
-        {
-            InitializeComponent();
-            _vm = viewModel;
-            BindingContext = viewModel;
-        }
-
-        protected override void OnAppearing()
-        {
-            base.OnAppearing();
-            _vm.LoadDataCommand.Execute(null);
-        }
+    protected override void OnAppearing()
+    {
+        base.OnAppearing();
+        // FIX 12: Cast BindingContext directly — no redundant _vm field.
+        // ExecuteAsync is the correct call for async RelayCommands.
+        if (BindingContext is WorkoutDetailViewModel vm)
+            _ = vm.LoadDataCommand.ExecuteAsync(null);
     }
 }

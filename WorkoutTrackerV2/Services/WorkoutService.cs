@@ -247,6 +247,15 @@ namespace WorkoutTrackerV2.Services
 
         // FIX 1: Batch insert — saves all sets in one InsertAllAsync call
         // instead of N sequential SaveSetAsync round-trips.
+        // Deletes all sets for a session in one query — replaces N sequential
+        // DeleteSetAsync calls in WorkoutDetailViewModel.DeleteWorkout.
+        public async Task DeleteSetsForSessionAsync(int sessionId)
+        {
+            await EnsureInitializedAsync();
+            await _database.ExecuteAsync(
+                "DELETE FROM WorkoutSet WHERE WorkoutSessionId = ?", sessionId);
+        }
+
         public async Task SaveAllSetsAsync(List<WorkoutSet> sets)
         {
             await EnsureInitializedAsync();

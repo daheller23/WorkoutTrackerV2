@@ -9,11 +9,18 @@
              BackgroundColor="#FAFAFA">
 
     <ContentPage.Resources>
-        <converters:MuscleGroupColorConverter x:Key="MuscleGroupColorConverter"/>
-        <converters:MuscleGroupEmojiConverter x:Key="MuscleGroupEmojiConverter"/>
+        <!--
+            FIX 8: MuscleGroupColorConverter and MuscleGroupEmojiConverter removed
+            from the muscle group pills — XAML now binds to MuscleGroupChipViewModel
+            properties (Color, Emoji, Name) directly.
+            FIX 9: MuscleGroupColorConverter removed from CollectionView item template
+            — binds to Exercise.MuscleGroupColor (pre-computed on the model).
+            FIX 10: VolumeComparisonColorConverter removed — XAML binds to
+            VolumeComparisonColor (pre-computed string on the ViewModel).
+            RelativeDateConverter and IsNotEmptyConverter retained — no alternative.
+        -->
         <converters:RelativeDateConverter x:Key="RelativeDateConverter"/>
         <converters:IsNotEmptyConverter x:Key="IsNotEmptyConverter"/>
-        <converters:VolumeComparisonColorConverter x:Key="VolumeComparisonColorConverter"/>
     </ContentPage.Resources>
 
     <Shell.NavBarIsVisible>False</Shell.NavBarIsVisible>
@@ -23,60 +30,43 @@
 
     <Grid RowDefinitions="Auto,*" RowSpacing="0">
 
-        <!-- Header -->
+        <!-- ── Header ─────────────────────────────────────────────────────── -->
         <StackLayout BackgroundColor="#FFFFFF" Padding="24,16,24,24" Spacing="4">
             <Grid ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="8">
                 <Button Grid.Column="0"
                         Text="← Back"
                         Command="{Binding GoBackCommand}"
-                        BackgroundColor="Transparent"
-                        TextColor="#1F77F0"
-                        FontSize="14"
-                        Padding="0"/>
+                        BackgroundColor="Transparent" TextColor="#1F77F0"
+                        FontSize="14" Padding="0"/>
                 <Button Grid.Column="2"
                         Text="✏️ Edit"
                         Command="{Binding EditWorkoutCommand}"
-                        BackgroundColor="Transparent"
-                        TextColor="#1F77F0"
-                        FontSize="13"
-                        FontAttributes="Bold"
-                        Padding="10,8"
-                        CornerRadius="20"
-                        BorderWidth="1"
-                        BorderColor="#1F77F0"/>
+                        BackgroundColor="Transparent" TextColor="#1F77F0"
+                        FontSize="13" FontAttributes="Bold"
+                        Padding="10,8" CornerRadius="20" BorderWidth="1" BorderColor="#1F77F0"/>
                 <Button Grid.Column="3"
                         Text="🗑 Delete"
                         Command="{Binding DeleteWorkoutCommand}"
-                        BackgroundColor="Transparent"
-                        TextColor="#FF6B6B"
-                        FontSize="13"
-                        FontAttributes="Bold"
-                        Padding="10,8"
-                        CornerRadius="20"
-                        BorderWidth="1"
-                        BorderColor="#FF6B6B"/>
+                        BackgroundColor="Transparent" TextColor="#FF6B6B"
+                        FontSize="13" FontAttributes="Bold"
+                        Padding="10,8" CornerRadius="20" BorderWidth="1" BorderColor="#FF6B6B"/>
             </Grid>
             <Label Text="{Binding Session.DayName}"
-                   FontSize="32"
-                   FontAttributes="Bold"
-                   TextColor="#1F77F0"
-                   CharacterSpacing="0.3"/>
+                   FontSize="32" FontAttributes="Bold"
+                   TextColor="#1F77F0" CharacterSpacing="0.3"/>
             <StackLayout Orientation="Horizontal" Spacing="8">
                 <Label Text="{Binding Session.Date, Converter={StaticResource RelativeDateConverter}}"
-                       FontSize="13"
-                       TextColor="#1F77F0"
-                       FontAttributes="Bold"/>
+                       FontSize="13" TextColor="#1F77F0" FontAttributes="Bold"/>
                 <Label Text="·" FontSize="13" TextColor="#999999"/>
                 <Label Text="{Binding Session.Date, StringFormat='{0:MMMM d, yyyy}'}"
-                       FontSize="13"
-                       TextColor="#999999"/>
+                       FontSize="13" TextColor="#999999"/>
             </StackLayout>
         </StackLayout>
 
         <ScrollView Grid.Row="1">
             <StackLayout Padding="20,24" Spacing="20">
 
-                <!-- Stats Row -->
+                <!-- ── Stats Row ──────────────────────────────────────────── -->
                 <Grid ColumnDefinitions="*,*,*,*" ColumnSpacing="12">
                     <StackLayout BackgroundColor="#F0F7FF" Padding="12,16" Spacing="4">
                         <Label Text="⏱" FontSize="18" HorizontalOptions="Center"/>
@@ -104,62 +94,57 @@
                     </StackLayout>
                 </Grid>
 
-                <!-- Volume Card -->
+                <!-- ── Volume Card ────────────────────────────────────────── -->
                 <StackLayout BackgroundColor="#F0F7FF" Padding="20,16" Spacing="4">
                     <Label Text="TOTAL VOLUME"
-                           FontSize="11"
-                           FontAttributes="Bold"
-                           TextColor="#1F77F0"
-                           Opacity="0.8"
-                           CharacterSpacing="1"/>
+                           FontSize="11" FontAttributes="Bold"
+                           TextColor="#1F77F0" Opacity="0.8" CharacterSpacing="1"/>
                     <StackLayout Orientation="Horizontal" Spacing="6">
                         <Label Text="{Binding TotalVolume, StringFormat='{0:F0}'}"
-                               FontSize="32"
-                               FontAttributes="Bold"
-                               TextColor="#1F77F0"/>
+                               FontSize="32" FontAttributes="Bold" TextColor="#1F77F0"/>
                         <Label Text="{Binding WeightUnitLabel}"
-                               FontSize="14"
-                               TextColor="#1F77F0"
-                               Opacity="0.8"
-                               VerticalOptions="End"
-                               Margin="0,0,0,4"/>
+                               FontSize="14" TextColor="#1F77F0" Opacity="0.8"
+                               VerticalOptions="End" Margin="0,0,0,4"/>
                     </StackLayout>
+                    <!--
+                        FIX 10: TextColor binds to VolumeComparisonColor (pre-computed
+                        string) instead of running VolumeComparisonColorConverter.
+                    -->
                     <Label Text="{Binding VolumeComparison}"
                            FontSize="12"
-                           TextColor="{Binding VolumeIsUp, Converter={StaticResource VolumeComparisonColorConverter}}"
+                           TextColor="{Binding VolumeComparisonColor}"
                            IsVisible="{Binding HasVolumeComparison}"/>
                 </StackLayout>
 
-                <!-- Muscle Group Breakdown -->
+                <!-- ── Muscle Group Breakdown ─────────────────────────────────
+                     FIX 8: BindableLayout now binds to MuscleGroupChips
+                     (List<MuscleGroupChipViewModel>) instead of List<string>.
+                     BackgroundColor, emoji, and name all come from pre-computed
+                     properties — MuscleGroupColorConverter and
+                     MuscleGroupEmojiConverter are no longer needed.             -->
                 <StackLayout BackgroundColor="#FFFFFF" Padding="16" Spacing="10">
                     <Label Text="MUSCLES TRAINED"
-                           FontSize="11"
-                           FontAttributes="Bold"
-                           TextColor="#999999"
-                           CharacterSpacing="1"/>
+                           FontSize="11" FontAttributes="Bold"
+                           TextColor="#999999" CharacterSpacing="1"/>
                     <FlexLayout Wrap="Wrap"
                                 JustifyContent="Start"
                                 AlignItems="Start"
-                                BindableLayout.ItemsSource="{Binding MuscleGroups}">
+                                BindableLayout.ItemsSource="{Binding MuscleGroupChips}">
                         <BindableLayout.ItemTemplate>
-                            <DataTemplate x:DataType="x:String">
+                            <DataTemplate x:DataType="vm:MuscleGroupChipViewModel">
                                 <Border StrokeThickness="0"
+                                        BackgroundColor="{Binding Color}"
                                         Padding="10,6"
                                         Margin="0,0,8,8">
-                                    <Border.BackgroundColor>
-                                        <Binding Converter="{StaticResource MuscleGroupColorConverter}"/>
-                                    </Border.BackgroundColor>
                                     <Border.StrokeShape>
                                         <RoundRectangle CornerRadius="14"/>
                                     </Border.StrokeShape>
                                     <StackLayout Orientation="Horizontal" Spacing="4">
-                                        <Label Text="{Binding ., Converter={StaticResource MuscleGroupEmojiConverter}}"
+                                        <Label Text="{Binding Emoji}"
                                                FontSize="12" VerticalOptions="Center"/>
-                                        <Label Text="{Binding .}"
-                                               FontSize="11"
-                                               FontAttributes="Bold"
-                                               TextColor="#FFFFFF"
-                                               VerticalOptions="Center"/>
+                                        <Label Text="{Binding Name}"
+                                               FontSize="11" FontAttributes="Bold"
+                                               TextColor="#FFFFFF" VerticalOptions="Center"/>
                                     </StackLayout>
                                 </Border>
                             </DataTemplate>
@@ -167,185 +152,172 @@
                     </FlexLayout>
                 </StackLayout>
 
-                <!-- Notes -->
-                <StackLayout BackgroundColor="#FFFFFF"
-                             Padding="16"
-                             Spacing="8"
+                <!-- ── Notes ──────────────────────────────────────────────── -->
+                <StackLayout BackgroundColor="#FFFFFF" Padding="16" Spacing="8"
                              IsVisible="{Binding Session.Notes, Converter={StaticResource IsNotEmptyConverter}}">
                     <Label Text="NOTES"
-                           FontSize="11"
-                           FontAttributes="Bold"
-                           TextColor="#999999"
-                           CharacterSpacing="1"/>
+                           FontSize="11" FontAttributes="Bold"
+                           TextColor="#999999" CharacterSpacing="1"/>
                     <Label Text="{Binding Session.Notes}"
-                           FontSize="14"
-                           TextColor="#000000"
-                           LineBreakMode="WordWrap"/>
+                           FontSize="14" TextColor="#000000" LineBreakMode="WordWrap"/>
                 </StackLayout>
 
-                <!-- Exercise Groups -->
+                <!-- ── Exercise Groups ────────────────────────────────────── -->
                 <StackLayout Spacing="12">
                     <Grid ColumnDefinitions="*,Auto">
                         <Label Grid.Column="0"
                                Text="EXERCISES"
-                               FontSize="11"
-                               FontAttributes="Bold"
-                               TextColor="#999999"
-                               CharacterSpacing="1"
+                               FontSize="11" FontAttributes="Bold"
+                               TextColor="#999999" CharacterSpacing="1"
                                VerticalOptions="Center"/>
                         <Label Grid.Column="1"
                                Text="🏆 = Personal Record"
-                               FontSize="10"
-                               TextColor="#999999"
-                               VerticalOptions="Center"/>
+                               FontSize="10" TextColor="#999999" VerticalOptions="Center"/>
                     </Grid>
                     <CollectionView ItemsSource="{Binding ExerciseGroups}" SelectionMode="None">
                         <CollectionView.EmptyView>
                             <Label Text="No exercises found"
-                                   FontSize="12"
-                                   TextColor="#D0D0D0"
-                                   HorizontalOptions="Center"
-                                   Margin="20,40"/>
+                                   FontSize="12" TextColor="#D0D0D0"
+                                   HorizontalOptions="Center" Margin="20,40"/>
                         </CollectionView.EmptyView>
                         <CollectionView.ItemTemplate>
                             <DataTemplate x:DataType="models:ExerciseGroup">
-                                <StackLayout Margin="0,0,0,12">
-                                    <Border BackgroundColor="#FFFFFF" StrokeThickness="0">
-                                        <Border.StrokeShape>
-                                            <RoundRectangle CornerRadius="8"/>
-                                        </Border.StrokeShape>
-                                        <StackLayout Padding="0,0,0,12" Spacing="12">
+                                <!--
+                                    FIX 11: Outer StackLayout wrapper removed —
+                                    Border is the direct item root, saving one
+                                    layout container per item.
+                                -->
+                                <Border BackgroundColor="#FFFFFF"
+                                        StrokeThickness="0"
+                                        Margin="0,0,0,12">
+                                    <Border.StrokeShape>
+                                        <RoundRectangle CornerRadius="8"/>
+                                    </Border.StrokeShape>
+                                    <StackLayout Padding="0,0,0,12" Spacing="12">
 
-                                            <!-- Color Bar + Exercise Header -->
-                                            <Grid ColumnDefinitions="6,*,Auto" ColumnSpacing="12">
-                                                <BoxView Grid.Column="0"
-                                                         BackgroundColor="{Binding Exercise.MuscleGroup, Converter={StaticResource MuscleGroupColorConverter}}"
-                                                         HorizontalOptions="Fill"
-                                                         VerticalOptions="Fill"/>
-                                                <StackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center" Padding="0,12,0,0">
-                                                    <Label Text="{Binding Exercise.Name}"
-                                                           FontSize="15"
-                                                           FontAttributes="Bold"
-                                                           TextColor="#000000"/>
-                                                    <Label Text="{Binding Exercise.MuscleGroup}"
-                                                           FontSize="11"
-                                                           TextColor="{Binding Exercise.MuscleGroup, Converter={StaticResource MuscleGroupColorConverter}}"/>
-                                                </StackLayout>
-                                                <Border Grid.Column="2"
-                                                        BackgroundColor="#F0F7FF"
-                                                        StrokeThickness="0"
-                                                        VerticalOptions="Center"
-                                                        Padding="8,4"
-                                                        Margin="0,12,12,0">
-                                                    <Border.StrokeShape>
-                                                        <RoundRectangle CornerRadius="10"/>
-                                                    </Border.StrokeShape>
-                                                    <Label Text="{Binding SetCountLabel}"
-                                                           FontSize="11"
-                                                           FontAttributes="Bold"
-                                                           TextColor="#1F77F0"/>
-                                                </Border>
-                                            </Grid>
+                                        <!-- Exercise Header -->
+                                        <Grid ColumnDefinitions="6,*,Auto" ColumnSpacing="12">
+                                            <!--
+                                                FIX 9: Binds to Exercise.MuscleGroupColor
+                                                (pre-computed) instead of converter.
+                                            -->
+                                            <BoxView Grid.Column="0"
+                                                     BackgroundColor="{Binding Exercise.MuscleGroupColor}"
+                                                     HorizontalOptions="Fill" VerticalOptions="Fill"/>
+                                            <StackLayout Grid.Column="1" Spacing="2"
+                                                         VerticalOptions="Center" Padding="0,12,0,0">
+                                                <Label Text="{Binding Exercise.Name}"
+                                                       FontSize="15" FontAttributes="Bold" TextColor="#000000"/>
+                                                <!--
+                                                    FIX 9: TextColor binds to Exercise.MuscleGroupColor.
+                                                -->
+                                                <Label Text="{Binding Exercise.MuscleGroup}"
+                                                       FontSize="11"
+                                                       TextColor="{Binding Exercise.MuscleGroupColor}"/>
+                                            </StackLayout>
+                                            <Border Grid.Column="2"
+                                                    BackgroundColor="#F0F7FF"
+                                                    StrokeThickness="0"
+                                                    VerticalOptions="Center"
+                                                    Padding="8,4" Margin="0,12,12,0">
+                                                <Border.StrokeShape>
+                                                    <RoundRectangle CornerRadius="10"/>
+                                                </Border.StrokeShape>
+                                                <Label Text="{Binding SetCountLabel}"
+                                                       FontSize="11" FontAttributes="Bold" TextColor="#1F77F0"/>
+                                            </Border>
+                                        </Grid>
 
-                                            <BoxView HeightRequest="0.5" Color="#F0F0F0" Margin="16,0"/>
+                                        <BoxView HeightRequest="0.5" Color="#F0F0F0" Margin="16,0"/>
 
-                                            <!-- Table Header -->
-                                            <Grid ColumnDefinitions="30,*,Auto,80" ColumnSpacing="8" Margin="16,0">
-                                                <Label Grid.Column="0" Text="Set" FontSize="11" TextColor="#999999" FontAttributes="Bold" HorizontalOptions="Center"/>
-                                                <Label Grid.Column="1" Text="Reps" FontSize="11" TextColor="#999999" FontAttributes="Bold" HorizontalOptions="Center"/>
-                                                <Label Grid.Column="2" Text="Weight" FontSize="11" TextColor="#999999" FontAttributes="Bold" HorizontalOptions="Center"/>
-                                                <Label Grid.Column="3" Text="Unit" FontSize="11" TextColor="#999999" FontAttributes="Bold" HorizontalOptions="Center"/>
-                                            </Grid>
+                                        <!-- Table Header -->
+                                        <Grid ColumnDefinitions="30,*,Auto,80" ColumnSpacing="8" Margin="16,0">
+                                            <Label Grid.Column="0" Text="Set"    FontSize="11" TextColor="#999999" FontAttributes="Bold" HorizontalOptions="Center"/>
+                                            <Label Grid.Column="1" Text="Reps"   FontSize="11" TextColor="#999999" FontAttributes="Bold" HorizontalOptions="Center"/>
+                                            <Label Grid.Column="2" Text="Weight" FontSize="11" TextColor="#999999" FontAttributes="Bold" HorizontalOptions="Center"/>
+                                            <Label Grid.Column="3" Text="Unit"   FontSize="11" TextColor="#999999" FontAttributes="Bold" HorizontalOptions="Center"/>
+                                        </Grid>
 
-                                            <!-- Sets Rows -->
-                                            <StackLayout BindableLayout.ItemsSource="{Binding Sets}" Spacing="6" Margin="16,0">
-                                                <BindableLayout.ItemTemplate>
-                                                    <DataTemplate x:DataType="models:WorkoutSet">
-                                                        <Grid ColumnDefinitions="30,*,Auto,80" ColumnSpacing="8">
-                                                            <Border Grid.Column="0"
-                                                                    BackgroundColor="#F0F7FF"
-                                                                    WidthRequest="28"
-                                                                    HeightRequest="28"
-                                                                    VerticalOptions="Center"
-                                                                    StrokeThickness="0">
-                                                                <Border.StrokeShape>
-                                                                    <RoundRectangle CornerRadius="6"/>
-                                                                </Border.StrokeShape>
-                                                                <Label Text="{Binding SetNumber}"
-                                                                       FontSize="12"
-                                                                       FontAttributes="Bold"
-                                                                       TextColor="#1F77F0"
-                                                                       HorizontalOptions="Center"
-                                                                       VerticalOptions="Center"/>
-                                                            </Border>
-                                                            <Label Grid.Column="1"
-                                                                   Text="{Binding Reps}"
-                                                                   FontSize="13"
-                                                                   FontAttributes="Bold"
+                                        <!-- Set Rows -->
+                                        <StackLayout BindableLayout.ItemsSource="{Binding Sets}"
+                                                     Spacing="6" Margin="16,0">
+                                            <BindableLayout.ItemTemplate>
+                                                <DataTemplate x:DataType="models:WorkoutSet">
+                                                    <Grid ColumnDefinitions="30,*,Auto,80" ColumnSpacing="8">
+                                                        <Border Grid.Column="0"
+                                                                BackgroundColor="#F0F7FF"
+                                                                WidthRequest="28" HeightRequest="28"
+                                                                VerticalOptions="Center" StrokeThickness="0">
+                                                            <Border.StrokeShape>
+                                                                <RoundRectangle CornerRadius="6"/>
+                                                            </Border.StrokeShape>
+                                                            <Label Text="{Binding SetNumber}"
+                                                                   FontSize="12" FontAttributes="Bold"
                                                                    TextColor="#1F77F0"
                                                                    HorizontalOptions="Center"
                                                                    VerticalOptions="Center"/>
-                                                            <StackLayout Grid.Column="2"
-                                                                         Orientation="Horizontal"
-                                                                         Spacing="4"
-                                                                         HorizontalOptions="Center"
-                                                                         VerticalOptions="Center">
-                                                                <Label Text="{Binding Weight}"
-                                                                       FontSize="13"
-                                                                       TextColor="#000000"
-                                                                       VerticalOptions="Center"/>
-                                                                <Label Text="🏆"
-                                                                       FontSize="11"
-                                                                       IsVisible="{Binding IsPR}"
-                                                                       VerticalOptions="Center"/>
-                                                            </StackLayout>
-                                                            <Label Grid.Column="3"
-                                                                   Text="{Binding WeightUnit}"
-                                                                   FontSize="13"
-                                                                   TextColor="#999999"
-                                                                   HorizontalOptions="Center"
+                                                        </Border>
+                                                        <Label Grid.Column="1"
+                                                               Text="{Binding Reps}"
+                                                               FontSize="13" FontAttributes="Bold"
+                                                               TextColor="#1F77F0"
+                                                               HorizontalOptions="Center"
+                                                               VerticalOptions="Center"/>
+                                                        <StackLayout Grid.Column="2"
+                                                                     Orientation="Horizontal" Spacing="4"
+                                                                     HorizontalOptions="Center"
+                                                                     VerticalOptions="Center">
+                                                            <Label Text="{Binding Weight}"
+                                                                   FontSize="13" TextColor="#000000"
                                                                    VerticalOptions="Center"/>
-                                                        </Grid>
-                                                    </DataTemplate>
-                                                </BindableLayout.ItemTemplate>
-                                            </StackLayout>
-
-                                            <!-- Total Reps + Max Weight -->
-                                            <Grid ColumnDefinitions="*,Auto" Margin="16,4,16,0">
-                                                <BoxView HeightRequest="0.5" Color="#F0F0F0" VerticalOptions="Center"/>
-                                                <StackLayout Grid.Column="1" Orientation="Horizontal" Spacing="8">
-                                                    <StackLayout Orientation="Horizontal" Spacing="4">
-                                                        <Label Text="Reps:" FontSize="11" TextColor="#999999" VerticalOptions="Center"/>
-                                                        <Label Text="{Binding TotalReps}"
-                                                               FontSize="11" FontAttributes="Bold" TextColor="#1F77F0" VerticalOptions="Center"/>
-                                                    </StackLayout>
-                                                    <StackLayout Orientation="Horizontal" Spacing="4">
-                                                        <Label Text="Max:" FontSize="11" TextColor="#999999" VerticalOptions="Center"/>
-                                                        <Label Text="{Binding MaxWeight, StringFormat='{0:F0}'}"
-                                                               FontSize="11" FontAttributes="Bold" TextColor="#4CAF50" VerticalOptions="Center"/>
-                                                    </StackLayout>
-                                                </StackLayout>
-                                            </Grid>
-
+                                                            <Label Text="🏆"
+                                                                   FontSize="11"
+                                                                   IsVisible="{Binding IsPR}"
+                                                                   VerticalOptions="Center"/>
+                                                        </StackLayout>
+                                                        <Label Grid.Column="3"
+                                                               Text="{Binding WeightUnit}"
+                                                               FontSize="13" TextColor="#999999"
+                                                               HorizontalOptions="Center"
+                                                               VerticalOptions="Center"/>
+                                                    </Grid>
+                                                </DataTemplate>
+                                            </BindableLayout.ItemTemplate>
                                         </StackLayout>
-                                    </Border>
-                                </StackLayout>
+
+                                        <!-- Total Reps + Max Weight -->
+                                        <Grid ColumnDefinitions="*,Auto" Margin="16,4,16,0">
+                                            <BoxView HeightRequest="0.5" Color="#F0F0F0" VerticalOptions="Center"/>
+                                            <StackLayout Grid.Column="1" Orientation="Horizontal" Spacing="8">
+                                                <StackLayout Orientation="Horizontal" Spacing="4">
+                                                    <Label Text="Reps:" FontSize="11" TextColor="#999999" VerticalOptions="Center"/>
+                                                    <Label Text="{Binding TotalReps}"
+                                                           FontSize="11" FontAttributes="Bold"
+                                                           TextColor="#1F77F0" VerticalOptions="Center"/>
+                                                </StackLayout>
+                                                <StackLayout Orientation="Horizontal" Spacing="4">
+                                                    <Label Text="Max:" FontSize="11" TextColor="#999999" VerticalOptions="Center"/>
+                                                    <Label Text="{Binding MaxWeight, StringFormat='{0:F0}'}"
+                                                           FontSize="11" FontAttributes="Bold"
+                                                           TextColor="#4CAF50" VerticalOptions="Center"/>
+                                                </StackLayout>
+                                            </StackLayout>
+                                        </Grid>
+
+                                    </StackLayout>
+                                </Border>
                             </DataTemplate>
                         </CollectionView.ItemTemplate>
                     </CollectionView>
                 </StackLayout>
 
-                <!-- Do Workout Again -->
+                <!-- ── Do Workout Again ───────────────────────────────────── -->
                 <Button Text="🔄 Do This Workout Again"
                         Command="{Binding DoWorkoutAgainCommand}"
-                        BackgroundColor="#FFFFFF"
-                        TextColor="#1F77F0"
-                        FontAttributes="Bold"
-                        FontSize="14"
-                        Padding="0,14"
-                        CornerRadius="10"
-                        BorderWidth="1"
-                        BorderColor="#1F77F0"/>
+                        BackgroundColor="#FFFFFF" TextColor="#1F77F0"
+                        FontAttributes="Bold" FontSize="14"
+                        Padding="0,14" CornerRadius="10"
+                        BorderWidth="1" BorderColor="#1F77F0"/>
 
                 <Label Text=" " Margin="0,20"/>
 
