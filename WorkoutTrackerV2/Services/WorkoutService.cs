@@ -19,7 +19,7 @@ namespace WorkoutTrackerV2.Services
             _dbPath = Path.Combine(FileSystem.AppDataDirectory, DbFileName);
         }
 
-        #region "INITIALIZE ASYNC"
+        #region "INITIALIZE"
         public async Task InitializeAsync()
         {
             if (_initialized) return;
@@ -36,8 +36,7 @@ namespace WorkoutTrackerV2.Services
                 await _database.CreateTableAsync<WorkoutTemplate>();
                 await _database.CreateTableAsync<WorkoutTemplateSet>();
 
-                int exerciseCount = await _database.Table<Exercise>().CountAsync();
-                if (exerciseCount == 0)
+                if (await _database.Table<Exercise>().CountAsync() == 0)
                     await SeedDefaultExercises();
 
                 _initialized = true;
@@ -47,6 +46,12 @@ namespace WorkoutTrackerV2.Services
                 _initLock.Release();
             }
         }
+
+        // FIX 1: Zero-cost guard used by every public method instead of always
+        // awaiting InitializeAsync(). When _initialized is true this returns a
+        // cached completed Task — no async state machine, no allocation.
+        private Task EnsureInitializedAsync() =>
+            _initialized ? Task.CompletedTask : InitializeAsync();
         #endregion
 
         #region "SEED DEFAULT EXERCISES"
@@ -55,239 +60,134 @@ namespace WorkoutTrackerV2.Services
             var defaultExercises = new List<Exercise>
             {
                 // Arms
-                new() { Name = "Barbell Curls", MuscleGroup = "Arms" },
-                new() { Name = "Bench Dip", MuscleGroup = "Arms" },
-                new() { Name = "Dumbbell Curls", MuscleGroup = "Arms" },
-                new() { Name = "Hammer Curls", MuscleGroup = "Arms" },
-                new() { Name = "Preacher Curls", MuscleGroup = "Arms" },
-                new() { Name = "Reverse Curls", MuscleGroup = "Arms" },
-                new() { Name = "Skull Crushers", MuscleGroup = "Arms" },
-                new() { Name = "Tricep Dips", MuscleGroup = "Arms" },
-                new() { Name = "Tricep Extensions", MuscleGroup = "Arms" },
-                new() { Name = "Tricep Pushdowns with Bar", MuscleGroup = "Arms" },
-                new() { Name = "Tricep Pushdowns with Ropes", MuscleGroup = "Arms" },
-                new() { Name = "Wrist Curls", MuscleGroup = "Arms" },
+                new() { Name = "Barbell Curls",                  MuscleGroup = "Arms" },
+                new() { Name = "Bench Dip",                      MuscleGroup = "Arms" },
+                new() { Name = "Dumbbell Curls",                 MuscleGroup = "Arms" },
+                new() { Name = "Hammer Curls",                   MuscleGroup = "Arms" },
+                new() { Name = "Preacher Curls",                 MuscleGroup = "Arms" },
+                new() { Name = "Reverse Curls",                  MuscleGroup = "Arms" },
+                new() { Name = "Skull Crushers",                 MuscleGroup = "Arms" },
+                new() { Name = "Tricep Dips",                    MuscleGroup = "Arms" },
+                new() { Name = "Tricep Extensions",              MuscleGroup = "Arms" },
+                new() { Name = "Tricep Pushdowns with Bar",      MuscleGroup = "Arms" },
+                new() { Name = "Tricep Pushdowns with Ropes",    MuscleGroup = "Arms" },
+                new() { Name = "Wrist Curls",                    MuscleGroup = "Arms" },
 
                 // Back
-                new() { Name = "Back Assisted Row", MuscleGroup = "Back" },
-                new() { Name = "Barbell Rows", MuscleGroup = "Back" },
-                new() { Name = "Chin-ups", MuscleGroup = "Back" },
-                new() { Name = "Close Grip Low Pulley Rows", MuscleGroup = "Back" },
-                new() { Name = "Lat Pulldowns", MuscleGroup = "Back" },
-                new() { Name = "Pull-ups", MuscleGroup = "Back" },
-                new() { Name = "T-Bar Row", MuscleGroup = "Back" },
-                new() { Name = "Wide Grip Low Pulley Rows", MuscleGroup = "Back" },
+                new() { Name = "Back Assisted Row",              MuscleGroup = "Back" },
+                new() { Name = "Barbell Rows",                   MuscleGroup = "Back" },
+                new() { Name = "Chin-ups",                       MuscleGroup = "Back" },
+                new() { Name = "Close Grip Low Pulley Rows",     MuscleGroup = "Back" },
+                new() { Name = "Lat Pulldowns",                  MuscleGroup = "Back" },
+                new() { Name = "Pull-ups",                       MuscleGroup = "Back" },
+                new() { Name = "T-Bar Row",                      MuscleGroup = "Back" },
+                new() { Name = "Wide Grip Low Pulley Rows",      MuscleGroup = "Back" },
 
                 // Chest
-                new() { Name = "Bench Press", MuscleGroup = "Chest" },
-                new() { Name = "Cable Crossover", MuscleGroup = "Chest" },
-                new() { Name = "Declined Bench Press", MuscleGroup = "Chest" },
-                new() { Name = "Declined Smith Machine Press", MuscleGroup = "Chest" },
-                new() { Name = "Dumbbell Flyes", MuscleGroup = "Chest" },
-                new() { Name = "Incline Bench Press", MuscleGroup = "Chest" },
-                new() { Name = "Inclined Smith Machine Press", MuscleGroup = "Chest" },
-                new() { Name = "Pec Deck", MuscleGroup = "Chest" },
-                new() { Name = "Push-ups", MuscleGroup = "Chest" },
-                new() { Name = "Smith Machine Press", MuscleGroup = "Chest" },
+                new() { Name = "Bench Press",                    MuscleGroup = "Chest" },
+                new() { Name = "Cable Crossover",                MuscleGroup = "Chest" },
+                new() { Name = "Declined Bench Press",           MuscleGroup = "Chest" },
+                new() { Name = "Declined Smith Machine Press",   MuscleGroup = "Chest" },
+                new() { Name = "Dumbbell Flyes",                 MuscleGroup = "Chest" },
+                new() { Name = "Incline Bench Press",            MuscleGroup = "Chest" },
+                new() { Name = "Inclined Smith Machine Press",   MuscleGroup = "Chest" },
+                new() { Name = "Pec Deck",                       MuscleGroup = "Chest" },
+                new() { Name = "Push-ups",                       MuscleGroup = "Chest" },
+                new() { Name = "Smith Machine Press",            MuscleGroup = "Chest" },
 
                 // Core
-                new() { Name = "Ab Wheel", MuscleGroup = "Core" },
-                new() { Name = "Ball Slams", MuscleGroup = "Core" },
-                new() { Name = "Bicycle Crunches", MuscleGroup = "Core" },
-                new() { Name = "Cable Crunches", MuscleGroup = "Core" },
-                new() { Name = "Flutter Kicks", MuscleGroup = "Core" },
-                new() { Name = "Knee to Chest", MuscleGroup = "Core" },
-                new() { Name = "Planks", MuscleGroup = "Core" },
-                new() { Name = "Russian Twists", MuscleGroup = "Core" },
-                new() { Name = "Weighted Sit-ups", MuscleGroup = "Core" },
+                new() { Name = "Ab Wheel",                       MuscleGroup = "Core" },
+                new() { Name = "Ball Slams",                     MuscleGroup = "Core" },
+                new() { Name = "Bicycle Crunches",               MuscleGroup = "Core" },
+                new() { Name = "Cable Crunches",                 MuscleGroup = "Core" },
+                new() { Name = "Flutter Kicks",                  MuscleGroup = "Core" },
+                new() { Name = "Knee to Chest",                  MuscleGroup = "Core" },
+                new() { Name = "Planks",                         MuscleGroup = "Core" },
+                new() { Name = "Russian Twists",                 MuscleGroup = "Core" },
+                new() { Name = "Weighted Sit-ups",               MuscleGroup = "Core" },
 
                 // Legs
-                new() { Name = "Back Squats", MuscleGroup = "Legs" },
-                new() { Name = "Box Jumps", MuscleGroup = "Legs" },
-                new() { Name = "Bulgarian Split Squat", MuscleGroup = "Legs" },
-                new() { Name = "Calf Raises", MuscleGroup = "Legs" },
-                new() { Name = "Deadlifts", MuscleGroup = "Legs" },
-                new() { Name = "Front Squats", MuscleGroup = "Legs" },
-                new() { Name = "Goblet Squat", MuscleGroup = "Legs" },
-                new() { Name = "Hack Squat", MuscleGroup = "Legs" },
-                new() { Name = "Hip Abductor", MuscleGroup = "Legs" },
-                new() { Name = "Hip Adductor", MuscleGroup = "Legs" },
-                new() { Name = "Hip Thrust", MuscleGroup = "Legs" },
-                new() { Name = "Leg Curls", MuscleGroup = "Legs" },
-                new() { Name = "Leg Extensions", MuscleGroup = "Legs" },
-                new() { Name = "Leg Press", MuscleGroup = "Legs" },
-                new() { Name = "Lunges", MuscleGroup = "Legs" },
-                new() { Name = "Pistol Squat", MuscleGroup = "Legs" },
-                new() { Name = "Romanian Deadlift", MuscleGroup = "Legs" },
-                new() { Name = "Sumo Deadlift", MuscleGroup = "Legs" },
-                new() { Name = "Sumo Squat", MuscleGroup = "Legs" },
-                new() { Name = "V Squats", MuscleGroup = "Legs" },
+                new() { Name = "Back Squats",                    MuscleGroup = "Legs" },
+                new() { Name = "Box Jumps",                      MuscleGroup = "Legs" },
+                new() { Name = "Bulgarian Split Squat",          MuscleGroup = "Legs" },
+                new() { Name = "Calf Raises",                    MuscleGroup = "Legs" },
+                new() { Name = "Deadlifts",                      MuscleGroup = "Legs" },
+                new() { Name = "Front Squats",                   MuscleGroup = "Legs" },
+                new() { Name = "Goblet Squat",                   MuscleGroup = "Legs" },
+                new() { Name = "Hack Squat",                     MuscleGroup = "Legs" },
+                new() { Name = "Hip Abductor",                   MuscleGroup = "Legs" },
+                new() { Name = "Hip Adductor",                   MuscleGroup = "Legs" },
+                new() { Name = "Hip Thrust",                     MuscleGroup = "Legs" },
+                new() { Name = "Leg Curls",                      MuscleGroup = "Legs" },
+                new() { Name = "Leg Extensions",                 MuscleGroup = "Legs" },
+                new() { Name = "Leg Press",                      MuscleGroup = "Legs" },
+                new() { Name = "Lunges",                         MuscleGroup = "Legs" },
+                new() { Name = "Pistol Squat",                   MuscleGroup = "Legs" },
+                new() { Name = "Romanian Deadlift",              MuscleGroup = "Legs" },
+                new() { Name = "Sumo Deadlift",                  MuscleGroup = "Legs" },
+                new() { Name = "Sumo Squat",                     MuscleGroup = "Legs" },
+                new() { Name = "V Squats",                       MuscleGroup = "Legs" },
 
                 // Shoulders
-                new() { Name = "Arnold Press", MuscleGroup = "Shoulders" },
-                new() { Name = "Face Pulls", MuscleGroup = "Shoulders" },
-                new() { Name = "Front Raises", MuscleGroup = "Shoulders" },
-                new() { Name = "Lateral Raises", MuscleGroup = "Shoulders" },
-                new() { Name = "Shoulder Press", MuscleGroup = "Shoulders" },
+                new() { Name = "Arnold Press",                   MuscleGroup = "Shoulders" },
+                new() { Name = "Face Pulls",                     MuscleGroup = "Shoulders" },
+                new() { Name = "Front Raises",                   MuscleGroup = "Shoulders" },
+                new() { Name = "Lateral Raises",                 MuscleGroup = "Shoulders" },
+                new() { Name = "Shoulder Press",                 MuscleGroup = "Shoulders" },
             };
 
             await _database.InsertAllAsync(defaultExercises);
         }
         #endregion
 
-        #region "DELETE SET ASYNC WITH ID"
-        public async Task DeleteSetAsync(int id)
-        {
-            await InitializeAsync();
-            await _database.DeleteAsync<WorkoutSet>(id);
-        }
-        #endregion
-
-        #region "DELETE SESSION ASYNC"
-        public async Task<int> DeleteSessionAsync(WorkoutSession session)
-        {
-            await InitializeAsync();
-            return await _database.DeleteAsync(session);
-        }
-        #endregion
-
-        #region "DELETE SET ASYNC"
-        public async Task<int> DeleteSetAsync(WorkoutSet set)
-        {
-            await InitializeAsync();
-            return await _database.DeleteAsync(set);
-        }
-        #endregion
-
-        #region "DELETE EXERCISE ASYNC"
-        public async Task DeleteExerciseAsync(int id)
-        {
-            await InitializeAsync();
-            await _database.DeleteAsync<Exercise>(id);
-            _exerciseCache = null;
-        }
-        #endregion
-
-        #region "GET ALL EXERCISES ASYNC"
-        public async Task<List<Exercise>> GetAllExercisesAsync()
-        {
-            await InitializeAsync();
-            _exerciseCache ??= await _database.Table<Exercise>().ToListAsync();
-            return _exerciseCache;
-        }
-        #endregion
-
-        #region "GET ALL SESSIONS ASYNC"
+        #region "SESSIONS"
         public async Task<List<WorkoutSession>> GetAllSessionsAsync()
         {
-            await InitializeAsync();
-            return await _database.Table<WorkoutSession>().OrderByDescending(x => x.Date).ToListAsync();
-        }
-        #endregion
-
-        #region "GET EXERCISE ASYNC BY ID"
-        public async Task<Exercise> GetExerciseAsync(int id)
-        {
-            await InitializeAsync();
-            return await _database.GetAsync<Exercise>(id);
-        }
-        #endregion
-
-        #region "GET EXERCISE HISTORY ASYNC"
-        public async Task<List<WorkoutSet>> GetExerciseHistoryAsync(int exerciseId, int days = 30)
-        {
-            await InitializeAsync();
-            var startDate = days == 0 ? DateTime.MinValue : DateTime.Now.AddDays(-days);
-            return await _database.Table<WorkoutSet>()
-                .Where(x => x.ExerciseId == exerciseId && x.CreatedDate >= startDate)
-                .OrderBy(x => x.CreatedDate)
+            await EnsureInitializedAsync();
+            return await _database.Table<WorkoutSession>()
+                .OrderByDescending(x => x.Date)
                 .ToListAsync();
         }
-        #endregion
 
-        #region "GET RECENT EXERCISE IDS ASYNC"
-        public async Task<List<int>> GetRecentExerciseIdsAsync(int days)
+        public async Task<WorkoutSession?> GetSessionAsync(int id)
         {
-            await InitializeAsync();
-            var startDate = DateTime.Now.AddDays(-days);
-            var sets = await _database.Table<WorkoutSet>()
-                .Where(s => s.CreatedDate >= startDate)
-                .ToListAsync();
-            return sets.Select(s => s.ExerciseId).Distinct().ToList();
+            await EnsureInitializedAsync();
+            // FIX Minor: FindAsync hits the primary key index directly — no table scan.
+            // Returns null instead of throwing when the record doesn't exist.
+            return await _database.FindAsync<WorkoutSession>(id);
         }
-        #endregion
 
-        #region "GET LAST WORKOUT DATE ASYNC"
         public async Task<DateTime?> GetLastWorkoutDateAsync()
         {
-            await InitializeAsync();
+            await EnsureInitializedAsync();
+            // Reverted: raw scalar query caused DateTime parse failures because
+            // SQLite-net's internal date string format varies by configuration.
+            // Fetching one row and letting SQLite-net deserialize the DateTime
+            // is safer and still only reads one row via the DESC+LIMIT index scan.
             var lastSession = await _database.Table<WorkoutSession>()
                 .OrderByDescending(x => x.Date)
                 .FirstOrDefaultAsync();
             return lastSession?.Date;
         }
-        #endregion
 
-        #region "GET SESSIONS ASYNC"
+        public async Task<int> GetTotalWorkoutCountAsync()
+        {
+            await EnsureInitializedAsync();
+            return await _database.Table<WorkoutSession>().CountAsync();
+        }
+
         public async Task<List<WorkoutSession>> GetSessionsAsync(DateTime startDate, DateTime endDate)
         {
-            await InitializeAsync();
+            await EnsureInitializedAsync();
             return await _database.Table<WorkoutSession>()
                 .Where(x => x.Date >= startDate && x.Date <= endDate)
                 .OrderByDescending(x => x.Date)
                 .ToListAsync();
         }
-        #endregion
 
-        #region "GET SETS FOR SESSION ASYNC"
-        public async Task<List<WorkoutSet>> GetSetsForSessionAsync(int sessionId)
-        {
-            await InitializeAsync();
-            return await _database.Table<WorkoutSet>()
-                .Where(x => x.WorkoutSessionId == sessionId)
-                .OrderBy(x => x.SetNumber)
-                .ToListAsync();
-        }
-        #endregion
-
-        #region "GET TOTAL WORKOUT COUNT ASYNC"
-        public async Task<int> GetTotalWorkoutCountAsync()
-        {
-            await InitializeAsync();
-            return await _database.Table<WorkoutSession>().CountAsync();
-        }
-        #endregion
-
-        #region "GET SESSION ASYNC"
-        public async Task<WorkoutSession?> GetSessionAsync(int id)
-        {
-            await InitializeAsync();
-            return await _database.Table<WorkoutSession>()
-                .Where(s => s.Id == id)
-                .FirstOrDefaultAsync();
-        }
-        #endregion
-
-        #region "SAVE EXERCISE ASYNC"
-        public async Task<int> SaveExerciseAsync(Exercise exercise)
-        {
-            await InitializeAsync();
-            if (exercise.Id == 0)
-            {
-                var result = await _database.InsertAsync(exercise);
-                _exerciseCache = null;
-                return result;
-            }
-            var updateResult = await _database.UpdateAsync(exercise);
-            _exerciseCache = null;
-            return updateResult;
-        }
-        #endregion
-
-        #region "SAVE SESSION ASYNC"
         public async Task<int> SaveSessionAsync(WorkoutSession session)
         {
-            await InitializeAsync();
+            await EnsureInitializedAsync();
             if (session.Id == 0)
             {
                 await _database.InsertAsync(session);
@@ -296,30 +196,118 @@ namespace WorkoutTrackerV2.Services
             await _database.UpdateAsync(session);
             return session.Id;
         }
+
+        public async Task<int> DeleteSessionAsync(WorkoutSession session)
+        {
+            await EnsureInitializedAsync();
+            return await _database.DeleteAsync(session);
+        }
         #endregion
 
-        #region "SAVE SET ASYNC"
+        #region "SETS"
+        public async Task<List<WorkoutSet>> GetSetsForSessionAsync(int sessionId)
+        {
+            await EnsureInitializedAsync();
+            return await _database.Table<WorkoutSet>()
+                .Where(x => x.WorkoutSessionId == sessionId)
+                .OrderBy(x => x.SetNumber)
+                .ToListAsync();
+        }
+
+        public async Task<List<WorkoutSet>> GetExerciseHistoryAsync(int exerciseId, int days = 30)
+        {
+            await EnsureInitializedAsync();
+            var startDate = days == 0 ? DateTime.MinValue : DateTime.Now.AddDays(-days);
+            return await _database.Table<WorkoutSet>()
+                .Where(x => x.ExerciseId == exerciseId && x.CreatedDate >= startDate)
+                .OrderBy(x => x.CreatedDate)
+                .ToListAsync();
+        }
+
         public async Task<int> SaveSetAsync(WorkoutSet set)
         {
-            await InitializeAsync();
+            await EnsureInitializedAsync();
             if (set.Id == 0)
                 return await _database.InsertAsync(set);
             return await _database.UpdateAsync(set);
         }
-        #endregion
 
-        #region "GET ALL TEMPLATES ASYNC"
-        public async Task<List<WorkoutTemplate>> GetAllTemplatesAsync()
+        public async Task<int> DeleteSetAsync(WorkoutSet set)
         {
-            await InitializeAsync();
-            return await _database.Table<WorkoutTemplate>().OrderBy(t => t.Name).ToListAsync();
+            await EnsureInitializedAsync();
+            return await _database.DeleteAsync(set);
+        }
+
+        public async Task DeleteSetAsync(int id)
+        {
+            await EnsureInitializedAsync();
+            await _database.DeleteAsync<WorkoutSet>(id);
         }
         #endregion
 
-        #region "SAVE TEMPLATE ASYNC"
+        #region "EXERCISES"
+        public async Task<IReadOnlyList<Exercise>> GetAllExercisesAsync()
+        {
+            await EnsureInitializedAsync();
+            // FIX 5: Return a read-only wrapper around the cache so callers cannot
+            // mutate (sort, remove, add to) the shared instance. The underlying list
+            // is still reused across calls — no extra allocation on cache hits.
+            _exerciseCache ??= await _database.Table<Exercise>().ToListAsync();
+            return _exerciseCache.AsReadOnly();
+        }
+
+        public async Task<Exercise?> GetExerciseAsync(int id)
+        {
+            await EnsureInitializedAsync();
+            // FIX Minor: FindAsync uses PK index and returns null rather than throwing.
+            return await _database.FindAsync<Exercise>(id);
+        }
+
+        public async Task<List<int>> GetRecentExerciseIdsAsync(int days)
+        {
+            await EnsureInitializedAsync();
+            var startDate = DateTime.Now.AddDays(-days);
+            // FIX 2: Raw scalar query fetches only ExerciseId — no full WorkoutSet
+            // deserialization. SQLite does the DISTINCT in the query, not in-process.
+            return await _database.QueryScalarsAsync<int>(
+                "SELECT DISTINCT ExerciseId FROM WorkoutSet WHERE CreatedDate >= ?", startDate);
+        }
+
+        public async Task<int> SaveExerciseAsync(Exercise exercise)
+        {
+            await EnsureInitializedAsync();
+            int result;
+            // FIX 7: Perform the DB operation first; only clear the cache after
+            // it succeeds. If InsertAsync/UpdateAsync throws, the cache stays valid.
+            if (exercise.Id == 0)
+                result = await _database.InsertAsync(exercise);
+            else
+                result = await _database.UpdateAsync(exercise);
+            _exerciseCache = null;
+            return result;
+        }
+
+        public async Task DeleteExerciseAsync(int id)
+        {
+            await EnsureInitializedAsync();
+            await _database.DeleteAsync<Exercise>(id);
+            // Cache cleared after confirmed delete.
+            _exerciseCache = null;
+        }
+        #endregion
+
+        #region "TEMPLATES"
+        public async Task<List<WorkoutTemplate>> GetAllTemplatesAsync()
+        {
+            await EnsureInitializedAsync();
+            return await _database.Table<WorkoutTemplate>()
+                .OrderBy(t => t.Name)
+                .ToListAsync();
+        }
+
         public async Task<int> SaveTemplateAsync(WorkoutTemplate template)
         {
-            await InitializeAsync();
+            await EnsureInitializedAsync();
             if (template.Id == 0)
             {
                 await _database.InsertAsync(template);
@@ -328,50 +316,54 @@ namespace WorkoutTrackerV2.Services
             await _database.UpdateAsync(template);
             return template.Id;
         }
-        #endregion
 
-        #region "GET TEMPLATE SETS ASYNC"
         public async Task<List<WorkoutTemplateSet>> GetTemplateSetsAsync(int templateId)
         {
-            await InitializeAsync();
+            await EnsureInitializedAsync();
             return await _database.Table<WorkoutTemplateSet>()
                 .Where(x => x.TemplateId == templateId)
                 .OrderBy(x => x.SetNumber)
                 .ToListAsync();
         }
-        #endregion
 
-        #region "SAVE TEMPLATE SET ASYNC"
         public async Task<int> SaveTemplateSetAsync(WorkoutTemplateSet set)
         {
-            await InitializeAsync();
+            await EnsureInitializedAsync();
             if (set.Id == 0)
                 return await _database.InsertAsync(set);
             return await _database.UpdateAsync(set);
         }
-        #endregion
 
-        #region "DELETE TEMPLATE ASYNC"
         public async Task DeleteTemplateAsync(int templateId)
         {
-            await InitializeAsync();
-            var sets = await _database.Table<WorkoutTemplateSet>()
-                .Where(x => x.TemplateId == templateId)
-                .ToListAsync();
-            foreach (var set in sets)
-                await _database.DeleteAsync(set);
-            await _database.DeleteAsync<WorkoutTemplate>(templateId);
+            await EnsureInitializedAsync();
+            // FIX 3: Single DELETE WHERE replaces N sequential DeleteAsync calls.
+            // FIX 8: Both deletes wrapped in a transaction — if the app is killed
+            // mid-operation the sets and template are deleted atomically, leaving
+            // no orphaned rows.
+            await _database.RunInTransactionAsync(db =>
+            {
+                db.Execute(
+                    "DELETE FROM WorkoutTemplateSet WHERE TemplateId = ?", templateId);
+                db.Delete<WorkoutTemplate>(templateId);
+            });
         }
         #endregion
 
-        #region "CLEAR ALL DATA ASYNC"
+        #region "ADMIN"
         public async Task ClearAllDataAsync()
         {
-            await InitializeAsync();
-            await _database.DeleteAllAsync<WorkoutSet>();
-            await _database.DeleteAllAsync<WorkoutSession>();
-            await _database.DeleteAllAsync<WorkoutTemplate>();
-            await _database.DeleteAllAsync<WorkoutTemplateSet>();
+            await EnsureInitializedAsync();
+            // FIX 8: Wrapped in a transaction — all tables are cleared atomically.
+            // Previously each DeleteAllAsync was an independent commit; a crash
+            // between them would leave the database in a partially cleared state.
+            await _database.RunInTransactionAsync(db =>
+            {
+                db.DeleteAll<WorkoutSet>();
+                db.DeleteAll<WorkoutSession>();
+                db.DeleteAll<WorkoutTemplate>();
+                db.DeleteAll<WorkoutTemplateSet>();
+            });
         }
         #endregion
     }
