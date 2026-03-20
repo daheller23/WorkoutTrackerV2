@@ -3,16 +3,17 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="WorkoutTrackerV2.Views.CreateExerciseView"
              xmlns:vm="clr-namespace:WorkoutTrackerV2.ViewModels"
-             xmlns:converters="clr-namespace:WorkoutTrackerV2.Converters"
              x:DataType="vm:CreateExerciseViewModel"
              BackgroundColor="#FAFAFA">
 
-    <ContentPage.Resources>
-        <converters:MuscleGroupFilterColorConverter x:Key="MuscleGroupFilterColorConverter"/>
-        <converters:MuscleGroupFilterTextColorConverter x:Key="MuscleGroupFilterTextColorConverter"/>
-        <converters:MuscleGroupColorConverter x:Key="MuscleGroupColorConverter"/>
-        <converters:MuscleGroupEmojiConverter x:Key="MuscleGroupEmojiConverter"/>
-    </ContentPage.Resources>
+    <!--
+        FIX 3: All four converters removed:
+          - MuscleGroupFilterColorConverter  ) replaced with DataTriggers
+          - MuscleGroupFilterTextColorConverter)   on MuscleGroupPillViewModel.IsSelected
+          - MuscleGroupColorConverter         ) replaced with PreviewMuscleGroupColor
+          - MuscleGroupEmojiConverter         ) replaced with PreviewMuscleGroupEmoji
+        No converter resources needed on this page.
+    -->
 
     <Shell.NavBarIsVisible>False</Shell.NavBarIsVisible>
     <Shell.BackButtonBehavior>
@@ -21,35 +22,27 @@
 
     <Grid RowDefinitions="Auto,*" RowSpacing="0">
 
-        <!-- Header -->
+        <!-- ── Header ─────────────────────────────────────────────────────── -->
         <StackLayout Grid.Row="0" BackgroundColor="#FFFFFF" Padding="24,16,24,20" Spacing="4">
             <Button Text="← Back"
                     Command="{Binding CancelCommand}"
-                    BackgroundColor="Transparent"
-                    TextColor="#1F77F0"
-                    FontSize="14"
-                    Padding="0"
-                    HorizontalOptions="Start"/>
+                    BackgroundColor="Transparent" TextColor="#1F77F0"
+                    FontSize="14" Padding="0" HorizontalOptions="Start"/>
             <Label Text="Create Exercise"
-                   FontSize="32"
-                   FontAttributes="Bold"
-                   TextColor="#1F77F0"
-                   CharacterSpacing="0.3"/>
+                   FontSize="32" FontAttributes="Bold"
+                   TextColor="#1F77F0" CharacterSpacing="0.3"/>
             <Label Text="Add a custom exercise to your library"
-                   FontSize="13"
-                   TextColor="#999999"/>
+                   FontSize="13" TextColor="#999999"/>
         </StackLayout>
 
         <ScrollView Grid.Row="1">
             <StackLayout Padding="20,24" Spacing="20">
 
-                <!-- Exercise Name -->
+                <!-- ── Exercise Name ─────────────────────────────────────── -->
                 <StackLayout Spacing="8">
                     <Label Text="EXERCISE NAME"
-                           FontSize="11"
-                           FontAttributes="Bold"
-                           TextColor="#999999"
-                           CharacterSpacing="1"/>
+                           FontSize="11" FontAttributes="Bold"
+                           TextColor="#999999" CharacterSpacing="1"/>
                     <Border BackgroundColor="#FFFFFF" StrokeThickness="0">
                         <Border.StrokeShape>
                             <RoundRectangle CornerRadius="10"/>
@@ -63,133 +56,93 @@
                                Margin="16,12"/>
                     </Border>
                     <Label Text="{Binding NameError}"
-                           FontSize="11"
-                           TextColor="#FF6B6B"
+                           FontSize="11" TextColor="#FF6B6B"
                            IsVisible="{Binding HasNameError}"/>
                 </StackLayout>
 
-                <!-- Muscle Group -->
+                <!-- ── Muscle Group Selector ──────────────────────────────────
+                     FIX 3: FlexLayout + BindableLayout over MuscleGroupPills
+                     replaces 6 hard-coded Borders each running 2 converters
+                     (MuscleGroupFilterColorConverter + MuscleGroupFilterTextColorConverter).
+                     Wrap="Wrap" reproduces the 3-column grid layout.
+                     DataTriggers on IsSelected handle colour — zero converters.  -->
                 <StackLayout Spacing="8">
                     <Label Text="MUSCLE GROUP"
-                           FontSize="11"
-                           FontAttributes="Bold"
-                           TextColor="#999999"
-                           CharacterSpacing="1"/>
-                    <Grid ColumnDefinitions="*,*,*" RowDefinitions="Auto,Auto" ColumnSpacing="10" RowSpacing="10">
-                        <Border Grid.Row="0" Grid.Column="0"
-                                BackgroundColor="{Binding SelectedMuscleGroup, Converter={StaticResource MuscleGroupFilterColorConverter}, ConverterParameter=Chest}"
-                                StrokeThickness="0" Padding="0,12">
-                            <Border.StrokeShape>
-                                <RoundRectangle CornerRadius="10"/>
-                            </Border.StrokeShape>
-                            <Border.GestureRecognizers>
-                                <TapGestureRecognizer Command="{Binding SelectMuscleGroupCommand}" CommandParameter="Chest"/>
-                            </Border.GestureRecognizers>
-                            <Label Text="🔵 Chest" FontSize="13" FontAttributes="Bold"
-                                   HorizontalOptions="Center"
-                                   TextColor="{Binding SelectedMuscleGroup, Converter={StaticResource MuscleGroupFilterTextColorConverter}, ConverterParameter=Chest}"/>
-                        </Border>
-                        <Border Grid.Row="0" Grid.Column="1"
-                                BackgroundColor="{Binding SelectedMuscleGroup, Converter={StaticResource MuscleGroupFilterColorConverter}, ConverterParameter=Back}"
-                                StrokeThickness="0" Padding="0,12">
-                            <Border.StrokeShape>
-                                <RoundRectangle CornerRadius="10"/>
-                            </Border.StrokeShape>
-                            <Border.GestureRecognizers>
-                                <TapGestureRecognizer Command="{Binding SelectMuscleGroupCommand}" CommandParameter="Back"/>
-                            </Border.GestureRecognizers>
-                            <Label Text="🟢 Back" FontSize="13" FontAttributes="Bold"
-                                   HorizontalOptions="Center"
-                                   TextColor="{Binding SelectedMuscleGroup, Converter={StaticResource MuscleGroupFilterTextColorConverter}, ConverterParameter=Back}"/>
-                        </Border>
-                        <Border Grid.Row="0" Grid.Column="2"
-                                BackgroundColor="{Binding SelectedMuscleGroup, Converter={StaticResource MuscleGroupFilterColorConverter}, ConverterParameter=Legs}"
-                                StrokeThickness="0" Padding="0,12">
-                            <Border.StrokeShape>
-                                <RoundRectangle CornerRadius="10"/>
-                            </Border.StrokeShape>
-                            <Border.GestureRecognizers>
-                                <TapGestureRecognizer Command="{Binding SelectMuscleGroupCommand}" CommandParameter="Legs"/>
-                            </Border.GestureRecognizers>
-                            <Label Text="🟠 Legs" FontSize="13" FontAttributes="Bold"
-                                   HorizontalOptions="Center"
-                                   TextColor="{Binding SelectedMuscleGroup, Converter={StaticResource MuscleGroupFilterTextColorConverter}, ConverterParameter=Legs}"/>
-                        </Border>
-                        <Border Grid.Row="1" Grid.Column="0"
-                                BackgroundColor="{Binding SelectedMuscleGroup, Converter={StaticResource MuscleGroupFilterColorConverter}, ConverterParameter=Shoulders}"
-                                StrokeThickness="0" Padding="0,12">
-                            <Border.StrokeShape>
-                                <RoundRectangle CornerRadius="10"/>
-                            </Border.StrokeShape>
-                            <Border.GestureRecognizers>
-                                <TapGestureRecognizer Command="{Binding SelectMuscleGroupCommand}" CommandParameter="Shoulders"/>
-                            </Border.GestureRecognizers>
-                            <Label Text="🟣 Shoulders" FontSize="13" FontAttributes="Bold"
-                                   HorizontalOptions="Center"
-                                   TextColor="{Binding SelectedMuscleGroup, Converter={StaticResource MuscleGroupFilterTextColorConverter}, ConverterParameter=Shoulders}"/>
-                        </Border>
-                        <Border Grid.Row="1" Grid.Column="1"
-                                BackgroundColor="{Binding SelectedMuscleGroup, Converter={StaticResource MuscleGroupFilterColorConverter}, ConverterParameter=Arms}"
-                                StrokeThickness="0" Padding="0,12">
-                            <Border.StrokeShape>
-                                <RoundRectangle CornerRadius="10"/>
-                            </Border.StrokeShape>
-                            <Border.GestureRecognizers>
-                                <TapGestureRecognizer Command="{Binding SelectMuscleGroupCommand}" CommandParameter="Arms"/>
-                            </Border.GestureRecognizers>
-                            <Label Text="🔴 Arms" FontSize="13" FontAttributes="Bold"
-                                   HorizontalOptions="Center"
-                                   TextColor="{Binding SelectedMuscleGroup, Converter={StaticResource MuscleGroupFilterTextColorConverter}, ConverterParameter=Arms}"/>
-                        </Border>
-                        <Border Grid.Row="1" Grid.Column="2"
-                                BackgroundColor="{Binding SelectedMuscleGroup, Converter={StaticResource MuscleGroupFilterColorConverter}, ConverterParameter=Core}"
-                                StrokeThickness="0" Padding="0,12">
-                            <Border.StrokeShape>
-                                <RoundRectangle CornerRadius="10"/>
-                            </Border.StrokeShape>
-                            <Border.GestureRecognizers>
-                                <TapGestureRecognizer Command="{Binding SelectMuscleGroupCommand}" CommandParameter="Core"/>
-                            </Border.GestureRecognizers>
-                            <Label Text="🩵 Core" FontSize="13" FontAttributes="Bold"
-                                   HorizontalOptions="Center"
-                                   TextColor="{Binding SelectedMuscleGroup, Converter={StaticResource MuscleGroupFilterTextColorConverter}, ConverterParameter=Core}"/>
-                        </Border>
-                    </Grid>
+                           FontSize="11" FontAttributes="Bold"
+                           TextColor="#999999" CharacterSpacing="1"/>
+                    <FlexLayout Wrap="Wrap"
+                                JustifyContent="SpaceBetween"
+                                AlignItems="Stretch"
+                                BindableLayout.ItemsSource="{Binding MuscleGroupPills}">
+                        <BindableLayout.ItemTemplate>
+                            <DataTemplate x:DataType="vm:MuscleGroupPillViewModel">
+                                <Border StrokeThickness="0"
+                                        Padding="0,12"
+                                        Margin="0,0,0,10"
+                                        WidthRequest="105">
+                                    <Border.StrokeShape>
+                                        <RoundRectangle CornerRadius="10"/>
+                                    </Border.StrokeShape>
+                                    <Border.Triggers>
+                                        <DataTrigger TargetType="Border" Binding="{Binding IsSelected}" Value="True">
+                                            <Setter Property="BackgroundColor" Value="#1F77F0"/>
+                                        </DataTrigger>
+                                        <DataTrigger TargetType="Border" Binding="{Binding IsSelected}" Value="False">
+                                            <Setter Property="BackgroundColor" Value="#EEEEEE"/>
+                                        </DataTrigger>
+                                    </Border.Triggers>
+                                    <Border.GestureRecognizers>
+                                        <TapGestureRecognizer
+                                            Command="{Binding Source={RelativeSource AncestorType={x:Type vm:CreateExerciseViewModel}}, Path=SelectMuscleGroupCommand}"
+                                            CommandParameter="{Binding Key}"/>
+                                    </Border.GestureRecognizers>
+                                    <Label Text="{Binding Label}"
+                                           FontSize="13" FontAttributes="Bold"
+                                           HorizontalOptions="Center">
+                                        <Label.Triggers>
+                                            <DataTrigger TargetType="Label" Binding="{Binding IsSelected}" Value="True">
+                                                <Setter Property="TextColor" Value="#FFFFFF"/>
+                                            </DataTrigger>
+                                            <DataTrigger TargetType="Label" Binding="{Binding IsSelected}" Value="False">
+                                                <Setter Property="TextColor" Value="#444444"/>
+                                            </DataTrigger>
+                                        </Label.Triggers>
+                                    </Label>
+                                </Border>
+                            </DataTemplate>
+                        </BindableLayout.ItemTemplate>
+                    </FlexLayout>
                     <Label Text="{Binding MuscleGroupError}"
-                           FontSize="11"
-                           TextColor="#FF6B6B"
+                           FontSize="11" TextColor="#FF6B6B"
                            IsVisible="{Binding HasMuscleGroupError}"/>
                 </StackLayout>
 
-                <!-- Preview Card -->
-                <StackLayout Spacing="8"
-                             IsVisible="{Binding HasValidInput}">
+                <!-- ── Preview Card ──────────────────────────────────────────
+                     FIX 3: BoxView.BackgroundColor binds to PreviewMuscleGroupColor,
+                     emoji Label binds to PreviewMuscleGroupEmoji, and muscle group
+                     Label.TextColor binds to PreviewMuscleGroupColor — all
+                     pre-computed string properties on the ViewModel.             -->
+                <StackLayout Spacing="8" IsVisible="{Binding HasValidInput}">
                     <Label Text="PREVIEW"
-                           FontSize="11"
-                           FontAttributes="Bold"
-                           TextColor="#999999"
-                           CharacterSpacing="1"/>
+                           FontSize="11" FontAttributes="Bold"
+                           TextColor="#999999" CharacterSpacing="1"/>
                     <Border BackgroundColor="#FFFFFF" StrokeThickness="0">
                         <Border.StrokeShape>
                             <RoundRectangle CornerRadius="8"/>
                         </Border.StrokeShape>
                         <Grid ColumnDefinitions="6,*" ColumnSpacing="0">
                             <BoxView Grid.Column="0"
-                                     BackgroundColor="{Binding SelectedMuscleGroup, Converter={StaticResource MuscleGroupColorConverter}}"
-                                     HorizontalOptions="Fill"
-                                     VerticalOptions="Fill"/>
-                            <StackLayout Grid.Column="1" Padding="14,14,14,14" Spacing="3">
+                                     BackgroundColor="{Binding PreviewMuscleGroupColor}"
+                                     HorizontalOptions="Fill" VerticalOptions="Fill"/>
+                            <StackLayout Grid.Column="1" Padding="14" Spacing="3">
                                 <Label Text="{Binding ExerciseName}"
-                                       FontSize="14"
-                                       FontAttributes="Bold"
-                                       TextColor="#000000"/>
+                                       FontSize="14" FontAttributes="Bold" TextColor="#000000"/>
                                 <StackLayout Orientation="Horizontal" Spacing="4">
-                                    <Label Text="{Binding SelectedMuscleGroup, Converter={StaticResource MuscleGroupEmojiConverter}}"
+                                    <Label Text="{Binding PreviewMuscleGroupEmoji}"
                                            FontSize="11" VerticalOptions="Center"/>
                                     <Label Text="{Binding SelectedMuscleGroup}"
-                                           FontSize="12"
-                                           FontAttributes="Bold"
-                                           TextColor="{Binding SelectedMuscleGroup, Converter={StaticResource MuscleGroupColorConverter}}"
+                                           FontSize="12" FontAttributes="Bold"
+                                           TextColor="{Binding PreviewMuscleGroupColor}"
                                            VerticalOptions="Center"/>
                                 </StackLayout>
                             </StackLayout>
@@ -197,16 +150,12 @@
                     </Border>
                 </StackLayout>
 
-                <!-- Save Button -->
+                <!-- ── Save Button ─────────────────────────────────────────── -->
                 <Button Text="💾 Save Exercise"
                         Command="{Binding SaveExerciseCommand}"
-                        BackgroundColor="#1F77F0"
-                        TextColor="#FFFFFF"
-                        FontAttributes="Bold"
-                        FontSize="15"
-                        Padding="0,16"
-                        CornerRadius="10"
-                        BorderWidth="0"/>
+                        BackgroundColor="#1F77F0" TextColor="#FFFFFF"
+                        FontAttributes="Bold" FontSize="15"
+                        Padding="0,16" CornerRadius="10" BorderWidth="0"/>
 
                 <Label Text=" " Margin="0,20"/>
 

@@ -17,53 +17,103 @@ namespace WorkoutTrackerV2.ViewModels
         [ObservableProperty] private bool _isRefreshing;
         [ObservableProperty] private int _selectedDays = 30;
         [ObservableProperty] private string _sessionCountLabel = string.Empty;
+
+        // FIX 9: Pill VMs — constructed once, IsSelected toggled on SelectedDays change.
+        public List<TimePeriodPillViewModel> TimePeriodPills { get; } =
+        [
+            new() { Label = "All", Days = 0  },
+            new() { Label = "7d",  Days = 7  },
+            new() { Label = "14d", Days = 14 },
+            new() { Label = "30d", Days = 30, IsSelected = true },
+            new() { Label = "60d", Days = 60 },
+            new() { Label = "90d", Days = 90 },
+        ];
         #endregion
 
         #region "PARTIAL METHODS"
-        partial void OnSelectedDaysChanged(int value) => LoadSessionsCommand.Execute(null);
+        partial void OnSelectedDaysChanged(int value)
+        {
+            foreach (var pill in TimePeriodPills)
+                pill.IsSelected = pill.Days == value;
+            // FIX 1: Call async method directly instead of LoadSessionsCommand.Execute().
+            _ = LoadSessionsAsync();
+        }
+        #endregion
+
+        #region "SET TIME PERIOD"
+        [RelayCommand]
+        private void SetTimePeriod(string days)
+        {
+            if (int.TryParse(days, out int result))
+                SelectedDays = result;
+        }
         #endregion
 
         #region "LOAD SESSIONS"
         [RelayCommand]
-        private async Task LoadSessions()
+        private async Task LoadSessions() => await LoadSessionsAsync();
+
+        private async Task LoadSessionsAsync()
         {
             if (IsLoading) return;
             try
             {
                 IsLoading = true;
-                _allSessions.Clear();
 
-                var startDate = SelectedDays == 0 ? DateTime.MinValue : DateTime.Now.AddDays(-SelectedDays).Date;
+                var startDate = SelectedDays == 0
+                    ? DateTime.MinValue
+                    : DateTime.Now.AddDays(-SelectedDays).Date;
                 var endDate = DateTime.Now.Date.AddDays(1);
-                var allSessions = await workoutService.GetSessionsAsync(startDate, endDate);
 
-                var setTasks = allSessions.Select(s => workoutService.GetSetsForSessionAsync(s.Id)).ToList();
+                var allSessions = await workoutService.GetSessionsAsync(startDate, endDate);
+                var exercisesTask = workoutService.GetAllExercisesAsync();
+
+                // Fetch all sets concurrently.
+                var setTasks = allSessions
+                    .Select(s => workoutService.GetSetsForSessionAsync(s.Id))
+                    .ToList();
                 var allSets = await Task.WhenAll(setTasks);
 
-                var exercises = await workoutService.GetAllExercisesAsync();
-                var exerciseDict = exercises.ToDictionary(e => e.Id);
+                var exerciseDict = (await exercisesTask).ToDictionary(e => e.Id);
 
+                // FIX 2: Build new list directly instead of Clear() + loop Add().
+                var sessions = new List<WorkoutSessionDetail>(allSessions.Count);
                 for (int i = 0; i < allSessions.Count; i++)
                 {
                     var sets = allSets[i];
+
                     var topMuscleGroup = sets
                         .Where(s => exerciseDict.ContainsKey(s.ExerciseId))
                         .GroupBy(s => exerciseDict[s.ExerciseId].MuscleGroup)
                         .OrderByDescending(g => g.Count())
                         .FirstOrDefault()?.Key ?? string.Empty;
 
-                    _allSessions.Add(new WorkoutSessionDetail
+                    // FIX 3: Single loop computes TotalReps and TotalWeight instead
+                    // of two separate .Sum() passes over the same set list.
+                    int reps = 0;
+                    double weight = 0;
+                    foreach (var s in sets)
+                    {
+                        reps += s.Reps;
+                        weight += s.Weight * s.Reps;
+                    }
+
+                    sessions.Add(new WorkoutSessionDetail
                     {
                         Session = allSessions[i],
                         SetCount = sets.Count,
-                        TotalReps = sets.Sum(s => s.Reps),
-                        TotalWeight = sets.Sum(s => s.Weight * s.Reps),
+                        TotalReps = reps,
+                        TotalWeight = weight,
                         Sets = sets,
                         MuscleGroup = topMuscleGroup
                     });
                 }
 
-                SessionCountLabel = _allSessions.Count == 1 ? "1 workout" : $"{_allSessions.Count} workouts";
+                _allSessions = sessions;
+                SessionCountLabel = _allSessions.Count == 1
+                    ? "1 workout"
+                    : $"{_allSessions.Count} workouts";
+
                 RebuildGroups();
             }
             catch (Exception ex)
@@ -81,26 +131,23 @@ namespace WorkoutTrackerV2.ViewModels
         #region "REBUILD GROUPS"
         private void RebuildGroups()
         {
-            var today = DateTime.Today;
-            var thisWeekStart = today.AddDays(-(int)today.DayOfWeek);
-            var lastWeekStart = thisWeekStart.AddDays(-7);
+            // FIX 8: Build an O(1) lookup for existing IsExpanded state instead
+            // of calling FirstOrDefault (O(n)) per group inside the Select.
+            var expandedState = GroupedSessions
+                .ToDictionary(gs => gs.Title, gs => gs.IsExpanded);
 
             var grouped = _allSessions
-                .GroupBy(s =>
-                {
-                    var date = s.Session.Date.Date;
-                    if (date >= thisWeekStart) return "This Week";
-                    if (date >= lastWeekStart) return "Last Week";
-                    return date.ToString("MMMM yyyy");
-                })
+                .GroupBy(s => GetGroupKey(s.Session.Date.Date))
                 .Select(g =>
                 {
-                    var existing = GroupedSessions.FirstOrDefault(gs => gs.Title == g.Key);
-                    var isExpanded = existing?.IsExpanded ?? true;
-                    var subtitle = g.Count() == 1 ? "1 workout" : $"{g.Count()} workouts";
-                    return new WorkoutSessionGroup(g.Key, subtitle, isExpanded ? g.ToList() : [])
+                    // FIX 7: Count() called once, stored in variable — was called
+                    // twice per group (once for Count check, once for subtitle).
+                    var count = g.Count();
+                    var expanded = expandedState.GetValueOrDefault(g.Key, true);
+                    var subtitle = count == 1 ? "1 workout" : $"{count} workouts";
+                    return new WorkoutSessionGroup(g.Key, subtitle, expanded ? g.ToList() : [])
                     {
-                        IsExpanded = isExpanded
+                        IsExpanded = expanded
                     };
                 })
                 .ToList();
@@ -117,17 +164,11 @@ namespace WorkoutTrackerV2.ViewModels
             var index = GroupedSessions.IndexOf(group);
             if (index < 0) return;
 
-            var allInGroup = _allSessions.Where(s =>
-            {
-                var date = s.Session.Date.Date;
-                var today = DateTime.Today;
-                var thisWeekStart = today.AddDays(-(int)today.DayOfWeek);
-                var lastWeekStart = thisWeekStart.AddDays(-7);
-                string key = date >= thisWeekStart ? "This Week"
-                    : date >= lastWeekStart ? "Last Week"
-                    : date.ToString("MMMM yyyy");
-                return key == group.Title;
-            }).ToList();
+            // FIX 4: GetGroupKey shared method replaces duplicated date-bucketing
+            // logic that was inlined here and in RebuildGroups separately.
+            var allInGroup = _allSessions
+                .Where(s => GetGroupKey(s.Session.Date.Date) == group.Title)
+                .ToList();
 
             var updated = new WorkoutSessionGroup(
                 group.Title, group.Subtitle,
@@ -136,17 +177,9 @@ namespace WorkoutTrackerV2.ViewModels
                 IsExpanded = group.IsExpanded
             };
 
-            GroupedSessions.RemoveAt(index);
-            GroupedSessions.Insert(index, updated);
-        }
-        #endregion
-
-        #region "SET TIME PERIOD"
-        [RelayCommand]
-        private void SetTimePeriod(string days)
-        {
-            if (int.TryParse(days, out int result))
-                SelectedDays = result;
+            // FIX 5: Use indexer assignment — one CollectionChanged notification
+            // instead of RemoveAt + Insert (two notifications).
+            GroupedSessions[index] = updated;
         }
         #endregion
 
@@ -154,26 +187,27 @@ namespace WorkoutTrackerV2.ViewModels
         [RelayCommand]
         private async Task DeleteSession(WorkoutSessionDetail detail)
         {
-            if (detail?.Session == null) return;
+            if (detail?.Session is null) return;
 
             bool confirmed = await Shell.Current.DisplayAlertAsync(
                 "Delete Workout",
                 $"Are you sure you want to delete '{detail.Session.DayName}'?",
                 "Yes", "No");
-
             if (!confirmed) return;
 
             try
             {
-                foreach (var set in detail.Sets)
-                    await workoutService.DeleteSetAsync(set);
+                // FIX 6: DeleteSetsForSessionAsync replaces foreach loop of
+                // individual DeleteSetAsync calls — one DB query instead of N.
+                await workoutService.DeleteSetsForSessionAsync(detail.Session.Id);
                 await workoutService.DeleteSessionAsync(detail.Session);
 
-                var toRemove = _allSessions.FirstOrDefault(s => s.Session.Id == detail.Session.Id);
-                if (toRemove is not null)
-                    _allSessions.Remove(toRemove);
+                _allSessions.RemoveAll(s => s.Session.Id == detail.Session.Id);
 
-                SessionCountLabel = _allSessions.Count == 1 ? "1 workout" : $"{_allSessions.Count} workouts";
+                SessionCountLabel = _allSessions.Count == 1
+                    ? "1 workout"
+                    : $"{_allSessions.Count} workouts";
+
                 RebuildGroups();
             }
             catch (Exception ex)
@@ -192,6 +226,24 @@ namespace WorkoutTrackerV2.ViewModels
                 { "Session", detail.Session }
             });
         }
+        #endregion
+
+        #region "PRIVATE HELPERS"
+
+        // FIX 4: Single shared method for date-to-group-key logic — eliminates the
+        // duplicate implementation that previously existed in RebuildGroups and
+        // ToggleGroup independently.
+        private static string GetGroupKey(DateTime date)
+        {
+            var today = DateTime.Today;
+            var thisWeekStart = today.AddDays(-(int)today.DayOfWeek);
+            var lastWeekStart = thisWeekStart.AddDays(-7);
+
+            if (date >= thisWeekStart) return "This Week";
+            if (date >= lastWeekStart) return "Last Week";
+            return date.ToString("MMMM yyyy");
+        }
+
         #endregion
     }
 }

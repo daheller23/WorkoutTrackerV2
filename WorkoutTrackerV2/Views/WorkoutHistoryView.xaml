@@ -9,11 +9,16 @@
              BackgroundColor="#FAFAFA">
 
     <ContentPage.Resources>
-        <converters:DaysToColorConverter x:Key="DaysToColorConverter"/>
-        <converters:DaysToTextColorConverter x:Key="DaysToTextColorConverter"/>
+        <!--
+            FIX 9:  DaysToColorConverter and DaysToTextColorConverter removed —
+                    replaced with TimePeriodPillViewModel + DataTriggers on IsSelected.
+            FIX 10: MuscleGroupColorConverter removed — BoxView binds to
+                    WorkoutSessionDetail.MuscleGroupColor (pre-computed string).
+            FIX 11: BoolToChevronConverter removed — replaced with DataTriggers
+                    on IsExpanded in the group header.
+            RelativeDateConverter and IsNotEmptyConverter retained.
+        -->
         <converters:RelativeDateConverter x:Key="RelativeDateConverter"/>
-        <converters:BoolToChevronConverter x:Key="BoolToChevronConverter"/>
-        <converters:MuscleGroupColorConverter x:Key="MuscleGroupColorConverter"/>
         <converters:IsNotEmptyConverter x:Key="IsNotEmptyConverter"/>
     </ContentPage.Resources>
 
@@ -21,143 +26,98 @@
 
     <Grid RowDefinitions="Auto,Auto,Auto,*" RowSpacing="0">
 
-        <!-- Header -->
+        <!-- ── Header ─────────────────────────────────────────────────────── -->
         <StackLayout Grid.Row="0" BackgroundColor="#FFFFFF" Padding="24,16,24,24" Spacing="8">
             <Label Text="📋 Workout History"
-                   FontSize="36"
-                   FontAttributes="Bold"
-                   TextColor="#1F77F0"
-                   CharacterSpacing="0.5"/>
-            <Label Text="Review your progress"
-                   FontSize="13"
-                   TextColor="#999999"/>
+                   FontSize="36" FontAttributes="Bold"
+                   TextColor="#1F77F0" CharacterSpacing="0.5"/>
+            <Label Text="Review your progress" FontSize="13" TextColor="#999999"/>
         </StackLayout>
 
-        <!-- Separator -->
         <BoxView Grid.Row="1" HeightRequest="1" Color="#F0F0F0"/>
 
-        <!-- Time Period Pills + Session Count -->
+        <!-- ── Time Period Pills + Session Count ──────────────────────────────
+             FIX 9: FlexLayout + BindableLayout over TimePeriodPills replaces
+             6 hard-coded Borders each running 2 converters per tap.
+             DataTriggers on IsSelected handle colour — zero converters.         -->
         <StackLayout Grid.Row="2" BackgroundColor="#FFFFFF" Padding="20,12,20,16" Spacing="10">
             <Grid ColumnDefinitions="*,Auto">
                 <Label Grid.Column="0"
                        Text="TIME PERIOD"
-                       FontSize="11"
-                       FontAttributes="Bold"
-                       TextColor="#999999"
-                       CharacterSpacing="1"
+                       FontSize="11" FontAttributes="Bold"
+                       TextColor="#999999" CharacterSpacing="1"
                        VerticalOptions="Center"/>
                 <Label Grid.Column="1"
                        Text="{Binding SessionCountLabel}"
-                       FontSize="11"
-                       TextColor="#999999"
-                       VerticalOptions="Center"/>
+                       FontSize="11" TextColor="#999999" VerticalOptions="Center"/>
             </Grid>
-            <Grid ColumnDefinitions="*,*,*,*,*,*" ColumnSpacing="6">
-                <Border Grid.Column="0"
-                        BackgroundColor="{Binding SelectedDays, Converter={StaticResource DaysToColorConverter}, ConverterParameter=0}"
-                        StrokeThickness="0">
-                    <Border.StrokeShape>
-                        <RoundRectangle CornerRadius="20"/>
-                    </Border.StrokeShape>
-                    <Border.GestureRecognizers>
-                        <TapGestureRecognizer Command="{Binding SetTimePeriodCommand}" CommandParameter="0"/>
-                    </Border.GestureRecognizers>
-                    <Label Text="All" FontSize="11" FontAttributes="Bold"
-                           TextColor="{Binding SelectedDays, Converter={StaticResource DaysToTextColorConverter}, ConverterParameter=0}"
-                           HorizontalOptions="Center" Padding="0,8"/>
-                </Border>
-                <Border Grid.Column="1"
-                        BackgroundColor="{Binding SelectedDays, Converter={StaticResource DaysToColorConverter}, ConverterParameter=7}"
-                        StrokeThickness="0">
-                    <Border.StrokeShape>
-                        <RoundRectangle CornerRadius="20"/>
-                    </Border.StrokeShape>
-                    <Border.GestureRecognizers>
-                        <TapGestureRecognizer Command="{Binding SetTimePeriodCommand}" CommandParameter="7"/>
-                    </Border.GestureRecognizers>
-                    <Label Text="7d" FontSize="11" FontAttributes="Bold"
-                           TextColor="{Binding SelectedDays, Converter={StaticResource DaysToTextColorConverter}, ConverterParameter=7}"
-                           HorizontalOptions="Center" Padding="0,8"/>
-                </Border>
-                <Border Grid.Column="2"
-                        BackgroundColor="{Binding SelectedDays, Converter={StaticResource DaysToColorConverter}, ConverterParameter=14}"
-                        StrokeThickness="0">
-                    <Border.StrokeShape>
-                        <RoundRectangle CornerRadius="20"/>
-                    </Border.StrokeShape>
-                    <Border.GestureRecognizers>
-                        <TapGestureRecognizer Command="{Binding SetTimePeriodCommand}" CommandParameter="14"/>
-                    </Border.GestureRecognizers>
-                    <Label Text="14d" FontSize="11" FontAttributes="Bold"
-                           TextColor="{Binding SelectedDays, Converter={StaticResource DaysToTextColorConverter}, ConverterParameter=14}"
-                           HorizontalOptions="Center" Padding="0,8"/>
-                </Border>
-                <Border Grid.Column="3"
-                        BackgroundColor="{Binding SelectedDays, Converter={StaticResource DaysToColorConverter}, ConverterParameter=30}"
-                        StrokeThickness="0">
-                    <Border.StrokeShape>
-                        <RoundRectangle CornerRadius="20"/>
-                    </Border.StrokeShape>
-                    <Border.GestureRecognizers>
-                        <TapGestureRecognizer Command="{Binding SetTimePeriodCommand}" CommandParameter="30"/>
-                    </Border.GestureRecognizers>
-                    <Label Text="30d" FontSize="11" FontAttributes="Bold"
-                           TextColor="{Binding SelectedDays, Converter={StaticResource DaysToTextColorConverter}, ConverterParameter=30}"
-                           HorizontalOptions="Center" Padding="0,8"/>
-                </Border>
-                <Border Grid.Column="4"
-                        BackgroundColor="{Binding SelectedDays, Converter={StaticResource DaysToColorConverter}, ConverterParameter=60}"
-                        StrokeThickness="0">
-                    <Border.StrokeShape>
-                        <RoundRectangle CornerRadius="20"/>
-                    </Border.StrokeShape>
-                    <Border.GestureRecognizers>
-                        <TapGestureRecognizer Command="{Binding SetTimePeriodCommand}" CommandParameter="60"/>
-                    </Border.GestureRecognizers>
-                    <Label Text="60d" FontSize="11" FontAttributes="Bold"
-                           TextColor="{Binding SelectedDays, Converter={StaticResource DaysToTextColorConverter}, ConverterParameter=60}"
-                           HorizontalOptions="Center" Padding="0,8"/>
-                </Border>
-                <Border Grid.Column="5"
-                        BackgroundColor="{Binding SelectedDays, Converter={StaticResource DaysToColorConverter}, ConverterParameter=90}"
-                        StrokeThickness="0">
-                    <Border.StrokeShape>
-                        <RoundRectangle CornerRadius="20"/>
-                    </Border.StrokeShape>
-                    <Border.GestureRecognizers>
-                        <TapGestureRecognizer Command="{Binding SetTimePeriodCommand}" CommandParameter="90"/>
-                    </Border.GestureRecognizers>
-                    <Label Text="90d" FontSize="11" FontAttributes="Bold"
-                           TextColor="{Binding SelectedDays, Converter={StaticResource DaysToTextColorConverter}, ConverterParameter=90}"
-                           HorizontalOptions="Center" Padding="0,8"/>
-                </Border>
-            </Grid>
+            <FlexLayout Direction="Row"
+                        JustifyContent="SpaceBetween"
+                        AlignItems="Center"
+                        BindableLayout.ItemsSource="{Binding TimePeriodPills}">
+                <BindableLayout.ItemTemplate>
+                    <DataTemplate x:DataType="vm:TimePeriodPillViewModel">
+                        <Border StrokeThickness="0" Padding="0">
+                            <Border.StrokeShape>
+                                <RoundRectangle CornerRadius="20"/>
+                            </Border.StrokeShape>
+                            <Border.Triggers>
+                                <DataTrigger TargetType="Border" Binding="{Binding IsSelected}" Value="True">
+                                    <Setter Property="BackgroundColor" Value="#1F77F0"/>
+                                </DataTrigger>
+                                <DataTrigger TargetType="Border" Binding="{Binding IsSelected}" Value="False">
+                                    <Setter Property="BackgroundColor" Value="#EEEEEE"/>
+                                </DataTrigger>
+                            </Border.Triggers>
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer
+                                    Command="{Binding Source={RelativeSource AncestorType={x:Type vm:WorkoutHistoryViewModel}}, Path=SetTimePeriodCommand}"
+                                    CommandParameter="{Binding DaysString}"/>
+                            </Border.GestureRecognizers>
+                            <Label Text="{Binding Label}"
+                                   FontSize="11" FontAttributes="Bold"
+                                   HorizontalOptions="Center" Padding="14,8">
+                                <Label.Triggers>
+                                    <DataTrigger TargetType="Label" Binding="{Binding IsSelected}" Value="True">
+                                        <Setter Property="TextColor" Value="#FFFFFF"/>
+                                    </DataTrigger>
+                                    <DataTrigger TargetType="Label" Binding="{Binding IsSelected}" Value="False">
+                                        <Setter Property="TextColor" Value="#666666"/>
+                                    </DataTrigger>
+                                </Label.Triggers>
+                            </Label>
+                        </Border>
+                    </DataTemplate>
+                </BindableLayout.ItemTemplate>
+            </FlexLayout>
         </StackLayout>
 
-        <!-- Sessions List -->
+        <!-- ── Sessions List ──────────────────────────────────────────────── -->
         <RefreshView Grid.Row="3"
                      IsRefreshing="{Binding IsRefreshing}"
                      Command="{Binding LoadSessionsCommand}"
                      RefreshColor="#1F77F0">
-            <CollectionView ItemsSource="{Binding GroupedSessions}"
-                            SelectionMode="None">
+            <CollectionView ItemsSource="{Binding GroupedSessions}" SelectionMode="None">
                 <CollectionView.EmptyView>
-                    <StackLayout Padding="40,80" Spacing="16" HorizontalOptions="Center" VerticalOptions="Center">
+                    <StackLayout Padding="40,80" Spacing="16"
+                                 HorizontalOptions="Center" VerticalOptions="Center">
                         <Label Text="📋" FontSize="48" HorizontalOptions="Center"/>
                         <Label Text="No workouts yet"
-                               FontSize="16" FontAttributes="Bold" TextColor="#999999" HorizontalOptions="Center"/>
+                               FontSize="16" FontAttributes="Bold" TextColor="#999999"
+                               HorizontalOptions="Center"/>
                         <Label Text="Start logging workouts to see your history"
                                FontSize="12" TextColor="#D0D0D0" HorizontalOptions="Center"/>
                     </StackLayout>
                 </CollectionView.EmptyView>
                 <CollectionView.ItemTemplate>
                     <DataTemplate x:DataType="models:WorkoutSessionGroup">
-                        <StackLayout Padding="20,0,20,0" Spacing="0" Margin="0,0,0,8">
+                        <StackLayout Padding="20,0" Spacing="0" Margin="0,0,0,8">
 
-                            <!-- Group Header -->
+                            <!-- Group Header
+                                 FIX 11: Chevron label uses DataTriggers on IsExpanded
+                                 instead of BoolToChevronConverter.                    -->
                             <Grid ColumnDefinitions="*,Auto,Auto"
-                                  Padding="8,10,8,10"
-                                  ColumnSpacing="8"
+                                  Padding="8,10" ColumnSpacing="8"
                                   BackgroundColor="#EEEEEE">
                                 <Grid.GestureRecognizers>
                                     <TapGestureRecognizer
@@ -166,91 +126,121 @@
                                 </Grid.GestureRecognizers>
                                 <Label Grid.Column="0"
                                        Text="{Binding Title}"
-                                       FontSize="13" FontAttributes="Bold" TextColor="#000000" VerticalOptions="Center"/>
+                                       FontSize="13" FontAttributes="Bold"
+                                       TextColor="#000000" VerticalOptions="Center"/>
                                 <Label Grid.Column="1"
                                        Text="{Binding Subtitle}"
                                        FontSize="11" TextColor="#999999" VerticalOptions="Center"/>
                                 <Label Grid.Column="2"
-                                       Text="{Binding IsExpanded, Converter={StaticResource BoolToChevronConverter}}"
-                                       FontSize="12" TextColor="#999999" VerticalOptions="Center"/>
+                                       FontSize="12" TextColor="#999999" VerticalOptions="Center">
+                                    <Label.Triggers>
+                                        <DataTrigger TargetType="Label" Binding="{Binding IsExpanded}" Value="True">
+                                            <Setter Property="Text" Value="▼"/>
+                                        </DataTrigger>
+                                        <DataTrigger TargetType="Label" Binding="{Binding IsExpanded}" Value="False">
+                                            <Setter Property="Text" Value="▶"/>
+                                        </DataTrigger>
+                                    </Label.Triggers>
+                                </Label>
                             </Grid>
 
                             <!-- Session Cards -->
                             <StackLayout BindableLayout.ItemsSource="{Binding .}" Spacing="10">
                                 <BindableLayout.ItemTemplate>
                                     <DataTemplate x:DataType="models:WorkoutSessionDetail">
-
-                                        <!-- Card with corner radius -->
-                                        <Border BackgroundColor="#FFFFFF"
-                                                StrokeThickness="0">
+                                        <Border BackgroundColor="#FFFFFF" StrokeThickness="0">
                                             <Border.StrokeShape>
                                                 <RoundRectangle CornerRadius="8"/>
                                             </Border.StrokeShape>
-                                            <StackLayout Spacing="0">
-                                                <StackLayout.GestureRecognizers>
-                                                    <TapGestureRecognizer
-                                                        Command="{Binding Source={RelativeSource AncestorType={x:Type vm:WorkoutHistoryViewModel}}, Path=ViewWorkoutCommand}"
-                                                        CommandParameter="{Binding .}"/>
-                                                </StackLayout.GestureRecognizers>
-                                                <Grid ColumnDefinitions="6,*" ColumnSpacing="0">
+                                            <Border.GestureRecognizers>
+                                                <TapGestureRecognizer
+                                                    Command="{Binding Source={RelativeSource AncestorType={x:Type vm:WorkoutHistoryViewModel}}, Path=ViewWorkoutCommand}"
+                                                    CommandParameter="{Binding .}"/>
+                                            </Border.GestureRecognizers>
+
+                                            <!--
+                                                FIX 12: Outer StackLayout inside Border removed —
+                                                Grid is the direct Border content, saving one
+                                                layout container per card.
+                                                FIX 10: BoxView binds to MuscleGroupColor
+                                                (pre-computed string) instead of converter.
+                                            -->
+                                            <Grid RowDefinitions="Auto,1,Auto" RowSpacing="0">
+                                                <Grid Grid.Row="0"
+                                                      ColumnDefinitions="6,*"
+                                                      ColumnSpacing="0">
                                                     <BoxView Grid.Column="0"
-                                                             BackgroundColor="{Binding MuscleGroup, Converter={StaticResource MuscleGroupColorConverter}}"
+                                                             BackgroundColor="{Binding MuscleGroupColor}"
                                                              HorizontalOptions="Fill"
                                                              VerticalOptions="Fill"/>
-                                                    <StackLayout Grid.Column="1" Spacing="0">
-                                                        <Grid ColumnDefinitions="*,Auto" Padding="16,14,16,0" ColumnSpacing="12">
-                                                            <StackLayout Grid.Column="0" Spacing="3">
-                                                                <Label Text="{Binding Session.DayName}"
-                                                                       FontSize="16" FontAttributes="Bold" TextColor="#1F77F0"/>
-                                                                <Label Text="{Binding Session.Date, Converter={StaticResource RelativeDateConverter}}"
-                                                                       FontSize="12" TextColor="#999999"/>
-                                                                <Label Text="{Binding Session.Notes}"
-                                                                       FontSize="11"
-                                                                       TextColor="#D0D0D0"
-                                                                       LineBreakMode="TailTruncation"
-                                                                       IsVisible="{Binding Session.Notes, Converter={StaticResource IsNotEmptyConverter}}"/>
-                                                            </StackLayout>
-                                                            <Button Grid.Column="1"
-                                                                    Text="✕"
-                                                                    Command="{Binding Source={RelativeSource AncestorType={x:Type vm:WorkoutHistoryViewModel}}, Path=DeleteSessionCommand}"
-                                                                    CommandParameter="{Binding .}"
-                                                                    BackgroundColor="Transparent"
-                                                                    TextColor="#FF6B6B"
-                                                                    FontSize="16"
-                                                                    Padding="8"
-                                                                    BorderWidth="0"
-                                                                    WidthRequest="36"
-                                                                    HeightRequest="36"
-                                                                    VerticalOptions="Start"/>
-                                                        </Grid>
-                                                        <BoxView HeightRequest="1" Color="#F0F0F0" Margin="16,12,16,0"/>
-                                                        <Grid ColumnDefinitions="*,*,*,*" ColumnSpacing="12" Padding="16,12,16,14">
-                                                            <StackLayout Spacing="4" HorizontalOptions="Center">
-                                                                <Label Text="{Binding SetCount}"
-                                                                       FontSize="16" FontAttributes="Bold" TextColor="#1F77F0" HorizontalOptions="Center"/>
-                                                                <Label Text="sets" FontSize="10" TextColor="#999999" HorizontalOptions="Center"/>
-                                                            </StackLayout>
-                                                            <StackLayout Grid.Column="1" Spacing="4" HorizontalOptions="Center">
-                                                                <Label Text="{Binding TotalReps}"
-                                                                       FontSize="16" FontAttributes="Bold" TextColor="#4CAF50" HorizontalOptions="Center"/>
-                                                                <Label Text="reps" FontSize="10" TextColor="#999999" HorizontalOptions="Center"/>
-                                                            </StackLayout>
-                                                            <StackLayout Grid.Column="2" Spacing="4" HorizontalOptions="Center">
-                                                                <Label Text="{Binding TotalWeight, StringFormat='{0:F0}'}"
-                                                                       FontSize="16" FontAttributes="Bold" TextColor="#FF9800" HorizontalOptions="Center"/>
-                                                                <Label Text="volume" FontSize="10" TextColor="#999999" HorizontalOptions="Center"/>
-                                                            </StackLayout>
-                                                            <StackLayout Grid.Column="3" Spacing="4" HorizontalOptions="Center">
-                                                                <Label Text="{Binding Session.Duration, StringFormat='{0:hh\\:mm}'}"
-                                                                       FontSize="16" FontAttributes="Bold" TextColor="#FF6B6B" HorizontalOptions="Center"/>
-                                                                <Label Text="duration" FontSize="10" TextColor="#999999" HorizontalOptions="Center"/>
-                                                            </StackLayout>
-                                                        </Grid>
+                                                    <Grid Grid.Column="1"
+                                                          ColumnDefinitions="*,Auto"
+                                                          Padding="16,14,16,0"
+                                                          ColumnSpacing="12">
+                                                        <StackLayout Grid.Column="0" Spacing="3">
+                                                            <Label Text="{Binding Session.DayName}"
+                                                                   FontSize="16" FontAttributes="Bold"
+                                                                   TextColor="#1F77F0"/>
+                                                            <Label Text="{Binding Session.Date, Converter={StaticResource RelativeDateConverter}}"
+                                                                   FontSize="12" TextColor="#999999"/>
+                                                            <Label Text="{Binding Session.Notes}"
+                                                                   FontSize="11" TextColor="#D0D0D0"
+                                                                   LineBreakMode="TailTruncation"
+                                                                   IsVisible="{Binding Session.Notes, Converter={StaticResource IsNotEmptyConverter}}"/>
+                                                        </StackLayout>
+                                                        <Button Grid.Column="1"
+                                                                Text="✕"
+                                                                Command="{Binding Source={RelativeSource AncestorType={x:Type vm:WorkoutHistoryViewModel}}, Path=DeleteSessionCommand}"
+                                                                CommandParameter="{Binding .}"
+                                                                BackgroundColor="Transparent"
+                                                                TextColor="#FF6B6B"
+                                                                FontSize="16" Padding="8"
+                                                                BorderWidth="0"
+                                                                WidthRequest="36" HeightRequest="36"
+                                                                VerticalOptions="Start"/>
+                                                    </Grid>
+                                                </Grid>
+
+                                                <BoxView Grid.Row="1"
+                                                         HeightRequest="1" Color="#F0F0F0"
+                                                         Margin="16,12,16,0"/>
+
+                                                <Grid Grid.Row="2"
+                                                      ColumnDefinitions="*,*,*,*"
+                                                      ColumnSpacing="12"
+                                                      Padding="16,12,16,14">
+                                                    <StackLayout Spacing="4" HorizontalOptions="Center">
+                                                        <Label Text="{Binding SetCount}"
+                                                               FontSize="16" FontAttributes="Bold"
+                                                               TextColor="#1F77F0" HorizontalOptions="Center"/>
+                                                        <Label Text="sets" FontSize="10" TextColor="#999999"
+                                                               HorizontalOptions="Center"/>
+                                                    </StackLayout>
+                                                    <StackLayout Grid.Column="1" Spacing="4" HorizontalOptions="Center">
+                                                        <Label Text="{Binding TotalReps}"
+                                                               FontSize="16" FontAttributes="Bold"
+                                                               TextColor="#4CAF50" HorizontalOptions="Center"/>
+                                                        <Label Text="reps" FontSize="10" TextColor="#999999"
+                                                               HorizontalOptions="Center"/>
+                                                    </StackLayout>
+                                                    <StackLayout Grid.Column="2" Spacing="4" HorizontalOptions="Center">
+                                                        <Label Text="{Binding TotalWeight, StringFormat='{0:F0}'}"
+                                                               FontSize="16" FontAttributes="Bold"
+                                                               TextColor="#FF9800" HorizontalOptions="Center"/>
+                                                        <Label Text="volume" FontSize="10" TextColor="#999999"
+                                                               HorizontalOptions="Center"/>
+                                                    </StackLayout>
+                                                    <StackLayout Grid.Column="3" Spacing="4" HorizontalOptions="Center">
+                                                        <Label Text="{Binding Session.Duration, StringFormat='{0:hh\\:mm}'}"
+                                                               FontSize="16" FontAttributes="Bold"
+                                                               TextColor="#FF6B6B" HorizontalOptions="Center"/>
+                                                        <Label Text="duration" FontSize="10" TextColor="#999999"
+                                                               HorizontalOptions="Center"/>
                                                     </StackLayout>
                                                 </Grid>
-                                            </StackLayout>
-                                        </Border>
+                                            </Grid>
 
+                                        </Border>
                                     </DataTemplate>
                                 </BindableLayout.ItemTemplate>
                             </StackLayout>
