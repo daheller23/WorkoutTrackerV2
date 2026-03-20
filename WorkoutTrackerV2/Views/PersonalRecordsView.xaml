@@ -140,9 +140,15 @@
                                                      VerticalOptions="Center"
                                                      Margin="0,0,4,0">
                                             <Label Text="🏆" FontSize="16" HorizontalOptions="Center"/>
-                                            <Label Text="{Binding BestWeight, StringFormat='{0:F0} lbs'}"
-                                                   FontSize="14" FontAttributes="Bold"
-                                                   TextColor="#FFD700" HorizontalOptions="Center"/>
+                                            <Label FontSize="14" FontAttributes="Bold"
+                                                   TextColor="#FFD700" HorizontalOptions="Center">
+                                                <Label.Text>
+                                                    <MultiBinding StringFormat="{}{0:F0} {1}">
+                                                        <Binding Path="BestWeight"/>
+                                                        <Binding Source="{RelativeSource AncestorType={x:Type vm:PersonalRecordsViewModel}}" Path="WeightUnitLabel"/>
+                                                    </MultiBinding>
+                                                </Label.Text>
+                                            </Label>
                                             <Label Text="{Binding BestDate, StringFormat='{0:MMM d, yyyy}'}"
                                                    FontSize="10" TextColor="#999999"
                                                    HorizontalOptions="Center"/>
@@ -187,9 +193,15 @@
                                                            FontSize="12" TextColor="#999999"
                                                            VerticalOptions="Center"/>
                                                     <Label Grid.Column="1"
-                                                           Text="{Binding Weight, StringFormat='{0:F0} lbs'}"
                                                            FontSize="13" FontAttributes="Bold"
-                                                           TextColor="#1F77F0" VerticalOptions="Center"/>
+                                                           TextColor="#1F77F0" VerticalOptions="Center">
+                                                        <Label.Text>
+                                                            <MultiBinding StringFormat="{}{0:F0} {1}">
+                                                                <Binding Path="Weight"/>
+                                                                <Binding Source="{RelativeSource AncestorType={x:Type vm:PersonalRecordsViewModel}}" Path="WeightUnitLabel"/>
+                                                            </MultiBinding>
+                                                        </Label.Text>
+                                                    </Label>
                                                     <Label Grid.Column="2"
                                                            Text="{Binding Reps, StringFormat='× {0}'}"
                                                            FontSize="13" TextColor="#999999"

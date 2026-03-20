@@ -6,11 +6,12 @@ using WorkoutTrackerV2.Services;
 
 namespace WorkoutTrackerV2.ViewModels
 {
-    public partial class PersonalRecordsViewModel(IAnalyticsService analyticsService) : BaseViewModel
+    public partial class PersonalRecordsViewModel(IAnalyticsService analyticsService, ISettingsService settingsService) : BaseViewModel
     {
         #region "OBSERVABLE PROPERTIES"
         [ObservableProperty] private ObservableCollection<PersonalRecord> _records = [];
         [ObservableProperty] private int _selectedDays = 0;
+        [ObservableProperty] private string _weightUnitLabel = "lbs";
 
         // FIX 4: Pill VMs with different day values from the Analytics/History pages
         // (0, 30, 60, 90, 180, 365 instead of 0, 7, 14, 30, 60, 90).
@@ -46,6 +47,7 @@ namespace WorkoutTrackerV2.ViewModels
             try
             {
                 IsLoading = true;
+                WeightUnitLabel = settingsService.WeightUnit;
                 var records = await analyticsService.GetPersonalRecordsAsync(SelectedDays);
                 Records = new ObservableCollection<PersonalRecord>(records);
             }

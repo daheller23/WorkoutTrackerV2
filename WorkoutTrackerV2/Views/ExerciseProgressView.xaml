@@ -38,7 +38,7 @@
                         <Label Text="{Binding Exercise.MaxWeight, StringFormat='{0:F0}'}"
                                FontSize="26" FontAttributes="Bold" TextColor="#1F77F0"
                                HorizontalOptions="Center"/>
-                        <Label Text="lbs" FontSize="10" TextColor="#1F77F0" HorizontalOptions="Center"/>
+                        <Label Text="{Binding WeightUnitLabel}" FontSize="10" TextColor="#1F77F0" HorizontalOptions="Center"/>
                     </StackLayout>
                     <StackLayout Grid.Column="1" BackgroundColor="#F1F8F1" Padding="16,20" Spacing="6">
                         <Label Text="AVG" FontSize="10" TextColor="#4CAF50"
@@ -46,7 +46,7 @@
                         <Label Text="{Binding Exercise.AverageWeight, StringFormat='{0:F0}'}"
                                FontSize="26" FontAttributes="Bold" TextColor="#4CAF50"
                                HorizontalOptions="Center"/>
-                        <Label Text="lbs" FontSize="10" TextColor="#4CAF50" HorizontalOptions="Center"/>
+                        <Label Text="{Binding WeightUnitLabel}" FontSize="10" TextColor="#4CAF50" HorizontalOptions="Center"/>
                     </StackLayout>
                     <StackLayout Grid.Column="2" BackgroundColor="#FFF8E1" Padding="16,20" Spacing="6">
                         <Label Text="REPS" FontSize="10" TextColor="#FF9800"

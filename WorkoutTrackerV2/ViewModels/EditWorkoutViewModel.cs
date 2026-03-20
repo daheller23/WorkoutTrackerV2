@@ -24,7 +24,7 @@ namespace WorkoutTrackerV2.ViewModels
         [ObservableProperty] private TimeSpan _endTime;
         [ObservableProperty] private double _totalVolume;
         [ObservableProperty] private int _totalSets;
-        [ObservableProperty] private string _weightUnitLabel = "lbs total";
+        [ObservableProperty] private string _weightUnitLabel = string.Empty;
         #endregion
 
         #region "PARTIAL METHODS"

@@ -24,6 +24,10 @@ public partial class AddWorkoutView : ContentPage
         // FIX 9: Cast BindingContext directly rather than using a stored _vm field.
         if (BindingContext is not AddWorkoutViewModel vm) return;
 
+        // Refresh WeightUnitLabel on every appear so it reflects the current
+        // setting immediately if the user changed units in Settings and returned.
+        vm.RefreshWeightUnitCommand.Execute(null);
+
         if (_templateService.PendingTemplate is not null)
         {
             var template = _templateService.PendingTemplate;

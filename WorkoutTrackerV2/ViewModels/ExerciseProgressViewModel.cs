@@ -3,14 +3,19 @@ using CommunityToolkit.Mvvm.Input;
 using Microcharts;
 using WorkoutTrackerV2.Helpers;
 using WorkoutTrackerV2.Models;
+using WorkoutTrackerV2.Services;
 
 namespace WorkoutTrackerV2.ViewModels
 {
     [QueryProperty(nameof(Exercise), "Exercise")]
-    public partial class ExerciseProgressViewModel : BaseViewModel
+    public partial class ExerciseProgressViewModel(ISettingsService settingsService) : BaseViewModel
     {
         [ObservableProperty] private ExerciseProgress? _exercise;
         [ObservableProperty] private LineChart? _chart;
+
+        // Exposes the user's preferred weight unit so XAML can bind to it
+        // instead of hardcoding "lbs" in the stats labels.
+        public string WeightUnitLabel => settingsService.WeightUnit;
 
         partial void OnExerciseChanged(ExerciseProgress? value)
         {

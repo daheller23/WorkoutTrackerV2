@@ -25,7 +25,7 @@ namespace WorkoutTrackerV2.ViewModels
         [ObservableProperty] private string _workoutName = string.Empty;
         [ObservableProperty] private double _totalVolume;
         [ObservableProperty] private int _totalSets;
-        [ObservableProperty] private string _weightUnitLabel = "lbs total";
+        [ObservableProperty] private string _weightUnitLabel = string.Empty;
         #endregion
 
         #region "PREPARE FOR TEMPLATE PICKER"
@@ -328,6 +328,16 @@ namespace WorkoutTrackerV2.ViewModels
         private void ClearSelectedExercise()
         {
             SelectedExercise = null;
+        }
+        #endregion
+
+        #region "REFRESH WEIGHT UNIT"
+        // Called from OnAppearing so WeightUnitLabel always reflects the
+        // current setting — even if the user changed it in Settings and returned.
+        [RelayCommand]
+        private void RefreshWeightUnit()
+        {
+            WeightUnitLabel = $"{settingsService.WeightUnit} total";
         }
         #endregion
 
