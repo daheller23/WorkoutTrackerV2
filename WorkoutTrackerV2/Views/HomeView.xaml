@@ -335,7 +335,36 @@
                     </StackLayout>
                 </StackLayout>
 
-                <Label Text=" " Margin="0,20"/>
+                <!-- ── Body Weight Card ───────────────────────────────── -->
+                <Border BackgroundColor="#FFFFFF" StrokeThickness="0">
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="12"/>
+                    </Border.StrokeShape>
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Command="{Binding ViewBodyWeightCommand}"/>
+                    </Border.GestureRecognizers>
+                    <Grid ColumnDefinitions="6,*" ColumnSpacing="0">
+                        <BoxView Grid.Column="0"
+                                 BackgroundColor="#9C27B0"
+                                 HorizontalOptions="Fill" VerticalOptions="Fill"/>
+                        <Grid Grid.Column="1"
+                              ColumnDefinitions="*,Auto"
+                              Padding="16,14" ColumnSpacing="12">
+                            <StackLayout Grid.Column="0" Spacing="3">
+                                <Label Text="⚖️ Body Weight"
+                                       FontSize="16" FontAttributes="Bold" TextColor="#1F77F0"/>
+                                <Label Text="Track your weight over time"
+                                       FontSize="12" TextColor="#999999"/>
+                            </StackLayout>
+                            <Label Grid.Column="1"
+                                   Text="›"
+                                   FontSize="22" TextColor="#D0D0D0"
+                                   VerticalOptions="Center"/>
+                        </Grid>
+                    </Grid>
+                </Border>
+
+                <Label Text=" " Margin="0,8"/>
 
             </StackLayout>
         </ScrollView>

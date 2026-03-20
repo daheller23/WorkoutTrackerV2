@@ -127,6 +127,30 @@
                                     VerticalOptions="Center"/>
                         </Grid>
                     </StackLayout>
+                    <!-- Height (for BMI in body weight tracker) -->
+                    <StackLayout BackgroundColor="#FFFFFF" Padding="16" Spacing="12">
+                        <Label Text="Height (for BMI)"
+                               FontSize="12" TextColor="#999999"
+                               FontAttributes="Bold" CharacterSpacing="0.3"/>
+                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                            <Entry Grid.Column="0"
+                                   Text="{Binding HeightCm}"
+                                   Placeholder="e.g. 178"
+                                   Keyboard="Numeric"
+                                   BackgroundColor="#F5F5F5"
+                                   TextColor="#000000"
+                                   FontSize="14"/>
+                            <Label Grid.Column="1"
+                                   Text="cm"
+                                   FontSize="14" TextColor="#999999"
+                                   VerticalOptions="Center"/>
+                        </Grid>
+                        <Button Text="Save Height"
+                                Command="{Binding SaveHeightCommand}"
+                                BackgroundColor="#F0F7FF" TextColor="#1F77F0"
+                                FontAttributes="Bold" FontSize="13"
+                                Padding="0,10" CornerRadius="8" BorderWidth="0"/>
+                    </StackLayout>
                 </StackLayout>
 
                 <!-- ── Notifications ─────────────────────────────────────── -->

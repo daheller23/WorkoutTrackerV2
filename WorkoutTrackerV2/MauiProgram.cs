@@ -45,6 +45,7 @@ namespace WorkoutTrackerV2
 
             // ── Services (Singleton — shared state, DB connection, caches) ────
             s.AddSingleton<IRestTimerService, RestTimerService>();
+            s.AddSingleton<IBodyWeightService, BodyWeightService>();
             s.AddSingleton<IWorkoutService, WorkoutService>();
             s.AddSingleton<IAnalyticsService, AnalyticsService>();
             s.AddSingleton<ITemplateService, TemplateService>();
@@ -107,6 +108,9 @@ namespace WorkoutTrackerV2
 
             s.AddTransient<CreateExerciseViewModel>();
             s.AddTransient<CreateExerciseView>();
+
+            s.AddTransient<BodyWeightViewModel>();
+            s.AddTransient<BodyWeightView>();
 
             return builder.Build();
         }

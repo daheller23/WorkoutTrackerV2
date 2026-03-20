@@ -18,6 +18,7 @@ namespace WorkoutTrackerV2.ViewModels
         private string _weightUnit = "lbs";
 
         [ObservableProperty] private bool _isDarkMode;
+        [ObservableProperty] private string _heightCm = string.Empty;
 
         // FIX 4: AppVersion computed once as a static field — AppInfo values are
         // compile-time constants that never change, no reason to recompute on
@@ -53,12 +54,24 @@ namespace WorkoutTrackerV2.ViewModels
         {
             WeightUnit = settingsService.WeightUnit;
             IsDarkMode = settingsService.IsDarkMode;
+            HeightCm = settingsService.HeightCm > 0
+                ? settingsService.HeightCm.ToString("F0")
+                : string.Empty;
         }
         #endregion
 
         #region "SET WEIGHT UNIT"
         [RelayCommand]
         private void SetWeightUnit(string unit) => WeightUnit = unit;
+        #endregion
+
+        #region "SAVE HEIGHT"
+        [RelayCommand]
+        private void SaveHeight()
+        {
+            if (double.TryParse(HeightCm, out double cm) && cm > 0)
+                settingsService.HeightCm = cm;
+        }
         #endregion
 
         #region "CLEAR ALL DATA"

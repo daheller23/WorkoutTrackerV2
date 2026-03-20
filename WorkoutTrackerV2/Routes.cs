@@ -19,6 +19,7 @@ namespace WorkoutTrackerV2
         public const string TemplatePicker = "templatepicker";
         public const string PersonalRecords = "personalrecords";
         public const string CreateExercise = "createexercise";
+        public const string BodyWeight = "bodyweight";
         public const string Back = "..";
     }
 }
