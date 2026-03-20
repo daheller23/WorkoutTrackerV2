@@ -17,6 +17,7 @@ namespace WorkoutTrackerV2.Services
 
         // Sets
         Task<List<WorkoutSet>> GetSetsForSessionAsync(int sessionId);
+        Task<List<WorkoutSet>> GetAllSetsAsync(int days = 0);
         Task<List<WorkoutSet>> GetExerciseHistoryAsync(int exerciseId, int days = 30);
         Task<int> SaveSetAsync(WorkoutSet set);
         Task<int> DeleteSetAsync(WorkoutSet set);

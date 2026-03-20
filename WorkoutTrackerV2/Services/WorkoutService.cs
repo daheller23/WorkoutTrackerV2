@@ -214,6 +214,19 @@ namespace WorkoutTrackerV2.Services
                 .ToListAsync();
         }
 
+        // FIX: Bulk fetch — returns all WorkoutSet rows in the date window across
+        // all exercises in a single query. Used by AnalyticsService to replace
+        // N per-exercise GetExerciseHistoryAsync calls with one round-trip.
+        public async Task<List<WorkoutSet>> GetAllSetsAsync(int days = 0)
+        {
+            await EnsureInitializedAsync();
+            var startDate = days == 0 ? DateTime.MinValue : DateTime.Now.AddDays(-days);
+            return await _database.Table<WorkoutSet>()
+                .Where(x => x.CreatedDate >= startDate)
+                .OrderBy(x => x.CreatedDate)
+                .ToListAsync();
+        }
+
         public async Task<List<WorkoutSet>> GetExerciseHistoryAsync(int exerciseId, int days = 30)
         {
             await EnsureInitializedAsync();
