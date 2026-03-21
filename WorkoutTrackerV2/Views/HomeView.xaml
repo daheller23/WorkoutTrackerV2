@@ -4,6 +4,7 @@
              x:Class="WorkoutTrackerV2.Views.HomeView"
              xmlns:vm="clr-namespace:WorkoutTrackerV2.ViewModels"
              x:DataType="vm:HomeViewModel"
+             xmlns:controls="clr-namespace:WorkoutTrackerV2.Controls"
              xmlns:models="clr-namespace:WorkoutTrackerV2.Models"
              xmlns:converters="clr-namespace:WorkoutTrackerV2.Converters"
              BackgroundColor="#FAFAFA">
@@ -21,21 +22,25 @@
         -->
     </ContentPage.Resources>
 
-    <Grid RowDefinitions="Auto,*" RowSpacing="0">
+    <AbsoluteLayout>
 
-        <!-- ── Header ─────────────────────────────────────────────────────── -->
-        <Grid BackgroundColor="#FFFFFF" Padding="24,16,24,24" ColumnDefinitions="*,Auto">
-            <StackLayout Grid.Column="0" Spacing="4">
-                <Label Text="💪 Workouts"
+        <Grid RowDefinitions="Auto,*" RowSpacing="0"
+          AbsoluteLayout.LayoutFlags="All"
+          AbsoluteLayout.LayoutBounds="0,0,1,1">
+
+            <!-- ── Header ─────────────────────────────────────────────────────── -->
+            <Grid BackgroundColor="#FFFFFF" Padding="24,16,24,24" ColumnDefinitions="*,Auto">
+                <StackLayout Grid.Column="0" Spacing="4">
+                    <Label Text="💪 Workouts"
                        FontSize="36"
                        FontAttributes="Bold"
                        TextColor="#1F77F0"
                        CharacterSpacing="0.5"/>
-                <Label Text="Track your progress"
+                    <Label Text="Track your progress"
                        FontSize="13"
                        TextColor="#999999"/>
-            </StackLayout>
-            <Button Grid.Column="1"
+                </StackLayout>
+                <Button Grid.Column="1"
                     Text="⚙️"
                     Command="{Binding ViewSettingsCommand}"
                     BackgroundColor="Transparent"
@@ -43,23 +48,23 @@
                     FontSize="22"
                     Padding="8"
                     VerticalOptions="Start"/>
-        </Grid>
+            </Grid>
 
-        <ScrollView Grid.Row="1">
-            <StackLayout Padding="20,24" Spacing="20">
+            <ScrollView Grid.Row="1">
+                <StackLayout Padding="20,24" Spacing="20">
 
-                <!-- ── Motivational Card ──────────────────────────────────── -->
-                <StackLayout BackgroundColor="#F0F7FF" Padding="20,24" Spacing="8">
-                    <Label Text="{Binding MotivationalMessage}"
+                    <!-- ── Motivational Card ──────────────────────────────────── -->
+                    <StackLayout BackgroundColor="#F0F7FF" Padding="20,24" Spacing="8">
+                        <Label Text="{Binding MotivationalMessage}"
                            FontSize="20"
                            FontAttributes="Bold"
                            TextColor="#1F77F0"
                            CharacterSpacing="0.3"/>
-                    <Label Text="{Binding MotivationalSubMessage}"
+                        <Label Text="{Binding MotivationalSubMessage}"
                            FontSize="13"
                            TextColor="#64B5F6"
                            LineBreakMode="WordWrap"/>
-                    <Button Text="+ Start Workout"
+                        <Button Text="+ Start Workout"
                             Command="{Binding StartWorkoutCommand}"
                             BackgroundColor="#1F77F0"
                             TextColor="#FFFFFF"
@@ -69,176 +74,176 @@
                             CornerRadius="8"
                             BorderWidth="0"
                             Margin="0,8,0,0"/>
-                </StackLayout>
+                    </StackLayout>
 
-                <!-- ── Compact Stats Row ──────────────────────────────────── -->
-                <Grid ColumnDefinitions="*,*,*" ColumnSpacing="12">
-                    <StackLayout BackgroundColor="#FFF8E1" Padding="14,16" Spacing="4">
-                        <Label Text="🔥" FontSize="20" HorizontalOptions="Center"/>
-                        <Label Text="{Binding CurrentStreak}"
+                    <!-- ── Compact Stats Row ──────────────────────────────────── -->
+                    <Grid ColumnDefinitions="*,*,*" ColumnSpacing="12">
+                        <StackLayout BackgroundColor="#FFF8E1" Padding="14,16" Spacing="4">
+                            <Label Text="🔥" FontSize="20" HorizontalOptions="Center"/>
+                            <Label Text="{Binding CurrentStreak}"
                                FontSize="26" FontAttributes="Bold" TextColor="#FF6F00"
                                HorizontalOptions="Center"/>
-                        <Label Text="{Binding StreakSubtitle}"
+                            <Label Text="{Binding StreakSubtitle}"
                                FontSize="9" TextColor="#FF9800" HorizontalOptions="Center"
                                HorizontalTextAlignment="Center" LineBreakMode="WordWrap"/>
-                    </StackLayout>
-                    <StackLayout Grid.Column="1" BackgroundColor="#F0F7FF" Padding="14,16" Spacing="4">
-                        <Label Text="🏋️" FontSize="20" HorizontalOptions="Center"/>
-                        <Label Text="{Binding TotalWorkouts}"
+                        </StackLayout>
+                        <StackLayout Grid.Column="1" BackgroundColor="#F0F7FF" Padding="14,16" Spacing="4">
+                            <Label Text="🏋️" FontSize="20" HorizontalOptions="Center"/>
+                            <Label Text="{Binding TotalWorkouts}"
                                FontSize="26" FontAttributes="Bold" TextColor="#1F77F0"
                                HorizontalOptions="Center"/>
-                        <Label Text="total workouts" FontSize="9" TextColor="#1F77F0"
+                            <Label Text="total workouts" FontSize="9" TextColor="#1F77F0"
                                HorizontalOptions="Center"/>
-                    </StackLayout>
-                    <StackLayout Grid.Column="2" BackgroundColor="#F1F8F1" Padding="14,16" Spacing="4">
-                        <Label Text="⏱" FontSize="20" HorizontalOptions="Center"/>
-                        <Label Text="{Binding AverageDuration, StringFormat='{0:F0}'}"
+                        </StackLayout>
+                        <StackLayout Grid.Column="2" BackgroundColor="#F1F8F1" Padding="14,16" Spacing="4">
+                            <Label Text="⏱" FontSize="20" HorizontalOptions="Center"/>
+                            <Label Text="{Binding AverageDuration, StringFormat='{0:F0}'}"
                                FontSize="26" FontAttributes="Bold" TextColor="#4CAF50"
                                HorizontalOptions="Center"/>
-                        <Label Text="avg minutes" FontSize="9" TextColor="#4CAF50"
+                            <Label Text="avg minutes" FontSize="9" TextColor="#4CAF50"
                                HorizontalOptions="Center"/>
-                    </StackLayout>
-                </Grid>
+                        </StackLayout>
+                    </Grid>
 
-                <BoxView HeightRequest="1" Color="#F0F0F0" Margin="0,4"/>
+                    <BoxView HeightRequest="1" Color="#F0F0F0" Margin="0,4"/>
 
-                <!-- ── Last Workout Card ──────────────────────────────────── -->
-                <StackLayout IsVisible="{Binding LastWorkoutSession, Converter={StaticResource IsNotNullConverter}}"
+                    <!-- ── Last Workout Card ──────────────────────────────────── -->
+                    <StackLayout IsVisible="{Binding LastWorkoutSession, Converter={StaticResource IsNotNullConverter}}"
                              BackgroundColor="#FFFFFF"
                              Padding="16"
                              Spacing="10">
-                    <StackLayout.GestureRecognizers>
-                        <TapGestureRecognizer
+                        <StackLayout.GestureRecognizers>
+                            <TapGestureRecognizer
                             Command="{Binding ViewWorkoutCommand}"
                             CommandParameter="{Binding LastWorkoutSession}"/>
-                    </StackLayout.GestureRecognizers>
-                    <Label Text="LAST WORKOUT"
+                        </StackLayout.GestureRecognizers>
+                        <Label Text="LAST WORKOUT"
                            FontSize="11" FontAttributes="Bold" TextColor="#999999" CharacterSpacing="1"/>
-                    <Grid ColumnDefinitions="*,Auto">
-                        <StackLayout Grid.Column="0" Spacing="3">
-                            <Label Text="{Binding LastWorkoutSession.DayName}"
+                        <Grid ColumnDefinitions="*,Auto">
+                            <StackLayout Grid.Column="0" Spacing="3">
+                                <Label Text="{Binding LastWorkoutSession.DayName}"
                                    FontSize="16" FontAttributes="Bold" TextColor="#000000"/>
-                            <Label Text="{Binding LastWorkoutDate, Converter={StaticResource RelativeDateConverter}}"
+                                <Label Text="{Binding LastWorkoutDate, Converter={StaticResource RelativeDateConverter}}"
                                    FontSize="12" TextColor="#999999"/>
-                        </StackLayout>
-                        <StackLayout Grid.Column="1" Spacing="3" HorizontalOptions="End" VerticalOptions="Center">
-                            <Label Text="{Binding LastWorkoutSession.Duration, StringFormat='{0:hh\\:mm}'}"
+                            </StackLayout>
+                            <StackLayout Grid.Column="1" Spacing="3" HorizontalOptions="End" VerticalOptions="Center">
+                                <Label Text="{Binding LastWorkoutSession.Duration, StringFormat='{0:hh\\:mm}'}"
                                    FontSize="14" FontAttributes="Bold" TextColor="#1F77F0"
                                    HorizontalOptions="End"/>
-                            <Label Text="{Binding LastWorkoutSession.TotalExercises, StringFormat='{0} exercises'}"
+                                <Label Text="{Binding LastWorkoutSession.TotalExercises, StringFormat='{0} exercises'}"
                                    FontSize="11" TextColor="#999999" HorizontalOptions="End"/>
-                        </StackLayout>
-                    </Grid>
-                    <BoxView HeightRequest="0.5" Color="#F0F0F0"/>
-                    <Label Text="Tap to view details →"
+                            </StackLayout>
+                        </Grid>
+                        <BoxView HeightRequest="0.5" Color="#F0F0F0"/>
+                        <Label Text="Tap to view details →"
                            FontSize="11" TextColor="#1F77F0" HorizontalOptions="End"/>
-                </StackLayout>
+                    </StackLayout>
 
-                <!-- ── This Week Summary ──────────────────────────────────── -->
-                <StackLayout Spacing="10">
-                    <Label Text="THIS WEEK"
+                    <!-- ── This Week Summary ──────────────────────────────────── -->
+                    <StackLayout Spacing="10">
+                        <Label Text="THIS WEEK"
                            FontSize="11" FontAttributes="Bold" TextColor="#999999" CharacterSpacing="1"/>
-                    <Grid ColumnDefinitions="*,*,*" ColumnSpacing="12">
-                        <StackLayout BackgroundColor="#FFFFFF" Padding="14,16" Spacing="4">
-                            <Label Text="{Binding WorkoutsThisWeek}"
+                        <Grid ColumnDefinitions="*,*,*" ColumnSpacing="12">
+                            <StackLayout BackgroundColor="#FFFFFF" Padding="14,16" Spacing="4">
+                                <Label Text="{Binding WorkoutsThisWeek}"
                                    FontSize="26" FontAttributes="Bold" TextColor="#1F77F0"
                                    HorizontalOptions="Center"/>
-                            <Label Text="workouts" FontSize="9" TextColor="#999999"
+                                <Label Text="workouts" FontSize="9" TextColor="#999999"
                                    HorizontalOptions="Center"/>
-                        </StackLayout>
-                        <StackLayout Grid.Column="1" BackgroundColor="#FFFFFF" Padding="14,16" Spacing="4">
-                            <Label Text="{Binding SetsThisWeek}"
+                            </StackLayout>
+                            <StackLayout Grid.Column="1" BackgroundColor="#FFFFFF" Padding="14,16" Spacing="4">
+                                <Label Text="{Binding SetsThisWeek}"
                                    FontSize="26" FontAttributes="Bold" TextColor="#FF9800"
                                    HorizontalOptions="Center"/>
-                            <Label Text="sets" FontSize="9" TextColor="#999999"
+                                <Label Text="sets" FontSize="9" TextColor="#999999"
                                    HorizontalOptions="Center"/>
-                        </StackLayout>
-                        <StackLayout Grid.Column="2" BackgroundColor="#FFFFFF" Padding="14,16" Spacing="4">
-                            <Label Text="{Binding VolumeThisWeek, StringFormat='{0:F0}'}"
+                            </StackLayout>
+                            <StackLayout Grid.Column="2" BackgroundColor="#FFFFFF" Padding="14,16" Spacing="4">
+                                <Label Text="{Binding VolumeThisWeek, StringFormat='{0:F0}'}"
                                    FontSize="26" FontAttributes="Bold" TextColor="#4CAF50"
                                    HorizontalOptions="Center"/>
-                            <Label Text="volume" FontSize="9" TextColor="#999999"
+                                <Label Text="volume" FontSize="9" TextColor="#999999"
                                    HorizontalOptions="Center"/>
-                        </StackLayout>
-                    </Grid>
-                </StackLayout>
+                            </StackLayout>
+                        </Grid>
+                    </StackLayout>
 
-                <!-- ── Personal Records ───────────────────────────────────── -->
-                <StackLayout BackgroundColor="#FFFFFF" Padding="16" Spacing="0">
-                    <StackLayout.GestureRecognizers>
-                        <TapGestureRecognizer Command="{Binding ViewPersonalRecordsCommand}"/>
-                    </StackLayout.GestureRecognizers>
-                    <Grid ColumnDefinitions="Auto,*,Auto">
-                        <Label Grid.Column="0"
+                    <!-- ── Personal Records ───────────────────────────────────── -->
+                    <StackLayout BackgroundColor="#FFFFFF" Padding="16" Spacing="0">
+                        <StackLayout.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding ViewPersonalRecordsCommand}"/>
+                        </StackLayout.GestureRecognizers>
+                        <Grid ColumnDefinitions="Auto,*,Auto">
+                            <Label Grid.Column="0"
                                Text="🏆"
                                FontSize="24"
                                VerticalOptions="Center"
                                Margin="0,0,12,0"/>
-                        <StackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
-                            <Label Text="Personal Records"
+                            <StackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
+                                <Label Text="Personal Records"
                                    FontSize="15" FontAttributes="Bold" TextColor="#000000"/>
-                            <Label Text="View your all time best lifts"
+                                <Label Text="View your all time best lifts"
                                    FontSize="11" TextColor="#999999"/>
-                        </StackLayout>
-                        <Label Grid.Column="2"
+                            </StackLayout>
+                            <Label Grid.Column="2"
                                Text="→"
                                FontSize="18"
                                TextColor="#1F77F0"
                                VerticalOptions="Center"/>
-                    </Grid>
-                </StackLayout>
+                        </Grid>
+                    </StackLayout>
 
-                <!-- ── Most Trained Muscle Group ──────────────────────────────
+                    <!-- ── Most Trained Muscle Group ──────────────────────────────
                      FIX: Both color bindings now point to MostTrainedMuscleGroupColor
                      (a pre-computed string property on the ViewModel) instead of
                      running MuscleGroupColorConverter on every render.             -->
-                <StackLayout IsVisible="{Binding MostTrainedMuscleGroup, Converter={StaticResource IsNotEmptyConverter}}"
+                    <StackLayout IsVisible="{Binding MostTrainedMuscleGroup, Converter={StaticResource IsNotEmptyConverter}}"
                              BackgroundColor="#FFFFFF"
                              Padding="16"
                              Spacing="6">
-                    <Label Text="THIS WEEK'S FOCUS"
+                        <Label Text="THIS WEEK'S FOCUS"
                            FontSize="11" FontAttributes="Bold" TextColor="#999999" CharacterSpacing="1"/>
-                    <Grid ColumnDefinitions="Auto,*">
-                        <Border Grid.Column="0"
+                        <Grid ColumnDefinitions="Auto,*">
+                            <Border Grid.Column="0"
                                 BackgroundColor="{Binding MostTrainedMuscleGroupColor}"
                                 WidthRequest="44"
                                 HeightRequest="44"
                                 StrokeThickness="0"
                                 VerticalOptions="Center"
                                 Margin="0,0,12,0">
-                            <Border.StrokeShape>
-                                <RoundRectangle CornerRadius="22"/>
-                            </Border.StrokeShape>
-                            <Label Text="🏆"
+                                <Border.StrokeShape>
+                                    <RoundRectangle CornerRadius="22"/>
+                                </Border.StrokeShape>
+                                <Label Text="🏆"
                                    FontSize="22"
                                    HorizontalOptions="Center"
                                    VerticalOptions="Center"/>
-                        </Border>
-                        <StackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
-                            <Label Text="{Binding MostTrainedMuscleGroup}"
+                            </Border>
+                            <StackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
+                                <Label Text="{Binding MostTrainedMuscleGroup}"
                                    FontSize="18"
                                    FontAttributes="Bold"
                                    TextColor="{Binding MostTrainedMuscleGroupColor}"/>
-                            <Label Text="most trained muscle group this week"
+                                <Label Text="most trained muscle group this week"
                                    FontSize="11" TextColor="#999999"/>
-                        </StackLayout>
-                    </Grid>
-                </StackLayout>
+                            </StackLayout>
+                        </Grid>
+                    </StackLayout>
 
-                <!-- ── Recent Activity ────────────────────────────────────────
+                    <!-- ── Recent Activity ────────────────────────────────────────
                      FIX: CollectionView replaced with BindableLayout inside a
                      StackLayout. The list is always exactly 3 items — CollectionView
                      carries virtualization overhead (item recycling, scroll state,
                      measure passes) that is wasted on a fixed micro-list.
                      BindableLayout renders all children eagerly but has no overhead
                      beyond what a plain StackLayout costs, which is cheaper here.  -->
-                <StackLayout Spacing="12">
-                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
-                        <Label Grid.Column="0"
+                    <StackLayout Spacing="12">
+                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                            <Label Grid.Column="0"
                                Text="More Recent Activity"
                                FontSize="16" FontAttributes="Bold" TextColor="#000000"
                                CharacterSpacing="0.3" VerticalOptions="Center"/>
-                        <Button Grid.Column="1"
+                            <Button Grid.Column="1"
                                 Text="View all →"
                                 BackgroundColor="Transparent"
                                 TextColor="#1F77F0"
@@ -246,128 +251,187 @@
                                 FontSize="12"
                                 Padding="0"
                                 Command="{Binding ViewHistoryCommand}"/>
-                    </Grid>
+                        </Grid>
 
-                    <!-- Empty state — shown when RecentSessions is empty -->
-                    <StackLayout IsVisible="{Binding RecentSessions.Count, Converter={StaticResource IsNotEmptyConverter}}"
+                        <!-- Empty state — shown when RecentSessions is empty -->
+                        <StackLayout IsVisible="{Binding RecentSessions.Count, Converter={StaticResource IsNotEmptyConverter}}"
                                  Padding="40,60" Spacing="16" HorizontalOptions="Center">
-                        <Label Text="🏋️" FontSize="48" HorizontalOptions="Center"/>
-                        <Label Text="No workouts yet"
+                            <Label Text="🏋️" FontSize="48" HorizontalOptions="Center"/>
+                            <Label Text="No workouts yet"
                                FontSize="16" FontAttributes="Bold" TextColor="#999999"
                                HorizontalOptions="Center"/>
-                        <Label Text="Tap + Start Workout to get started"
+                            <Label Text="Tap + Start Workout to get started"
                                FontSize="12" TextColor="#D0D0D0" HorizontalOptions="Center"
                                HorizontalTextAlignment="Center"/>
-                    </StackLayout>
+                        </StackLayout>
 
-                    <!-- FIX: Item template uses Grid throughout replacing nested
+                        <!-- FIX: Item template uses Grid throughout replacing nested
                          StackLayout chains — single measure pass per item.         -->
-                    <StackLayout BindableLayout.ItemsSource="{Binding RecentSessions}" Spacing="10">
-                        <BindableLayout.ItemTemplate>
-                            <DataTemplate x:DataType="models:WorkoutSession">
-                                <Grid RowDefinitions="Auto,1"
+                        <StackLayout BindableLayout.ItemsSource="{Binding RecentSessions}" Spacing="10">
+                            <BindableLayout.ItemTemplate>
+                                <DataTemplate x:DataType="models:WorkoutSession">
+                                    <Grid RowDefinitions="Auto,1"
                                       RowSpacing="0"
                                       BackgroundColor="#FFFFFF"
                                       Margin="0,0,0,0">
-                                    <Grid.GestureRecognizers>
-                                        <TapGestureRecognizer
+                                        <Grid.GestureRecognizers>
+                                            <TapGestureRecognizer
                                             Command="{Binding Source={RelativeSource AncestorType={x:Type vm:HomeViewModel}}, Path=ViewWorkoutCommand}"
                                             CommandParameter="{Binding .}"/>
-                                    </Grid.GestureRecognizers>
+                                        </Grid.GestureRecognizers>
 
-                                    <!-- Content row -->
-                                    <Grid Grid.Row="0"
+                                        <!-- Content row -->
+                                        <Grid Grid.Row="0"
                                           ColumnDefinitions="Auto,*,Auto"
                                           ColumnSpacing="16"
                                           Padding="16,14">
-                                        <Label Grid.Column="0"
+                                            <Label Grid.Column="0"
                                                Text="🏋️" FontSize="28" VerticalOptions="Center"/>
 
-                                        <!-- FIX: Single Grid replaces StackLayout + nested StackLayout -->
-                                        <Grid Grid.Column="1"
+                                            <!-- FIX: Single Grid replaces StackLayout + nested StackLayout -->
+                                            <Grid Grid.Column="1"
                                               RowDefinitions="Auto,Auto,Auto"
                                               RowSpacing="2"
                                               VerticalOptions="Center">
-                                            <Label Grid.Row="0"
+                                                <Label Grid.Row="0"
                                                    Text="{Binding DayName}"
                                                    FontSize="15" FontAttributes="Bold" TextColor="#1F77F0"/>
-                                            <Label Grid.Row="1"
+                                                <Label Grid.Row="1"
                                                    Text="{Binding Date, StringFormat='{0:MMM d, yyyy}'}"
                                                    FontSize="12" TextColor="#999999"/>
-                                            <Label Grid.Row="2"
+                                                <Label Grid.Row="2"
                                                    Text="{Binding Notes}"
                                                    FontSize="11" TextColor="#D0D0D0"
                                                    LineBreakMode="TailTruncation"/>
-                                        </Grid>
+                                            </Grid>
 
-                                        <!-- FIX: Single Grid replaces outer+inner StackLayouts -->
-                                        <Grid Grid.Column="2"
+                                            <!-- FIX: Single Grid replaces outer+inner StackLayouts -->
+                                            <Grid Grid.Column="2"
                                               RowDefinitions="Auto,Auto"
                                               RowSpacing="6"
                                               VerticalOptions="Center"
                                               HorizontalOptions="End">
-                                            <StackLayout Grid.Row="0"
+                                                <StackLayout Grid.Row="0"
                                                          BackgroundColor="#F0F7FF"
                                                          Padding="8,6" Spacing="2">
-                                                <Label Text="{Binding TotalExercises}"
+                                                    <Label Text="{Binding TotalExercises}"
                                                        FontSize="14" FontAttributes="Bold" TextColor="#1F77F0"
                                                        HorizontalOptions="Center"/>
-                                                <Label Text="exercises" FontSize="9" TextColor="#1F77F0"
+                                                    <Label Text="exercises" FontSize="9" TextColor="#1F77F0"
                                                        HorizontalOptions="Center"/>
-                                            </StackLayout>
-                                            <StackLayout Grid.Row="1"
+                                                </StackLayout>
+                                                <StackLayout Grid.Row="1"
                                                          BackgroundColor="#FFF8E1"
                                                          Padding="8,6" Spacing="2">
-                                                <Label Text="{Binding Duration, StringFormat='{0:hh\\:mm}'}"
+                                                    <Label Text="{Binding Duration, StringFormat='{0:hh\\:mm}'}"
                                                        FontSize="14" FontAttributes="Bold" TextColor="#FF9800"
                                                        HorizontalOptions="Center"/>
-                                                <Label Text="duration" FontSize="9" TextColor="#FF9800"
+                                                    <Label Text="duration" FontSize="9" TextColor="#FF9800"
                                                        HorizontalOptions="Center"/>
-                                            </StackLayout>
+                                                </StackLayout>
+                                            </Grid>
                                         </Grid>
+
+                                        <!-- Divider -->
+                                        <BoxView Grid.Row="1" HeightRequest="1" Color="#F0F0F0" Margin="16,0"/>
                                     </Grid>
-
-                                    <!-- Divider -->
-                                    <BoxView Grid.Row="1" HeightRequest="1" Color="#F0F0F0" Margin="16,0"/>
-                                </Grid>
-                            </DataTemplate>
-                        </BindableLayout.ItemTemplate>
+                                </DataTemplate>
+                            </BindableLayout.ItemTemplate>
+                        </StackLayout>
                     </StackLayout>
-                </StackLayout>
 
-                <!-- ── Body Weight Card ───────────────────────────────── -->
-                <Border BackgroundColor="#FFFFFF" StrokeThickness="0">
-                    <Border.StrokeShape>
-                        <RoundRectangle CornerRadius="12"/>
-                    </Border.StrokeShape>
-                    <Border.GestureRecognizers>
-                        <TapGestureRecognizer Command="{Binding ViewBodyWeightCommand}"/>
-                    </Border.GestureRecognizers>
-                    <Grid ColumnDefinitions="6,*" ColumnSpacing="0">
-                        <BoxView Grid.Column="0"
+                    <!-- ── Body Weight Card ───────────────────────────────── -->
+                    <Border BackgroundColor="#FFFFFF" StrokeThickness="0">
+                        <Border.StrokeShape>
+                            <RoundRectangle CornerRadius="12"/>
+                        </Border.StrokeShape>
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding ViewBodyWeightCommand}"/>
+                        </Border.GestureRecognizers>
+                        <Grid ColumnDefinitions="6,*" ColumnSpacing="0">
+                            <BoxView Grid.Column="0"
                                  BackgroundColor="#9C27B0"
                                  HorizontalOptions="Fill" VerticalOptions="Fill"/>
-                        <Grid Grid.Column="1"
+                            <Grid Grid.Column="1"
                               ColumnDefinitions="*,Auto"
                               Padding="16,14" ColumnSpacing="12">
-                            <StackLayout Grid.Column="0" Spacing="3">
-                                <Label Text="⚖️ Body Weight"
+                                <StackLayout Grid.Column="0" Spacing="3">
+                                    <Label Text="⚖️ Body Weight"
                                        FontSize="16" FontAttributes="Bold" TextColor="#1F77F0"/>
-                                <Label Text="Track your weight over time"
+                                    <Label Text="Track your weight over time"
                                        FontSize="12" TextColor="#999999"/>
-                            </StackLayout>
-                            <Label Grid.Column="1"
+                                </StackLayout>
+                                <Label Grid.Column="1"
                                    Text="›"
                                    FontSize="22" TextColor="#D0D0D0"
                                    VerticalOptions="Center"/>
+                            </Grid>
                         </Grid>
-                    </Grid>
-                </Border>
+                    </Border>
 
-                <Label Text=" " Margin="0,8"/>
+                    <Label Text=" " Margin="0,8"/>
 
-            </StackLayout>
-        </ScrollView>
+                </StackLayout>
+            </ScrollView>
 
-    </Grid>
+        </Grid>
+
+        <!-- ── PR Celebration Overlay ───────────────────────────────────────────
+         No scrim — confetti rains over the home content.
+         Banner slides in from the top, home page stays fully visible.      -->
+        <Grid IsVisible="{Binding IsPrVisible}"
+          AbsoluteLayout.LayoutFlags="All"
+          AbsoluteLayout.LayoutBounds="0,0,1,1"
+          InputTransparent="True">
+
+            <controls:ConfettiView x:Name="ConfettiCanvas"
+                               InputTransparent="True"/>
+
+            <!-- PR banner — styled to match the app's card language:
+             white background, blue accent stripe, same typography as
+             section headers and card titles throughout the app.        -->
+            <Border x:Name="PrBanner"
+                BackgroundColor="#FFFFFF"
+                StrokeThickness="0"
+                HorizontalOptions="Fill"
+                VerticalOptions="Start"
+                Margin="20,52,20,0"
+                InputTransparent="True">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="12"/>
+                </Border.StrokeShape>
+                <!-- Shadow via subtle elevation tint on the border -->
+                <Border.Shadow>
+                    <Shadow Brush="#000000" Offset="0,4" Radius="12" Opacity="0.12"/>
+                </Border.Shadow>
+                <Grid ColumnDefinitions="6,Auto,*" ColumnSpacing="0">
+                    <!-- 6px accent stripe — same pattern as workout cards -->
+                    <BoxView Grid.Column="0"
+                         BackgroundColor="#FFD700"
+                         HorizontalOptions="Fill"
+                         VerticalOptions="Fill"/>
+                    <Label Grid.Column="1"
+                       Text="🏆"
+                       FontSize="22"
+                       VerticalOptions="Center"
+                       Margin="14,16,10,16"/>
+                    <StackLayout Grid.Column="2"
+                             Spacing="2"
+                             VerticalOptions="Center"
+                             Padding="0,16,16,16">
+                        <Label Text="NEW PERSONAL RECORD"
+                           FontSize="11" FontAttributes="Bold"
+                           TextColor="#999999"
+                           CharacterSpacing="1"/>
+                        <Label Text="{Binding PrMessage}"
+                           FontSize="15" FontAttributes="Bold"
+                           TextColor="#1F77F0"
+                           LineBreakMode="TailTruncation"/>
+                    </StackLayout>
+                </Grid>
+            </Border>
+
+        </Grid>
+
+    </AbsoluteLayout>
 </ContentPage>

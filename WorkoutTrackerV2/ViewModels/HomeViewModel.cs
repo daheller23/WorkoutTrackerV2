@@ -6,6 +6,7 @@ using WorkoutTrackerV2.Services;
 
 namespace WorkoutTrackerV2.ViewModels
 {
+    [QueryProperty(nameof(PrMessage), "PrMessage")]
     public partial class HomeViewModel(
         IWorkoutService workoutService,
         IAnalyticsService analyticsService) : BaseViewModel
@@ -25,7 +26,14 @@ namespace WorkoutTrackerV2.ViewModels
         [ObservableProperty] private int _setsThisWeek;
         [ObservableProperty] private double _volumeThisWeek;
         [ObservableProperty] private string _mostTrainedMuscleGroupColor = "#1F77F0";
+
+        // PR celebration — set via QueryProperty when navigating from SaveWorkout.
+        [ObservableProperty] private string _prMessage = string.Empty;
+        [ObservableProperty] private bool _isPrVisible;
         #endregion
+
+        // IsPrVisible is set from HomeView.OnAppearing after LoadData completes
+        // so the celebration fires once the page content is fully rendered.
 
         #region "LOAD DATA"
         [RelayCommand]

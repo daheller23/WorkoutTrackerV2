@@ -11,7 +11,8 @@ namespace WorkoutTrackerV2.ViewModels
         IWorkoutService workoutService,
         ITemplateService templateService,
         ISettingsService settingsService,
-        IRestTimerService restTimerService) : BaseViewModel
+        IRestTimerService restTimerService,
+        IAnalyticsService analyticsService) : BaseViewModel
     {
         private bool _ignoreNextExerciseSelection = false;
 
@@ -33,7 +34,12 @@ namespace WorkoutTrackerV2.ViewModels
         [ObservableProperty] private double _totalVolume;
         [ObservableProperty] private int _totalSets;
         [ObservableProperty] private string _weightUnitLabel = string.Empty;
+
         #endregion
+
+        // Keyed by ExerciseId — loaded once on first save to avoid a DB call
+        // on every set change. null means not yet loaded.
+        private Dictionary<int, double>? _prBaselines;
 
         #region "PREPARE FOR TEMPLATE PICKER"
         [RelayCommand]
@@ -313,10 +319,20 @@ namespace WorkoutTrackerV2.ViewModels
                     }))
                     .ToList();
 
-                await workoutService.SaveAllSetsAsync(workoutSets);
+                // Detect PRs before resetting form (ExerciseGroups still populated).
+                // Run concurrently with the DB save — both are independent.
+                var saveTask = workoutService.SaveAllSetsAsync(workoutSets);
+                var newPr = DetectWeightPr(workoutSets);
+                await saveTask;
 
                 ResetForm();
-                await Shell.Current.GoToAsync(Routes.Home);
+
+                // Navigate immediately — no waiting for anything else.
+                var navParams = new Dictionary<string, object>
+                {
+                    { "PrMessage", newPr ?? string.Empty }
+                };
+                await Shell.Current.GoToAsync(Routes.Home, navParams);
             }
             catch (Exception ex)
             {
@@ -346,10 +362,12 @@ namespace WorkoutTrackerV2.ViewModels
         #region "REFRESH WEIGHT UNIT"
         // Called from OnAppearing so WeightUnitLabel always reflects the
         // current setting — even if the user changed it in Settings and returned.
+        // Also refreshes PR baselines so detection is current when the user saves.
         [RelayCommand]
         private void RefreshWeightUnit()
         {
             WeightUnitLabel = $"{settingsService.WeightUnit} total";
+            _ = LoadPrBaselinesAsync();
         }
         #endregion
 
@@ -455,6 +473,60 @@ namespace WorkoutTrackerV2.ViewModels
             });
             return set;
         }
+
+        #region "PR DETECTION"
+        // Lazily loads all-time PR baselines the first time DetectWeightPr is called.
+        // Returns the celebration message if any exercise hit a new weight PR,
+        // null otherwise.
+        private string? DetectWeightPr(List<WorkoutSet> savedSets)
+        {
+            if (_prBaselines is null) return null;
+
+            string? message = null;
+
+            // Group saved sets by exercise, find the max weight per exercise,
+            // compare against the baseline captured before the save.
+            var maxByExercise = savedSets
+                .GroupBy(s => s.ExerciseId)
+                .Select(g => (ExerciseId: g.Key, Max: g.Max(s => s.Weight)))
+                .ToList();
+
+            foreach (var (exerciseId, max) in maxByExercise)
+            {
+                var baseline = _prBaselines.TryGetValue(exerciseId, out double b) ? b : 0;
+                if (max > baseline)
+                {
+                    // Find the exercise name for the message.
+                    var group = ExerciseGroups.FirstOrDefault(g => g.Exercise.Id == exerciseId);
+                    var name = group?.Exercise.Name ?? "exercise";
+                    var unit = group?.Sets.FirstOrDefault()?.WeightUnit
+                                ?? settingsService.WeightUnit;
+                    message = $"New PR on {name}! 🏆 {max:F0} {unit}";
+                    // Report the first PR found — don't stack messages.
+                    break;
+                }
+            }
+
+            return message;
+        }
+
+        // Called from OnAppearing via RefreshWeightUnitCommand path —
+        // loads PR baselines so they're ready before the user saves.
+        private async Task LoadPrBaselinesAsync()
+        {
+            try
+            {
+                var records = await analyticsService.GetPersonalRecordsAsync(0);
+                _prBaselines = records.ToDictionary(r => r.ExerciseId, r => r.BestWeight);
+            }
+            catch
+            {
+                // Non-critical — if baselines fail to load, PR detection is
+                // skipped silently. Better than blocking the save flow.
+                _prBaselines = [];
+            }
+        }
+        #endregion
 
         #region "LOAD LAST SESSION"
         private async Task LoadLastSessionAsync(ExerciseGroup group, int exerciseId)
