@@ -203,7 +203,7 @@
                                            FontSize="13" FontAttributes="Bold" TextColor="#000000"
                                            VerticalOptions="Center"/>
                                     <StackLayout Grid.Column="1" Spacing="2" HorizontalOptions="Center">
-                                        <Label Text="MAX" FontSize="9" TextColor="#999999" HorizontalOptions="Center" CharacterSpacing="0.5"/>
+                                        <Label Text="MAX" FontSize="10" TextColor="#999999" HorizontalOptions="Center" CharacterSpacing="1"/>
                                         <StackLayout Orientation="Horizontal" Spacing="4" HorizontalOptions="Center">
                                             <Label Text="{Binding MaxWeight, StringFormat='{0:F0}'}"
                                                    FontSize="13" FontAttributes="Bold" TextColor="#4CAF50" VerticalOptions="Center"/>
@@ -212,12 +212,12 @@
                                         </StackLayout>
                                     </StackLayout>
                                     <StackLayout Grid.Column="2" Spacing="2" HorizontalOptions="Center">
-                                        <Label Text="AVG" FontSize="9" TextColor="#999999" HorizontalOptions="Center" CharacterSpacing="0.5"/>
+                                        <Label Text="AVG" FontSize="10" TextColor="#999999" HorizontalOptions="Center" CharacterSpacing="1"/>
                                         <Label Text="{Binding AverageWeight, StringFormat='{0:F0}'}"
                                                FontSize="13" FontAttributes="Bold" TextColor="#FF9800" HorizontalOptions="Center"/>
                                     </StackLayout>
                                     <StackLayout Grid.Column="3" Spacing="2" HorizontalOptions="Center">
-                                        <Label Text="REPS" FontSize="9" TextColor="#999999" HorizontalOptions="Center" CharacterSpacing="0.5"/>
+                                        <Label Text="REPS" FontSize="10" TextColor="#999999" HorizontalOptions="Center" CharacterSpacing="1"/>
                                         <Label Text="{Binding TotalReps}"
                                                FontSize="13" FontAttributes="Bold" TextColor="#1F77F0" HorizontalOptions="Center"/>
                                     </StackLayout>

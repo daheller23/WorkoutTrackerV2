@@ -66,6 +66,38 @@
                     <microcharts:ChartView Chart="{Binding Chart}" HeightRequest="260"/>
                 </StackLayout>
 
+                <!-- ── Estimated 1RM ─────────────────────────────────────── -->
+                <StackLayout IsVisible="{Binding HasOneRepMax}"
+                             BackgroundColor="#FFFFFF" Padding="16" Spacing="8">
+                    <Label Text="ESTIMATED 1 REP MAX"
+                           FontSize="11" FontAttributes="Bold"
+                           TextColor="#999999" CharacterSpacing="1"/>
+                    <Grid ColumnDefinitions="*,Auto">
+                        <StackLayout Grid.Column="0" Spacing="2">
+                            <Label Text="{Binding EstimatedOneRepMax}"
+                                   FontSize="32" FontAttributes="Bold"
+                                   TextColor="#1F77F0"/>
+                            <Label FontSize="11" TextColor="#999999">
+                                <Label.Text>
+                                    <MultiBinding StringFormat="{}Based on {0:F0} {1} × {2} reps ({3} formula)">
+                                        <Binding Path="Exercise.MaxWeight"/>
+                                        <Binding Path="WeightUnitLabel"/>
+                                        <Binding Path="Exercise.RepsAtMaxWeight"/>
+                                        <Binding Path="FormulaLabel"/>
+                                    </MultiBinding>
+                                </Label.Text>
+                            </Label>
+                        </StackLayout>
+                        <Label Grid.Column="1"
+                               Text="🏋️"
+                               FontSize="36"
+                               VerticalOptions="Center"
+                               Opacity="0.3"/>
+                    </Grid>
+                    <Label Text="⚠️ Estimate only — always warm up properly before attempting a true max."
+                           FontSize="10" TextColor="#AAAAAA" LineBreakMode="WordWrap"/>
+                </StackLayout>
+
                 <!-- ── Set History ────────────────────────────────────────── -->
                 <StackLayout Spacing="12">
                     <Label Text="SET HISTORY"

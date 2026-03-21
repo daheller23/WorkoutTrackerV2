@@ -115,14 +115,14 @@
                         <Label Text="{Binding TotalSets}"
                                FontSize="18" FontAttributes="Bold" TextColor="#1F77F0"
                                HorizontalOptions="Center"/>
-                        <Label Text="sets" FontSize="9" TextColor="#1F77F0" HorizontalOptions="Center"/>
+                        <Label Text="sets" FontSize="10" TextColor="#1F77F0" HorizontalOptions="Center"/>
                     </StackLayout>
                     <StackLayout Grid.Column="1" BackgroundColor="#F1F8F1" Padding="12,16" Spacing="4">
                         <Label Text="💪" FontSize="18" HorizontalOptions="Center"/>
                         <Label Text="{Binding TotalReps}"
                                FontSize="18" FontAttributes="Bold" TextColor="#4CAF50"
                                HorizontalOptions="Center"/>
-                        <Label Text="reps" FontSize="9" TextColor="#4CAF50" HorizontalOptions="Center"/>
+                        <Label Text="reps" FontSize="10" TextColor="#4CAF50" HorizontalOptions="Center"/>
                     </StackLayout>
                     <StackLayout Grid.Column="2" BackgroundColor="#FFF8E1" Padding="12,16" Spacing="4">
                         <Label Text="🏆" FontSize="18" HorizontalOptions="Center"/>
@@ -130,7 +130,7 @@
                                FontSize="18" FontAttributes="Bold" TextColor="#FF9800"
                                HorizontalOptions="Center"/>
                         <Label Text="{Binding WeightUnitLabel, StringFormat='max {0}'}"
-                               FontSize="9" TextColor="#FF9800" HorizontalOptions="Center"/>
+                               FontSize="10" TextColor="#FF9800" HorizontalOptions="Center"/>
                     </StackLayout>
                 </Grid>
 
@@ -244,7 +244,7 @@
                                               VerticalOptions="Center"
                                               Padding="0,14,8,14">
                                             <Label Grid.Row="0"
-                                                   Text="MAX" FontSize="9" TextColor="#999999"
+                                                   Text="MAX" FontSize="10" TextColor="#999999"
                                                    HorizontalOptions="End" CharacterSpacing="0.5"/>
                                             <Label Grid.Row="1"
                                                    Text="{Binding LatestMaxWeight, StringFormat='{0:F0}'}"

@@ -23,7 +23,7 @@
     <Grid RowDefinitions="Auto,*" RowSpacing="0">
 
         <!-- ── Header ─────────────────────────────────────────────────────── -->
-        <StackLayout Grid.Row="0" BackgroundColor="#FFFFFF" Padding="24,16,24,20" Spacing="4">
+        <StackLayout Grid.Row="0" BackgroundColor="#FFFFFF" Padding="24,16,24,24" Spacing="4">
             <Button Text="← Back"
                     Command="{Binding GoBackCommand}"
                     BackgroundColor="Transparent" TextColor="#1F77F0"
@@ -235,7 +235,7 @@
                         <Grid ColumnDefinitions="Auto,*">
                             <Label Grid.Column="0"
                                    Text="{Binding BmiLabel}"
-                                   FontSize="36" FontAttributes="Bold" TextColor="#1F77F0"/>
+                                   FontSize="26" FontAttributes="Bold" TextColor="#1F77F0"/>
                             <StackLayout Grid.Column="1" Spacing="2"
                                          VerticalOptions="Center" Margin="12,0,0,0">
                                 <Label Text="{Binding BmiCategory}"

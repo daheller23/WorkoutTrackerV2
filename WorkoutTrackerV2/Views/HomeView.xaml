@@ -32,7 +32,7 @@
             <Grid BackgroundColor="#FFFFFF" Padding="24,16,24,24" ColumnDefinitions="*,Auto">
                 <StackLayout Grid.Column="0" Spacing="4">
                     <Label Text="💪 Workouts"
-                       FontSize="36"
+                       FontSize="32"
                        FontAttributes="Bold"
                        TextColor="#1F77F0"
                        CharacterSpacing="0.5"/>
@@ -84,7 +84,7 @@
                                FontSize="26" FontAttributes="Bold" TextColor="#FF6F00"
                                HorizontalOptions="Center"/>
                             <Label Text="{Binding StreakSubtitle}"
-                               FontSize="9" TextColor="#FF9800" HorizontalOptions="Center"
+                               FontSize="10" TextColor="#FF9800" HorizontalOptions="Center"
                                HorizontalTextAlignment="Center" LineBreakMode="WordWrap"/>
                         </StackLayout>
                         <StackLayout Grid.Column="1" BackgroundColor="#F0F7FF" Padding="14,16" Spacing="4">
@@ -92,7 +92,7 @@
                             <Label Text="{Binding TotalWorkouts}"
                                FontSize="26" FontAttributes="Bold" TextColor="#1F77F0"
                                HorizontalOptions="Center"/>
-                            <Label Text="total workouts" FontSize="9" TextColor="#1F77F0"
+                            <Label Text="total workouts" FontSize="10" TextColor="#1F77F0"
                                HorizontalOptions="Center"/>
                         </StackLayout>
                         <StackLayout Grid.Column="2" BackgroundColor="#F1F8F1" Padding="14,16" Spacing="4">
@@ -100,7 +100,7 @@
                             <Label Text="{Binding AverageDuration, StringFormat='{0:F0}'}"
                                FontSize="26" FontAttributes="Bold" TextColor="#4CAF50"
                                HorizontalOptions="Center"/>
-                            <Label Text="avg minutes" FontSize="9" TextColor="#4CAF50"
+                            <Label Text="avg minutes" FontSize="10" TextColor="#4CAF50"
                                HorizontalOptions="Center"/>
                         </StackLayout>
                     </Grid>
@@ -148,21 +148,21 @@
                                 <Label Text="{Binding WorkoutsThisWeek}"
                                    FontSize="26" FontAttributes="Bold" TextColor="#1F77F0"
                                    HorizontalOptions="Center"/>
-                                <Label Text="workouts" FontSize="9" TextColor="#999999"
+                                <Label Text="workouts" FontSize="10" TextColor="#999999"
                                    HorizontalOptions="Center"/>
                             </StackLayout>
                             <StackLayout Grid.Column="1" BackgroundColor="#FFFFFF" Padding="14,16" Spacing="4">
                                 <Label Text="{Binding SetsThisWeek}"
                                    FontSize="26" FontAttributes="Bold" TextColor="#FF9800"
                                    HorizontalOptions="Center"/>
-                                <Label Text="sets" FontSize="9" TextColor="#999999"
+                                <Label Text="sets" FontSize="10" TextColor="#999999"
                                    HorizontalOptions="Center"/>
                             </StackLayout>
                             <StackLayout Grid.Column="2" BackgroundColor="#FFFFFF" Padding="14,16" Spacing="4">
                                 <Label Text="{Binding VolumeThisWeek, StringFormat='{0:F0}'}"
                                    FontSize="26" FontAttributes="Bold" TextColor="#4CAF50"
                                    HorizontalOptions="Center"/>
-                                <Label Text="volume" FontSize="9" TextColor="#999999"
+                                <Label Text="volume" FontSize="10" TextColor="#999999"
                                    HorizontalOptions="Center"/>
                             </StackLayout>
                         </Grid>
@@ -317,7 +317,7 @@
                                                     <Label Text="{Binding TotalExercises}"
                                                        FontSize="14" FontAttributes="Bold" TextColor="#1F77F0"
                                                        HorizontalOptions="Center"/>
-                                                    <Label Text="exercises" FontSize="9" TextColor="#1F77F0"
+                                                    <Label Text="exercises" FontSize="10" TextColor="#1F77F0"
                                                        HorizontalOptions="Center"/>
                                                 </StackLayout>
                                                 <StackLayout Grid.Row="1"
@@ -326,7 +326,7 @@
                                                     <Label Text="{Binding Duration, StringFormat='{0:hh\\:mm}'}"
                                                        FontSize="14" FontAttributes="Bold" TextColor="#FF9800"
                                                        HorizontalOptions="Center"/>
-                                                    <Label Text="duration" FontSize="9" TextColor="#FF9800"
+                                                    <Label Text="duration" FontSize="10" TextColor="#FF9800"
                                                        HorizontalOptions="Center"/>
                                                 </StackLayout>
                                             </Grid>

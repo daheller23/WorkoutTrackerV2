@@ -72,25 +72,25 @@
                         <Label Text="⏱" FontSize="18" HorizontalOptions="Center"/>
                         <Label Text="{Binding Session.Duration, StringFormat='{0:hh\\:mm}'}"
                                FontSize="18" FontAttributes="Bold" TextColor="#1F77F0" HorizontalOptions="Center"/>
-                        <Label Text="duration" FontSize="9" TextColor="#1F77F0" HorizontalOptions="Center"/>
+                        <Label Text="duration" FontSize="10" TextColor="#1F77F0" HorizontalOptions="Center"/>
                     </StackLayout>
                     <StackLayout Grid.Column="1" BackgroundColor="#FFF8E1" Padding="12,16" Spacing="4">
                         <Label Text="🏋️" FontSize="18" HorizontalOptions="Center"/>
                         <Label Text="{Binding Session.TotalExercises}"
                                FontSize="18" FontAttributes="Bold" TextColor="#FF9800" HorizontalOptions="Center"/>
-                        <Label Text="exercises" FontSize="9" TextColor="#FF9800" HorizontalOptions="Center"/>
+                        <Label Text="exercises" FontSize="10" TextColor="#FF9800" HorizontalOptions="Center"/>
                     </StackLayout>
                     <StackLayout Grid.Column="2" BackgroundColor="#F1F8F1" Padding="12,16" Spacing="4">
                         <Label Text="📊" FontSize="18" HorizontalOptions="Center"/>
                         <Label Text="{Binding TotalSets}"
                                FontSize="18" FontAttributes="Bold" TextColor="#4CAF50" HorizontalOptions="Center"/>
-                        <Label Text="sets" FontSize="9" TextColor="#4CAF50" HorizontalOptions="Center"/>
+                        <Label Text="sets" FontSize="10" TextColor="#4CAF50" HorizontalOptions="Center"/>
                     </StackLayout>
                     <StackLayout Grid.Column="3" BackgroundColor="#FFF0F0" Padding="12,16" Spacing="4">
                         <Label Text="🔥" FontSize="18" HorizontalOptions="Center"/>
                         <Label Text="{Binding TotalReps}"
                                FontSize="18" FontAttributes="Bold" TextColor="#FF6B6B" HorizontalOptions="Center"/>
-                        <Label Text="total reps" FontSize="9" TextColor="#FF6B6B" HorizontalOptions="Center"/>
+                        <Label Text="total reps" FontSize="10" TextColor="#FF6B6B" HorizontalOptions="Center"/>
                     </StackLayout>
                 </Grid>
 
