@@ -151,6 +151,39 @@
 
                                         <BoxView HeightRequest="0.5" Color="#F0F0F0" Margin="16,0"/>
 
+                                        <!-- Last Session Row — fetched async after exercise is added.
+                                             Hidden until HasLastSession becomes true.
+                                             Sits above the table header so the column labels
+                                             remain directly above their input fields.          -->
+                                        <StackLayout IsVisible="{Binding HasLastSession}"
+                                                     Margin="16,0,16,4"
+                                                     Spacing="4">
+                                            <Label Text="{Binding LastSessionSummary}"
+                                                   FontSize="10" FontAttributes="Bold"
+                                                   TextColor="#999999" CharacterSpacing="0.5"/>
+                                            <FlexLayout Direction="Row"
+                                                        Wrap="Wrap"
+                                                        AlignItems="Center"
+                                                        BindableLayout.ItemsSource="{Binding LastSessionChips}">
+                                                <BindableLayout.ItemTemplate>
+                                                    <DataTemplate x:DataType="x:String">
+                                                        <Border BackgroundColor="#F0F7FF"
+                                                                StrokeThickness="0"
+                                                                Padding="8,3"
+                                                                Margin="0,0,6,4">
+                                                            <Border.StrokeShape>
+                                                                <RoundRectangle CornerRadius="8"/>
+                                                            </Border.StrokeShape>
+                                                            <Label Text="{Binding .}"
+                                                                   FontSize="11"
+                                                                   TextColor="#1F77F0"
+                                                                   FontAttributes="Bold"/>
+                                                        </Border>
+                                                    </DataTemplate>
+                                                </BindableLayout.ItemTemplate>
+                                            </FlexLayout>
+                                        </StackLayout>
+
                                         <!-- Table Header — 6 columns matching set row:
                                              Set | Reps | Weight | Unit | ⏱ | ✕ -->
                                         <Grid ColumnDefinitions="30,*,*,80,36,36" ColumnSpacing="8"

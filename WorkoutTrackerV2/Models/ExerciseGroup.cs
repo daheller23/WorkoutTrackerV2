@@ -28,6 +28,51 @@ namespace WorkoutTrackerV2.Models
         public int TotalReps { get; private set; }
         public double MaxWeight { get; private set; }
 
+        // Previous session data — populated asynchronously after the group is
+        // created. Observable so the XAML updates when the fetch completes.
+        [ObservableProperty] private string _lastSessionSummary = string.Empty;
+        [ObservableProperty] private bool _hasLastSession;
+
+        // Each entry is "Reps × Weight Unit" — shown as chips in the XAML.
+        public ObservableCollection<string> LastSessionChips { get; } = [];
+
+        /// <summary>
+        /// Called by AddWorkoutViewModel once the previous session fetch completes.
+        /// Populates the last session display from the most recent sets for this exercise.
+        /// </summary>
+        public void SetLastSession(List<WorkoutSet> sets, string weightUnit)
+        {
+            LastSessionChips.Clear();
+
+            if (sets.Count == 0)
+            {
+                HasLastSession = false;
+                return;
+            }
+
+            // Group by session date, take the most recent session's sets only.
+            var lastDate = sets.Max(s => s.CreatedDate.Date);
+            var lastSets = sets
+                .Where(s => s.CreatedDate.Date == lastDate)
+                .OrderBy(s => s.SetNumber)
+                .ToList();
+
+            LastSessionSummary = $"Last session · {lastDate:MMM d}";
+
+            foreach (var s in lastSets)
+            {
+                // Convert to display unit if stored unit differs.
+                double w = s.WeightUnit == weightUnit
+                    ? s.Weight
+                    : s.WeightUnit == "lbs"
+                        ? s.Weight * 0.453592
+                        : s.Weight / 0.453592;
+                LastSessionChips.Add($"{s.Reps} × {w:F0}");
+            }
+
+            HasLastSession = true;
+        }
+
         // onDeleted is an optional callback injected by the ViewModel so that
         // when a set's DeleteCommand fires it can call both group.RemoveSet (which
         // updates SetCountLabel) AND ViewModel.UpdateTotals (which updates TotalSets).

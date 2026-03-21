@@ -69,12 +69,17 @@ namespace WorkoutTrackerV2.ViewModels
 
             var existing = ExerciseGroups.FirstOrDefault(g => g.Exercise.Id == value.Id);
             if (existing is not null)
+            {
                 existing.AddSet(settingsService.WeightUnit, _ => UpdateTotals());
+            }
             else
             {
                 var group = new ExerciseGroup(value, settingsService.WeightUnit);
                 group.AddSet(settingsService.WeightUnit, _ => UpdateTotals());
                 ExerciseGroups.Add(group);
+                // Fetch last session in the background — fires concurrently so
+                // it never blocks the UI. ExerciseGroup updates itself when done.
+                _ = LoadLastSessionAsync(group, value.Id);
             }
             SelectedExercise = null;
             UpdateTotals();
@@ -450,6 +455,25 @@ namespace WorkoutTrackerV2.ViewModels
             });
             return set;
         }
+
+        #region "LOAD LAST SESSION"
+        private async Task LoadLastSessionAsync(ExerciseGroup group, int exerciseId)
+        {
+            try
+            {
+                // Fetch up to 90 days of history — enough to always find a
+                // previous session without pulling unbounded history.
+                var history = await workoutService.GetExerciseHistoryAsync(exerciseId, 90);
+                group.SetLastSession(history, settingsService.WeightUnit);
+            }
+            catch
+            {
+                // Non-critical — silently swallow. The last session display is
+                // a convenience feature; a fetch failure should not surface as
+                // an error to the user.
+            }
+        }
+        #endregion
 
         private void ResetForm()
         {
