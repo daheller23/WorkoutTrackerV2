@@ -123,15 +123,15 @@ namespace WorkoutTrackerV2.ViewModels
                 return;
             }
 
-            // FIX 1: Use group.AddSet() then overwrite Reps/Weight/WeightUnit
-            // so NotifySetStats() fires on the group and SetCountLabel updates.
-            // Previously used group.Sets.Add() directly which bypassed
-            // NotifySetStats entirely, leaving SetCountLabel stale.
+            // Use group.AddSet() so NotifySetStats fires and SetCountLabel updates,
+            // then overwrite the fields from the last set.
+            // IsCompleted is intentionally NOT copied — new set starts unchecked.
             group.AddSet(lastSet.WeightUnit, _ => UpdateTotals());
             var newSet = group.Sets[^1];
             newSet.Reps = lastSet.Reps;
             newSet.Weight = lastSet.Weight;
             newSet.WeightUnit = lastSet.WeightUnit;
+            newSet.SuggestedWeightPlaceholder = lastSet.SuggestedWeightPlaceholder;
             UpdateTotals();
         }
         #endregion
@@ -497,7 +497,7 @@ namespace WorkoutTrackerV2.ViewModels
                     var name = group?.Exercise.Name ?? "exercise";
                     var unit = group?.Sets.FirstOrDefault()?.WeightUnit
                                 ?? settingsService.WeightUnit;
-                    message = $"New PR on {name}! 🏆 { max: F0} { unit}";
+                    message = $"New PR on {name}! 🏆 {max} {unit}";
                     // Report the first PR found — don't stack messages.
                     break;
                 }

@@ -10,26 +10,31 @@ namespace WorkoutTrackerV2.Models
     {
         private readonly string _defaultWeightUnit = defaultWeightUnit;
 
+        // Injected by AddWorkoutViewModel so sets can auto-trigger the rest timer
+        // without holding a service reference. Set once after construction.
+        public Action<string>? StartRestTimerAction { get; set; }
+
         public Exercise Exercise { get; set; } = exercise;
 
-        // FIX 5: Private setter — Sets should never be replaced from outside
-        // the class since that would silently break all CollectionView bindings
-        // on the existing ObservableCollection instance.
+        // Private setter — Sets should never be replaced from outside the class
+        // since that would silently break all CollectionView bindings.
         public ObservableCollection<WorkoutSet> Sets { get; } = [];
 
         public string SetCountLabel => Sets.Count == 1 ? "1 set" : $"{Sets.Count} sets";
         public bool HasSets => Sets.Count > 0;
 
-        // FIX 1+2: TotalReps and MaxWeight now notify correctly — they are
-        // computed from Sets but were not raising PropertyChanged after AddSet
-        // or RemoveSet, causing bound labels to show stale values. Both are
-        // computed together in one loop inside NotifySetStats() to avoid two
-        // separate LINQ passes over Sets on every set operation.
+        // Completion progress — drives the progress bar under each exercise header.
+        public int CompletedSets => Sets.Count(s => s.IsCompleted);
+        public int TotalSetCount => Sets.Count;
+        public bool AllSetsCompleted => Sets.Count > 0 && Sets.All(s => s.IsCompleted);
+        // 0.0–1.0 for ProgressBar.Progress binding — no converter needed.
+        public double CompletionProgress => Sets.Count == 0 ? 0 : (double)CompletedSets / Sets.Count;
+
+        // FIX 1+2: TotalReps and MaxWeight notify correctly.
         public int TotalReps { get; private set; }
         public double MaxWeight { get; private set; }
 
-        // Previous session data — populated asynchronously after the group is
-        // created. Observable so the XAML updates when the fetch completes.
+        // Previous session data — populated asynchronously after group is created.
         [ObservableProperty] private string _lastSessionSummary = string.Empty;
         [ObservableProperty] private bool _hasLastSession;
 
@@ -38,7 +43,8 @@ namespace WorkoutTrackerV2.Models
 
         /// <summary>
         /// Called by AddWorkoutViewModel once the previous session fetch completes.
-        /// Populates the last session display from the most recent sets for this exercise.
+        /// Populates last-session chips and injects suggested weight placeholder
+        /// into each set row so the user knows what they hit last time.
         /// </summary>
         public void SetLastSession(List<WorkoutSet> sets, string weightUnit)
         {
@@ -50,7 +56,6 @@ namespace WorkoutTrackerV2.Models
                 return;
             }
 
-            // Group by session date, take the most recent session's sets only.
             var lastDate = sets.Max(s => s.CreatedDate.Date);
             var lastSets = sets
                 .Where(s => s.CreatedDate.Date == lastDate)
@@ -59,25 +64,33 @@ namespace WorkoutTrackerV2.Models
 
             LastSessionSummary = $"Last session · {lastDate:MMM d}";
 
-            foreach (var s in lastSets)
+            for (int i = 0; i < lastSets.Count; i++)
             {
-                // Convert to display unit if stored unit differs.
+                var s = lastSets[i];
                 double w = s.WeightUnit == weightUnit
                     ? s.Weight
-                    : s.WeightUnit == "lbs"
-                        ? s.Weight * 0.453592
-                        : s.Weight / 0.453592;
+                    : s.WeightUnit == "lbs" ? s.Weight * 0.453592 : s.Weight / 0.453592;
                 LastSessionChips.Add($"{s.Reps} × {w:F0}");
+
+                // Inject into the matching live set row.
+                if (i < Sets.Count)
+                    Sets[i].SuggestedWeightPlaceholder = $"Last: {w:F0}";
+            }
+
+            // Fill extra rows beyond what last session had.
+            if (lastSets.Count > 0)
+            {
+                var last = lastSets[^1];
+                double lastW = last.WeightUnit == weightUnit
+                    ? last.Weight
+                    : last.WeightUnit == "lbs" ? last.Weight * 0.453592 : last.Weight / 0.453592;
+                for (int i = lastSets.Count; i < Sets.Count; i++)
+                    Sets[i].SuggestedWeightPlaceholder = $"Last: {lastW:F0}";
             }
 
             HasLastSession = true;
         }
 
-        // onDeleted is an optional callback injected by the ViewModel so that
-        // when a set's DeleteCommand fires it can call both group.RemoveSet (which
-        // updates SetCountLabel) AND ViewModel.UpdateTotals (which updates TotalSets).
-        // Without this, DeleteCommand only reached RemoveSet and TotalSets never
-        // decremented. ExerciseGroup intentionally has no direct ViewModel reference.
         public void AddSet(string? weightUnit = null, Action<WorkoutSet>? onDeleted = null)
         {
             var unit = weightUnit ?? _defaultWeightUnit;
@@ -89,11 +102,24 @@ namespace WorkoutTrackerV2.Models
                 WeightUnit = unit,
                 ParentGroup = this
             };
+
             set.DeleteCommand = new RelayCommand(() =>
             {
                 RemoveSet(set);
                 onDeleted?.Invoke(set);
             });
+
+            // ToggleCompletedCommand: flip IsCompleted + auto-start rest timer
+            // when completing (not un-completing). CommandParameter = muscle group
+            // so the rest timer service picks the right default duration.
+            set.ToggleCompletedCommand = new RelayCommand<string>(muscleGroup =>
+            {
+                set.IsCompleted = !set.IsCompleted;
+                NotifyCompletionStats();
+                if (set.IsCompleted)
+                    StartRestTimerAction?.Invoke(muscleGroup ?? Exercise.MuscleGroup);
+            });
+
             Sets.Add(set);
             NotifySetStats();
         }
@@ -101,23 +127,16 @@ namespace WorkoutTrackerV2.Models
         public void RemoveSet(WorkoutSet set)
         {
             Sets.Remove(set);
-            // Renumber remaining sets to keep SetNumber sequential.
             for (int i = 0; i < Sets.Count; i++)
                 Sets[i].SetNumber = i + 1;
             NotifySetStats();
         }
 
-        // FIX 1+2: Single loop computes TotalReps and MaxWeight together, then
-        // raises all four PropertyChanged notifications in one call site instead
-        // of duplicating the notification calls in AddSet and RemoveSet.
-        // Public overload used by AddWorkoutViewModel after template loading
-        // where sets are added via Sets.Add() directly rather than AddSet().
         public void NotifySetStatsPublic() => NotifySetStats();
 
         private void NotifySetStats()
         {
-            int reps = 0;
-            double max = 0;
+            int reps = 0; double max = 0;
             foreach (var s in Sets)
             {
                 reps += s.Reps;
@@ -130,6 +149,16 @@ namespace WorkoutTrackerV2.Models
             OnPropertyChanged(nameof(MaxWeight));
             OnPropertyChanged(nameof(SetCountLabel));
             OnPropertyChanged(nameof(HasSets));
+            NotifyCompletionStats();
+        }
+
+        // Raised whenever a set is checked/unchecked or the set count changes.
+        private void NotifyCompletionStats()
+        {
+            OnPropertyChanged(nameof(CompletedSets));
+            OnPropertyChanged(nameof(TotalSetCount));
+            OnPropertyChanged(nameof(AllSetsCompleted));
+            OnPropertyChanged(nameof(CompletionProgress));
         }
     }
 }
