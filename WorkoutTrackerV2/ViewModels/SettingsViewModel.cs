@@ -10,12 +10,14 @@ namespace WorkoutTrackerV2.ViewModels
     {
         #region "OBSERVABLE PROPERTIES"
         [ObservableProperty]
-        // FIX 5: NotifyPropertyChangedFor drives IsLbsSelected and IsKgSelected,
-        // which replace WeightUnitColorConverter and WeightUnitTextColorConverter
-        // in the XAML (4 converter calls per tap → 0).
         [NotifyPropertyChangedFor(nameof(IsLbsSelected))]
         [NotifyPropertyChangedFor(nameof(IsKgSelected))]
         private string _weightUnit = "lbs";
+
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(IsEpleySelected))]
+        [NotifyPropertyChangedFor(nameof(IsBrzyckiSelected))]
+        private string _rmFormula = "Epley";
 
         [ObservableProperty] private bool _isDarkMode;
         [ObservableProperty] private string _heightCm = string.Empty;
@@ -32,12 +34,19 @@ namespace WorkoutTrackerV2.ViewModels
         // of running WeightUnitColorConverter and WeightUnitTextColorConverter.
         public bool IsLbsSelected => WeightUnit == "lbs";
         public bool IsKgSelected => WeightUnit == "kg";
+        public bool IsEpleySelected => RmFormula == "Epley";
+        public bool IsBrzyckiSelected => RmFormula == "Brzycki";
         #endregion
 
         #region "PARTIAL METHODS"
         partial void OnWeightUnitChanged(string value)
         {
             settingsService.WeightUnit = value;
+        }
+
+        partial void OnRmFormulaChanged(string value)
+        {
+            settingsService.RmFormula = value;
         }
 
         partial void OnIsDarkModeChanged(bool value)
@@ -54,6 +63,7 @@ namespace WorkoutTrackerV2.ViewModels
         {
             WeightUnit = settingsService.WeightUnit;
             IsDarkMode = settingsService.IsDarkMode;
+            RmFormula = settingsService.RmFormula;
             HeightCm = settingsService.HeightCm > 0
                 ? settingsService.HeightCm.ToString("F0")
                 : string.Empty;
@@ -63,6 +73,11 @@ namespace WorkoutTrackerV2.ViewModels
         #region "SET WEIGHT UNIT"
         [RelayCommand]
         private void SetWeightUnit(string unit) => WeightUnit = unit;
+        #endregion
+
+        #region "SET RM FORMULA"
+        [RelayCommand]
+        private void SetRmFormula(string formula) => RmFormula = formula;
         #endregion
 
         #region "SAVE HEIGHT"

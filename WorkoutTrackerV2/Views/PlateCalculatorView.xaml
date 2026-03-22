@@ -1,0 +1,283 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="WorkoutTrackerV2.Views.PlateCalculatorView"
+             xmlns:vm="clr-namespace:WorkoutTrackerV2.ViewModels"
+             x:DataType="vm:PlateCalculatorViewModel"
+             BackgroundColor="#FAFAFA">
+
+    <Shell.NavBarIsVisible>False</Shell.NavBarIsVisible>
+    <Shell.BackButtonBehavior>
+        <BackButtonBehavior IsVisible="False" IsEnabled="False"/>
+    </Shell.BackButtonBehavior>
+
+    <Grid RowDefinitions="Auto,*" RowSpacing="0">
+
+        <!-- ── Header ───────────────────────────────────────────────────── -->
+        <StackLayout Grid.Row="0" BackgroundColor="#FFFFFF"
+                     Padding="24,16,24,24" Spacing="4">
+            <Button Text="← Back"
+                    Command="{Binding GoBackCommand}"
+                    BackgroundColor="Transparent" TextColor="#1F77F0"
+                    FontSize="14" Padding="0" HorizontalOptions="Start"/>
+            <Label Text="🏋️ Plate Calculator"
+                   FontSize="32" FontAttributes="Bold"
+                   TextColor="#1F77F0" CharacterSpacing="0.5"/>
+            <Label Text="How to load the bar for any weight"
+                   FontSize="13" TextColor="#999999"/>
+        </StackLayout>
+
+        <ScrollView Grid.Row="1">
+            <StackLayout Padding="20,24" Spacing="20">
+
+                <!-- ── Target weight ────────────────────────────────────── -->
+                <StackLayout Spacing="10">
+                    <Label Text="TARGET WEIGHT"
+                           FontSize="11" FontAttributes="Bold"
+                           TextColor="#999999" CharacterSpacing="1"/>
+                    <StackLayout BackgroundColor="#FFFFFF" Padding="16" Spacing="14">
+                        <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
+                            <Entry Grid.Column="0"
+                                   Text="{Binding TargetWeightText}"
+                                   Keyboard="Numeric"
+                                   FontSize="22" FontAttributes="Bold"
+                                   TextColor="#1F77F0"
+                                   BackgroundColor="#F5F5F5"
+                                   Placeholder="0"
+                                   PlaceholderColor="#DDDDDD"
+                                   HorizontalTextAlignment="Center"
+                                   ReturnType="Done"
+                                   ReturnCommand="{Binding CalculateCommand}"/>
+                            <Label Grid.Column="1"
+                                   Text="{Binding WeightUnit}"
+                                   FontSize="15" FontAttributes="Bold"
+                                   TextColor="#BBBBBB"
+                                   VerticalOptions="Center"/>
+                            <Button Grid.Column="2"
+                                    Text="✕"
+                                    Command="{Binding ClearCommand}"
+                                    BackgroundColor="Transparent"
+                                    TextColor="#CCCCCC"
+                                    FontSize="16" Padding="16,0"
+                                    BorderWidth="0"
+                                    VerticalOptions="Center"/>
+                        </Grid>
+                        <Button Text="Calculate"
+                                Command="{Binding CalculateCommand}"
+                                BackgroundColor="#1F77F0" TextColor="#FFFFFF"
+                                FontAttributes="Bold" FontSize="14"
+                                Padding="0,14" CornerRadius="10" BorderWidth="0"/>
+                    </StackLayout>
+                </StackLayout>
+
+                <!-- ── Bar weight ─────────────────────────────────────────
+                     Segmented-control feel: chips fill the row equally      -->
+                <StackLayout Spacing="10">
+                    <Label Text="BAR WEIGHT"
+                           FontSize="11" FontAttributes="Bold"
+                           TextColor="#999999" CharacterSpacing="1"/>
+                    <Border BackgroundColor="#F5F5F5" StrokeThickness="0" Padding="4">
+                        <Border.StrokeShape>
+                            <RoundRectangle CornerRadius="12"/>
+                        </Border.StrokeShape>
+                        <StackLayout Orientation="Horizontal" Spacing="4"
+                                     BindableLayout.ItemsSource="{Binding BarChips}">
+                            <BindableLayout.ItemTemplate>
+                                <DataTemplate x:DataType="vm:BarChipViewModel">
+                                    <Border StrokeThickness="0"
+                                            Padding="0,10"
+                                            HorizontalOptions="FillAndExpand">
+                                        <Border.StrokeShape>
+                                            <RoundRectangle CornerRadius="8"/>
+                                        </Border.StrokeShape>
+                                        <Border.GestureRecognizers>
+                                            <TapGestureRecognizer
+                                                Command="{Binding Source={RelativeSource AncestorType={x:Type vm:PlateCalculatorViewModel}}, Path=SetBarCommand}"
+                                                CommandParameter="{Binding Weight}"/>
+                                        </Border.GestureRecognizers>
+                                        <Border.Triggers>
+                                            <DataTrigger TargetType="Border"
+                                                         Binding="{Binding IsSelected}" Value="True">
+                                                <Setter Property="BackgroundColor" Value="#FFFFFF"/>
+                                            </DataTrigger>
+                                            <DataTrigger TargetType="Border"
+                                                         Binding="{Binding IsSelected}" Value="False">
+                                                <Setter Property="BackgroundColor" Value="Transparent"/>
+                                            </DataTrigger>
+                                        </Border.Triggers>
+                                        <StackLayout Spacing="1" HorizontalOptions="Center">
+                                            <Label Text="{Binding Label}"
+                                                   FontSize="15" FontAttributes="Bold"
+                                                   HorizontalOptions="Center">
+                                                <Label.Triggers>
+                                                    <DataTrigger TargetType="Label"
+                                                                 Binding="{Binding IsSelected}" Value="True">
+                                                        <Setter Property="TextColor" Value="#111111"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger TargetType="Label"
+                                                                 Binding="{Binding IsSelected}" Value="False">
+                                                        <Setter Property="TextColor" Value="#AAAAAA"/>
+                                                    </DataTrigger>
+                                                </Label.Triggers>
+                                            </Label>
+                                            <Label Text="{Binding Source={RelativeSource AncestorType={x:Type vm:PlateCalculatorViewModel}}, Path=WeightUnit}"
+                                                   FontSize="10"
+                                                   HorizontalOptions="Center">
+                                                <Label.Triggers>
+                                                    <DataTrigger TargetType="Label"
+                                                                 Binding="{Binding IsSelected}" Value="True">
+                                                        <Setter Property="TextColor" Value="#999999"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger TargetType="Label"
+                                                                 Binding="{Binding IsSelected}" Value="False">
+                                                        <Setter Property="TextColor" Value="#CCCCCC"/>
+                                                    </DataTrigger>
+                                                </Label.Triggers>
+                                            </Label>
+                                        </StackLayout>
+                                    </Border>
+                                </DataTemplate>
+                            </BindableLayout.ItemTemplate>
+                        </StackLayout>
+                    </Border>
+                </StackLayout>
+
+                <!-- ── Available plates ──────────────────────────────────── -->
+                <StackLayout Spacing="10">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <Label Grid.Column="0"
+                               Text="AVAILABLE PLATES"
+                               FontSize="11" FontAttributes="Bold"
+                               TextColor="#999999" CharacterSpacing="1"
+                               VerticalOptions="Center"/>
+                        <Label Grid.Column="1"
+                               Text="tap to toggle"
+                               FontSize="11" TextColor="#CCCCCC"
+                               VerticalOptions="Center"/>
+                    </Grid>
+                    <StackLayout BackgroundColor="#FFFFFF" Padding="16">
+                        <FlexLayout Direction="Row" Wrap="Wrap" AlignItems="Center"
+                                    BindableLayout.ItemsSource="{Binding AvailablePlates}">
+                            <BindableLayout.ItemTemplate>
+                                <DataTemplate x:DataType="vm:PlateViewModel">
+                                    <Border StrokeThickness="0"
+                                            Padding="16,9" Margin="0,0,8,8">
+                                        <Border.StrokeShape>
+                                            <RoundRectangle CornerRadius="10"/>
+                                        </Border.StrokeShape>
+                                        <Border.GestureRecognizers>
+                                            <TapGestureRecognizer
+                                                Command="{Binding Source={RelativeSource AncestorType={x:Type vm:PlateCalculatorViewModel}}, Path=TogglePlateCommand}"
+                                                CommandParameter="{Binding .}"/>
+                                        </Border.GestureRecognizers>
+                                        <Border.Triggers>
+                                            <DataTrigger TargetType="Border"
+                                                         Binding="{Binding IsAvailable}" Value="True">
+                                                <Setter Property="BackgroundColor" Value="#1F77F0"/>
+                                            </DataTrigger>
+                                            <DataTrigger TargetType="Border"
+                                                         Binding="{Binding IsAvailable}" Value="False">
+                                                <Setter Property="BackgroundColor" Value="#F5F5F5"/>
+                                            </DataTrigger>
+                                        </Border.Triggers>
+                                        <Label Text="{Binding Label}"
+                                               FontSize="13" FontAttributes="Bold">
+                                            <Label.Triggers>
+                                                <DataTrigger TargetType="Label"
+                                                             Binding="{Binding IsAvailable}" Value="True">
+                                                    <Setter Property="TextColor" Value="#FFFFFF"/>
+                                                </DataTrigger>
+                                                <DataTrigger TargetType="Label"
+                                                             Binding="{Binding IsAvailable}" Value="False">
+                                                    <Setter Property="TextColor" Value="#CCCCCC"/>
+                                                </DataTrigger>
+                                            </Label.Triggers>
+                                        </Label>
+                                    </Border>
+                                </DataTemplate>
+                            </BindableLayout.ItemTemplate>
+                        </FlexLayout>
+                    </StackLayout>
+                </StackLayout>
+
+                <!-- ── Error ─────────────────────────────────────────────── -->
+                <Border IsVisible="{Binding HasError}"
+                        BackgroundColor="#FFF3E0" StrokeThickness="0" Padding="16,14">
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="12"/>
+                    </Border.StrokeShape>
+                    <StackLayout Spacing="4">
+                        <Label Text="⚠️ Can't make this exactly"
+                               FontSize="13" FontAttributes="Bold" TextColor="#E65100"/>
+                        <Label Text="{Binding ErrorMessage}"
+                               FontSize="12" TextColor="#BF360C" LineBreakMode="WordWrap"/>
+                    </StackLayout>
+                </Border>
+
+                <!-- ── Result ────────────────────────────────────────────── -->
+                <StackLayout IsVisible="{Binding HasResult}" Spacing="10">
+
+                    <Label Text="RESULT"
+                           FontSize="11" FontAttributes="Bold"
+                           TextColor="#999999" CharacterSpacing="1"/>
+
+                    <StackLayout BackgroundColor="#FFFFFF" Padding="20" Spacing="0">
+
+                        <!-- Total weight headline -->
+                        <Label Text="{Binding ResultMessage}"
+                               FontSize="26" FontAttributes="Bold"
+                               TextColor="#111111"/>
+                        <Label Margin="0,4,0,0" FontSize="13" TextColor="#999999">
+                            <Label.Text>
+                                <MultiBinding StringFormat="{}{0:F2} {1} per side">
+                                    <Binding Path="TotalPerSide"/>
+                                    <Binding Path="WeightUnit"/>
+                                </MultiBinding>
+                            </Label.Text>
+                        </Label>
+
+                        <BoxView HeightRequest="0.5" Color="#F0F0F0" Margin="0,16"/>
+
+                        <!-- Plates per side breakdown — clean list, no colour stripes -->
+                        <Label Text="PLATES PER SIDE"
+                               FontSize="11" FontAttributes="Bold"
+                               TextColor="#999999" CharacterSpacing="1"
+                               Margin="0,0,0,12"/>
+
+                        <StackLayout BindableLayout.ItemsSource="{Binding PlatesPerSide}"
+                                     Spacing="0">
+                            <BindableLayout.ItemTemplate>
+                                <DataTemplate x:DataType="vm:PlateViewModel">
+                                    <Grid ColumnDefinitions="*,Auto"
+                                          Padding="0,11">
+                                        <Label Grid.Column="0"
+                                               FontSize="15" FontAttributes="Bold"
+                                               TextColor="#111111"
+                                               VerticalOptions="Center">
+                                            <Label.Text>
+                                                <MultiBinding StringFormat="{}{0} × {1} {2}">
+                                                    <Binding Path="Count"/>
+                                                    <Binding Path="Label"/>
+                                                    <Binding Source="{RelativeSource AncestorType={x:Type vm:PlateCalculatorViewModel}}"
+                                                             Path="WeightUnit"/>
+                                                </MultiBinding>
+                                            </Label.Text>
+                                        </Label>
+                                        <Label Grid.Column="1"
+                                               Text="{Binding SubtotalPerSide, StringFormat='{0:F2}'}"
+                                               FontSize="15" TextColor="#999999"
+                                               VerticalOptions="Center"/>
+                                    </Grid>
+                                </DataTemplate>
+                            </BindableLayout.ItemTemplate>
+                        </StackLayout>
+
+                    </StackLayout>
+                </StackLayout>
+
+                <Label Text=" " Margin="0,8"/>
+
+            </StackLayout>
+        </ScrollView>
+    </Grid>
+</ContentPage>

@@ -213,6 +213,9 @@ namespace WorkoutTrackerV2.ViewModels
 
         [RelayCommand]
         private static Task ViewBodyWeight() => Shell.Current.GoToAsync(Routes.BodyWeight);
+
+        [RelayCommand]
+        private static Task ViewPlateCalculator() => Shell.Current.GoToAsync(Routes.PlateCalculator);
         #endregion
     }
 }

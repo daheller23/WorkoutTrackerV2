@@ -94,6 +94,9 @@
 		<MauiXaml Update="Views\PersonalRecordsView.xaml">
 		  <Generator>MSBuild:Compile</Generator>
 		</MauiXaml>
+		<MauiXaml Update="Views\PlateCalculatorView.xaml">
+		  <Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
 		<MauiXaml Update="Views\SettingsView.xaml">
 		  <Generator>MSBuild:Compile</Generator>
 		</MauiXaml>

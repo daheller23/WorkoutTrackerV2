@@ -112,6 +112,9 @@ namespace WorkoutTrackerV2
             s.AddTransient<BodyWeightViewModel>();
             s.AddTransient<BodyWeightView>();
 
+            s.AddTransient<PlateCalculatorViewModel>();
+            s.AddTransient<PlateCalculatorView>();
+
             return builder.Build();
         }
     }

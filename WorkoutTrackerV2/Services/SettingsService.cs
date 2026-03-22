@@ -9,6 +9,7 @@
         private const string KeyWeightUnit = "weight_unit";
         private const string KeyDarkMode = "dark_mode";
         private const string KeyHeightCm = "height_cm";
+        private const string KeyRmFormula = "rm_formula";
 
         public string WeightUnit
         {
@@ -26,6 +27,12 @@
         {
             get => Preferences.Get(KeyHeightCm, 0.0);
             set => Preferences.Set(KeyHeightCm, value);
+        }
+
+        public string RmFormula
+        {
+            get => Preferences.Get(KeyRmFormula, "Epley");
+            set => Preferences.Set(KeyRmFormula, value);
         }
     }
 }

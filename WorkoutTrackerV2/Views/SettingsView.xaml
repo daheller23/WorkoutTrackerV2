@@ -127,6 +127,91 @@
                                     VerticalOptions="Center"/>
                         </Grid>
                     </StackLayout>
+                    <!-- 1RM Formula -->
+                    <StackLayout BackgroundColor="#FFFFFF" Padding="16" Spacing="12">
+                        <Label Text="1RM Formula"
+                               FontSize="12" TextColor="#999999"
+                               FontAttributes="Bold" CharacterSpacing="0.3"/>
+                        <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+                            <Border StrokeThickness="0">
+                                <Border.StrokeShape>
+                                    <RoundRectangle CornerRadius="8"/>
+                                </Border.StrokeShape>
+                                <Border.Triggers>
+                                    <DataTrigger TargetType="Border" Binding="{Binding IsEpleySelected}" Value="True">
+                                        <Setter Property="BackgroundColor" Value="#1F77F0"/>
+                                    </DataTrigger>
+                                    <DataTrigger TargetType="Border" Binding="{Binding IsEpleySelected}" Value="False">
+                                        <Setter Property="BackgroundColor" Value="#EEEEEE"/>
+                                    </DataTrigger>
+                                </Border.Triggers>
+                                <Border.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding SetRmFormulaCommand}" CommandParameter="Epley"/>
+                                </Border.GestureRecognizers>
+                                <StackLayout Padding="12,10" Spacing="2">
+                                    <Label Text="Epley" FontSize="14" FontAttributes="Bold" HorizontalOptions="Center">
+                                        <Label.Triggers>
+                                            <DataTrigger TargetType="Label" Binding="{Binding IsEpleySelected}" Value="True">
+                                                <Setter Property="TextColor" Value="#FFFFFF"/>
+                                            </DataTrigger>
+                                            <DataTrigger TargetType="Label" Binding="{Binding IsEpleySelected}" Value="False">
+                                                <Setter Property="TextColor" Value="#666666"/>
+                                            </DataTrigger>
+                                        </Label.Triggers>
+                                    </Label>
+                                    <Label Text="w × (1 + r/30)" FontSize="10" HorizontalOptions="Center">
+                                        <Label.Triggers>
+                                            <DataTrigger TargetType="Label" Binding="{Binding IsEpleySelected}" Value="True">
+                                                <Setter Property="TextColor" Value="#CCDDFF"/>
+                                            </DataTrigger>
+                                            <DataTrigger TargetType="Label" Binding="{Binding IsEpleySelected}" Value="False">
+                                                <Setter Property="TextColor" Value="#999999"/>
+                                            </DataTrigger>
+                                        </Label.Triggers>
+                                    </Label>
+                                </StackLayout>
+                            </Border>
+                            <Border Grid.Column="1" StrokeThickness="0">
+                                <Border.StrokeShape>
+                                    <RoundRectangle CornerRadius="8"/>
+                                </Border.StrokeShape>
+                                <Border.Triggers>
+                                    <DataTrigger TargetType="Border" Binding="{Binding IsBrzyckiSelected}" Value="True">
+                                        <Setter Property="BackgroundColor" Value="#1F77F0"/>
+                                    </DataTrigger>
+                                    <DataTrigger TargetType="Border" Binding="{Binding IsBrzyckiSelected}" Value="False">
+                                        <Setter Property="BackgroundColor" Value="#EEEEEE"/>
+                                    </DataTrigger>
+                                </Border.Triggers>
+                                <Border.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding SetRmFormulaCommand}" CommandParameter="Brzycki"/>
+                                </Border.GestureRecognizers>
+                                <StackLayout Padding="12,10" Spacing="2">
+                                    <Label Text="Brzycki" FontSize="14" FontAttributes="Bold" HorizontalOptions="Center">
+                                        <Label.Triggers>
+                                            <DataTrigger TargetType="Label" Binding="{Binding IsBrzyckiSelected}" Value="True">
+                                                <Setter Property="TextColor" Value="#FFFFFF"/>
+                                            </DataTrigger>
+                                            <DataTrigger TargetType="Label" Binding="{Binding IsBrzyckiSelected}" Value="False">
+                                                <Setter Property="TextColor" Value="#666666"/>
+                                            </DataTrigger>
+                                        </Label.Triggers>
+                                    </Label>
+                                    <Label Text="w × 36/(37−r)" FontSize="10" HorizontalOptions="Center">
+                                        <Label.Triggers>
+                                            <DataTrigger TargetType="Label" Binding="{Binding IsBrzyckiSelected}" Value="True">
+                                                <Setter Property="TextColor" Value="#CCDDFF"/>
+                                            </DataTrigger>
+                                            <DataTrigger TargetType="Label" Binding="{Binding IsBrzyckiSelected}" Value="False">
+                                                <Setter Property="TextColor" Value="#999999"/>
+                                            </DataTrigger>
+                                        </Label.Triggers>
+                                    </Label>
+                                </StackLayout>
+                            </Border>
+                        </Grid>
+                    </StackLayout>
+
                     <!-- Height (for BMI in body weight tracker) -->
                     <StackLayout BackgroundColor="#FFFFFF" Padding="16" Spacing="12">
                         <Label Text="Height (for BMI)"
