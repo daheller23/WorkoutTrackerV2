@@ -10,45 +10,45 @@ namespace WorkoutTrackerV2.Models
     {
         private readonly string _defaultWeightUnit = defaultWeightUnit;
 
-        // Injected by AddWorkoutViewModel so sets can auto-trigger the rest timer
-        // without holding a service reference. Set once after construction.
-        public Action<string>? StartRestTimerAction { get; set; }
-
         public Exercise Exercise { get; set; } = exercise;
 
-        // Private setter — Sets should never be replaced from outside the class
-        // since that would silently break all CollectionView bindings.
         public ObservableCollection<WorkoutSet> Sets { get; } = [];
 
         public string SetCountLabel => Sets.Count == 1 ? "1 set" : $"{Sets.Count} sets";
         public bool HasSets => Sets.Count > 0;
 
-        // Completion progress — drives the progress bar under each exercise header.
+        // ── Completion progress ───────────────────────────────────────────────
         public int CompletedSets => Sets.Count(s => s.IsCompleted);
         public int TotalSetCount => Sets.Count;
         public bool AllSetsCompleted => Sets.Count > 0 && Sets.All(s => s.IsCompleted);
-        // 0.0–1.0 for ProgressBar.Progress binding — no converter needed.
         public double CompletionProgress => Sets.Count == 0 ? 0 : (double)CompletedSets / Sets.Count;
 
-        // FIX 1+2: TotalReps and MaxWeight notify correctly.
         public int TotalReps { get; private set; }
         public double MaxWeight { get; private set; }
 
-        // Previous session data — populated asynchronously after group is created.
+        // ── Last session display ──────────────────────────────────────────────
         [ObservableProperty] private string _lastSessionSummary = string.Empty;
         [ObservableProperty] private bool _hasLastSession;
 
-        // Each entry is "Reps × Weight Unit" — shown as chips in the XAML.
         public ObservableCollection<string> LastSessionChips { get; } = [];
+
+        // ── Progressive overload suggestion ──────────────────────────────────
+        // Shown as a banner above the set table when we have enough history to
+        // make a meaningful recommendation. Empty string = hide the banner.
+        [ObservableProperty] private string _progressionSuggestion = string.Empty;
+        [ObservableProperty] private bool _hasProgressionSuggestion;
+        [ObservableProperty] private bool _progressionIsIncrease; // drives colour (green vs amber)
 
         /// <summary>
         /// Called by AddWorkoutViewModel once the previous session fetch completes.
-        /// Populates last-session chips and injects suggested weight placeholder
-        /// into each set row so the user knows what they hit last time.
+        /// Populates last-session chips, injects suggested weight placeholders,
+        /// and computes the progressive overload recommendation.
         /// </summary>
         public void SetLastSession(List<WorkoutSet> sets, string weightUnit)
         {
             LastSessionChips.Clear();
+            ProgressionSuggestion = string.Empty;
+            HasProgressionSuggestion = false;
 
             if (sets.Count == 0)
             {
@@ -64,31 +64,108 @@ namespace WorkoutTrackerV2.Models
 
             LastSessionSummary = $"Last session · {lastDate:MMM d}";
 
+            // ── Convert all last-session weights to current display unit ──────
+            double Convert(WorkoutSet s) =>
+                s.WeightUnit == weightUnit ? s.Weight
+                : s.WeightUnit == "lbs" ? s.Weight * 0.453592
+                                           : s.Weight / 0.453592;
+
+            var lastWeights = lastSets.Select(Convert).ToList();
+
+            // ── Populate chips and per-set placeholders ───────────────────────
             for (int i = 0; i < lastSets.Count; i++)
             {
-                var s = lastSets[i];
-                double w = s.WeightUnit == weightUnit
-                    ? s.Weight
-                    : s.WeightUnit == "lbs" ? s.Weight * 0.453592 : s.Weight / 0.453592;
-                LastSessionChips.Add($"{s.Reps} × {w:F0}");
-
-                // Inject into the matching live set row.
+                LastSessionChips.Add($"{lastSets[i].Reps} × {lastWeights[i]:F0}");
                 if (i < Sets.Count)
-                    Sets[i].SuggestedWeightPlaceholder = $"Last: {w:F0}";
+                    Sets[i].SuggestedWeightPlaceholder = $"Last: {lastWeights[i]:F0}";
             }
 
-            // Fill extra rows beyond what last session had.
-            if (lastSets.Count > 0)
+            // Fill any extra rows beyond what last session had.
+            if (lastWeights.Count > 0)
             {
-                var last = lastSets[^1];
-                double lastW = last.WeightUnit == weightUnit
-                    ? last.Weight
-                    : last.WeightUnit == "lbs" ? last.Weight * 0.453592 : last.Weight / 0.453592;
-                for (int i = lastSets.Count; i < Sets.Count; i++)
-                    Sets[i].SuggestedWeightPlaceholder = $"Last: {lastW:F0}";
+                var fill = $"Last: {lastWeights[^1]:F0}";
+                for (int i = lastWeights.Count; i < Sets.Count; i++)
+                    Sets[i].SuggestedWeightPlaceholder = fill;
             }
 
             HasLastSession = true;
+
+            // ── Progressive overload logic ────────────────────────────────────
+            ComputeProgressionSuggestion(lastSets, lastWeights, weightUnit);
+        }
+
+        private void ComputeProgressionSuggestion(
+            List<WorkoutSet> lastSets,
+            List<double> lastWeights,
+            string weightUnit)
+        {
+            if (lastSets.Count == 0) return;
+
+            // Determine increment based on muscle group and unit.
+            // Compound / leg movements: larger increment.
+            // Isolation / upper accessory: smaller increment.
+            bool isCompound = Exercise.MuscleGroup is "Legs" or "Back";
+            double increment = weightUnit == "kg"
+                ? (isCompound ? 2.5 : 1.25)
+                : (isCompound ? 5.0 : 2.5);
+
+            // Use the most common rep count as the inferred target.
+            int inferredTarget = lastSets
+                .GroupBy(s => s.Reps)
+                .OrderByDescending(g => g.Count())
+                .First().Key;
+
+            // Highest weight lifted last session (already converted to display unit).
+            double topWeight = lastWeights.Max();
+
+            // Count how many sets hit the inferred target at top weight.
+            int hitsAtTop = lastSets
+                .Where((s, i) => s.Reps >= inferredTarget && lastWeights[i] >= topWeight)
+                .Count();
+
+            int totalSetsAtTop = lastSets.Count(s => s.Reps > 0);
+
+            if (hitsAtTop >= totalSetsAtTop)
+            {
+                // All sets hit target — ready to progress.
+                double suggested = topWeight + increment;
+                string unit = weightUnit;
+                ProgressionSuggestion = $"↑ Ready to progress — try {suggested:F1} {unit} today";
+                HasProgressionSuggestion = true;
+                ProgressionIsIncrease = true;
+
+                // Update weight placeholders to the suggested target.
+                var hint = $"→ {suggested:F1} {unit}";
+                foreach (var s in Sets)
+                    s.SuggestedWeightPlaceholder = hint;
+            }
+            else if (hitsAtTop > 0)
+            {
+                // Partial — consolidate at current weight.
+                ProgressionSuggestion = $"→ Consolidate at {topWeight:F0} {weightUnit} — match all sets first";
+                HasProgressionSuggestion = true;
+                ProgressionIsIncrease = false;
+            }
+            // If hitsAtTop == 0 (missed target on all sets), no suggestion shown —
+            // the last-session chips already tell the story.
+        }
+
+        // Called by AddSet when a new set is added after history already loaded,
+        // so the new row also gets the correct placeholder.
+        public void ApplyPlaceholderToLastSet()
+        {
+            if (Sets.Count == 0) return;
+            var last = Sets[^1];
+            if (!string.IsNullOrEmpty(ProgressionSuggestion) && ProgressionIsIncrease)
+            {
+                // Carry the suggested-weight hint to the new row.
+                var first = Sets.Count > 1 ? Sets[0].SuggestedWeightPlaceholder : string.Empty;
+                last.SuggestedWeightPlaceholder = first;
+            }
+            else if (Sets.Count > 1)
+            {
+                last.SuggestedWeightPlaceholder = Sets[^2].SuggestedWeightPlaceholder;
+            }
         }
 
         public void AddSet(string? weightUnit = null, Action<WorkoutSet>? onDeleted = null)
@@ -109,19 +186,18 @@ namespace WorkoutTrackerV2.Models
                 onDeleted?.Invoke(set);
             });
 
-            // ToggleCompletedCommand: flip IsCompleted + auto-start rest timer
-            // when completing (not un-completing). CommandParameter = muscle group
-            // so the rest timer service picks the right default duration.
-            set.ToggleCompletedCommand = new RelayCommand<string>(muscleGroup =>
+            set.ToggleCompletedCommand = new RelayCommand<string>(_ =>
             {
                 set.IsCompleted = !set.IsCompleted;
                 NotifyCompletionStats();
-                if (set.IsCompleted)
-                    StartRestTimerAction?.Invoke(muscleGroup ?? Exercise.MuscleGroup);
             });
 
             Sets.Add(set);
             NotifySetStats();
+
+            // If history is already loaded, propagate the placeholder to the new row.
+            if (HasLastSession)
+                ApplyPlaceholderToLastSet();
         }
 
         public void RemoveSet(WorkoutSet set)
@@ -152,7 +228,6 @@ namespace WorkoutTrackerV2.Models
             NotifyCompletionStats();
         }
 
-        // Raised whenever a set is checked/unchecked or the set count changes.
         private void NotifyCompletionStats()
         {
             OnPropertyChanged(nameof(CompletedSets));

@@ -195,6 +195,42 @@
                                             </FlexLayout>
                                         </StackLayout>
 
+                                        <!-- Progressive overload suggestion banner.
+                                             Green = ready to increase weight.
+                                             Amber = consolidate at current weight.
+                                             Hidden when there is no recommendation.  -->
+                                        <Border IsVisible="{Binding HasProgressionSuggestion}"
+                                                StrokeThickness="0"
+                                                Padding="10,7"
+                                                Margin="16,4,16,0">
+                                            <Border.StrokeShape>
+                                                <RoundRectangle CornerRadius="8"/>
+                                            </Border.StrokeShape>
+                                            <Border.Triggers>
+                                                <DataTrigger TargetType="Border"
+                                                             Binding="{Binding ProgressionIsIncrease}" Value="True">
+                                                    <Setter Property="BackgroundColor" Value="#F1FFF4"/>
+                                                </DataTrigger>
+                                                <DataTrigger TargetType="Border"
+                                                             Binding="{Binding ProgressionIsIncrease}" Value="False">
+                                                    <Setter Property="BackgroundColor" Value="#FFFBF0"/>
+                                                </DataTrigger>
+                                            </Border.Triggers>
+                                            <Label Text="{Binding ProgressionSuggestion}"
+                                                   FontSize="11" FontAttributes="Bold">
+                                                <Label.Triggers>
+                                                    <DataTrigger TargetType="Label"
+                                                                 Binding="{Binding ProgressionIsIncrease}" Value="True">
+                                                        <Setter Property="TextColor" Value="#2E7D32"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger TargetType="Label"
+                                                                 Binding="{Binding ProgressionIsIncrease}" Value="False">
+                                                        <Setter Property="TextColor" Value="#F57F17"/>
+                                                    </DataTrigger>
+                                                </Label.Triggers>
+                                            </Label>
+                                        </Border>
+
                                         <!-- Set completion progress bar -->
                                         <Grid ColumnDefinitions="*,Auto" Margin="16,4,16,0"
                                               IsVisible="{Binding HasSets}">
