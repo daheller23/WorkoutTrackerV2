@@ -319,20 +319,16 @@ namespace WorkoutTrackerV2.ViewModels
                     }))
                     .ToList();
 
-                // Detect PRs before resetting form (ExerciseGroups still populated).
-                // Run concurrently with the DB save — both are independent.
                 var saveTask = workoutService.SaveAllSetsAsync(workoutSets);
                 var newPr = DetectWeightPr(workoutSets);
                 await saveTask;
 
-                ResetForm();
+                // Set the static field BEFORE navigation so HomeView.OnAppearing
+                // reads it synchronously — no QueryProperty timing race possible.
+                HomeViewModel.PendingPrMessage = newPr ?? string.Empty;
 
-                // Navigate immediately — no waiting for anything else.
-                var navParams = new Dictionary<string, object>
-                {
-                    { "PrMessage", newPr ?? string.Empty }
-                };
-                await Shell.Current.GoToAsync(Routes.Home, navParams);
+                ResetForm();
+                await Shell.Current.GoToAsync(Routes.Home);
             }
             catch (Exception ex)
             {
@@ -501,7 +497,7 @@ namespace WorkoutTrackerV2.ViewModels
                     var name = group?.Exercise.Name ?? "exercise";
                     var unit = group?.Sets.FirstOrDefault()?.WeightUnit
                                 ?? settingsService.WeightUnit;
-                    message = $"New PR on {name}! 🏆 {max:F0} {unit}";
+                    message = $"New PR on {name}! 🏆 { max: F0} { unit}";
                     // Report the first PR found — don't stack messages.
                     break;
                 }

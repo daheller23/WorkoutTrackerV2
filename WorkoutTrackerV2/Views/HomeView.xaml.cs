@@ -5,69 +5,61 @@ namespace WorkoutTrackerV2.Views;
 
 public partial class HomeView : ContentPage
 {
-    private ConfettiView? _confettiView;
+    private ConfettiView? _confetti;
 
     public HomeView(HomeViewModel vm)
     {
         InitializeComponent();
         BindingContext = vm;
-
-        _confettiView = this.FindByName<ConfettiView>("ConfettiCanvas");
-
-        vm.PropertyChanged += (_, e) =>
-        {
-            if (e.PropertyName != nameof(HomeViewModel.IsPrVisible)) return;
-            if (vm.IsPrVisible)
-                _ = AnimatePrBannerIn(vm);
-            else
-                ResetPrBanner();
-        };
+        _confetti = this.FindByName<ConfettiView>("ConfettiCanvas");
     }
 
     protected override void OnAppearing()
     {
         base.OnAppearing();
-        if (BindingContext is HomeViewModel vm)
-            _ = OnAppearingAsync(vm);
+
+        if (BindingContext is not HomeViewModel vm) return;
+
+        // Read the static PR message synchronously — set by AddWorkoutViewModel
+        // before GoToAsync so it is always populated when OnAppearing fires.
+        // No QueryProperty, no PropertyChanged, no timing race.
+        var pr = HomeViewModel.PendingPrMessage;
+        HomeViewModel.PendingPrMessage = string.Empty; // consume immediately
+
+        _ = vm.LoadDataCommand.ExecuteAsync(null);
+
+        if (!string.IsNullOrEmpty(pr))
+            _ = ShowPrBannerAsync(pr);
     }
 
-    private async Task OnAppearingAsync(HomeViewModel vm)
+    private async Task ShowPrBannerAsync(string message)
     {
-        // Fire data load and PR check simultaneously — don't wait for data
-        // before showing the celebration. The PR banner appears instantly
-        // while the home stats load in the background.
-        var loadTask = vm.LoadDataCommand.ExecuteAsync(null);
+        // Set the label text directly — no binding needed
+        PrMessageLabel.Text = message;
 
-        if (!string.IsNullOrEmpty(vm.PrMessage))
-            vm.IsPrVisible = true;
-
-        await loadTask;
-    }
-
-    private void ResetPrBanner()
-    {
-        PrBanner.TranslationY = -120;
+        // Show overlay and reset banner position
+        PrOverlay.IsVisible = true;
+        PrBanner.IsVisible = true;
         PrBanner.Opacity = 0;
-    }
+        PrBanner.TranslationY = -160;
 
-    private async Task AnimatePrBannerIn(HomeViewModel vm)
-    {
-        PrBanner.TranslationY = -120;
-        PrBanner.Opacity = 0;
+        // Start confetti
+        _confetti?.Start();
 
-        _confettiView?.Start();
-
+        // Spring slide down + fade in
         await Task.WhenAll(
             PrBanner.TranslateToAsync(0, 0, 320, Easing.SpringOut),
             PrBanner.FadeToAsync(1, 200, Easing.Linear)
         );
 
-        await Task.Delay(5000);
+        // Hold for 2 seconds
+        await Task.Delay(2000);
+
+        // Fade out
         await PrBanner.FadeToAsync(0, 400, Easing.Linear);
 
-        // Reset VM state and clear the message so it doesn't re-trigger on
-        // the next OnAppearing.
-        vm.IsPrVisible = false;
-        vm.PrMessage = string.Empty;
+        // Hide everything
+        PrBanner.IsVisible = false;
+        PrOverlay.IsVisible = false;
     }
 }

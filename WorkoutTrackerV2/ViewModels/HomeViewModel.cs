@@ -6,7 +6,6 @@ using WorkoutTrackerV2.Services;
 
 namespace WorkoutTrackerV2.ViewModels
 {
-    [QueryProperty(nameof(PrMessage), "PrMessage")]
     public partial class HomeViewModel(
         IWorkoutService workoutService,
         IAnalyticsService analyticsService) : BaseViewModel
@@ -26,14 +25,12 @@ namespace WorkoutTrackerV2.ViewModels
         [ObservableProperty] private int _setsThisWeek;
         [ObservableProperty] private double _volumeThisWeek;
         [ObservableProperty] private string _mostTrainedMuscleGroupColor = "#1F77F0";
-
-        // PR celebration — set via QueryProperty when navigating from SaveWorkout.
-        [ObservableProperty] private string _prMessage = string.Empty;
-        [ObservableProperty] private bool _isPrVisible;
         #endregion
 
-        // IsPrVisible is set from HomeView.OnAppearing after LoadData completes
-        // so the celebration fires once the page content is fully rendered.
+        // PR message set via static field from AddWorkoutViewModel before navigation.
+        // Static survives the singleton lifetime — read once in HomeView.OnAppearing
+        // then cleared. No QueryProperty, no PropertyChanged, no timing races.
+        public static string PendingPrMessage { get; set; } = string.Empty;
 
         #region "LOAD DATA"
         [RelayCommand]
@@ -44,7 +41,6 @@ namespace WorkoutTrackerV2.ViewModels
             {
                 IsLoading = true;
 
-                // Fire all independent DB queries concurrently.
                 var totalWorkoutsTask = workoutService.GetTotalWorkoutCountAsync();
                 var currentStreakTask = analyticsService.GetCurrentStreak();
                 var lastWorkoutDateTask = workoutService.GetLastWorkoutDateAsync();
@@ -62,31 +58,20 @@ namespace WorkoutTrackerV2.ViewModels
                 AverageDuration = averageDurationTask.Result;
 
                 var allSessions = allSessionsTask.Result;
-                // FIX: Build exercise lookup once here and pass it down so
-                // LoadMostTrainedMuscleGroup doesn't repeat the full table fetch.
                 var exerciseDict = allExercisesTask.Result.ToDictionary(e => e.Id);
 
-                // Last workout shown in its own card.
                 LastWorkoutSession = allSessions.FirstOrDefault();
 
-                // Next 3 sessions shown in the Recent Activity list.
-                // FIX: Replace Clear()+foreach with a single collection swap to
-                // fire one CollectionChanged notification instead of N+1.
                 var recent = allSessions.Skip(1).Take(3).ToList();
                 RecentSessions = new ObservableCollection<WorkoutSession>(recent);
 
-                // Calculate week boundaries once and reuse across both stat blocks.
                 var today = DateTime.Today;
-                var calWeekStart = today.AddDays(-(int)today.DayOfWeek);   // Sun–Sat week
-                var rollingWeekStart = today.AddDays(-7);                   // rolling 7 days
+                var calWeekStart = today.AddDays(-(int)today.DayOfWeek);
+                var rollingWeekStart = today.AddDays(-7);
 
-                // Identify sessions in each window.
                 var calWeekSessions = allSessions.Where(s => s.Date >= calWeekStart).ToList();
                 var rollingWeekSessions = allSessions.Where(s => s.Date >= rollingWeekStart).ToList();
 
-                // FIX: Fetch sets for the UNION of both windows in one fan-out so
-                // sessions that fall in both ranges are only fetched once.
-                // Use a HashSet to deduplicate session Ids across both windows.
                 var allRelevantIds = calWeekSessions
                     .Select(s => s.Id)
                     .Union(rollingWeekSessions.Select(s => s.Id))
@@ -96,19 +81,13 @@ namespace WorkoutTrackerV2.ViewModels
                     .Where(s => allRelevantIds.Contains(s.Id))
                     .ToList();
 
-                var setTasks = allRelevantSessions
-                    .Select(s => workoutService.GetSetsForSessionAsync(s.Id))
-                    .ToList();
+                var setTasks = allRelevantSessions.Select(s => workoutService.GetSetsForSessionAsync(s.Id)).ToList();
                 var allSetsArrays = await Task.WhenAll(setTasks);
 
-                // Build a per-session lookup so we can slice by window without re-fetching.
-                // Explicitly typed to IEnumerable<WorkoutSet> so the dictionary is compatible
-                // regardless of whether GetSetsForSessionAsync returns List, Array, or IEnumerable.
                 var setsBySessionId = allRelevantSessions
                     .Zip(allSetsArrays, (session, sets) => (session.Id, sets))
                     .ToDictionary(x => x.Id, x => (IEnumerable<WorkoutSet>)x.sets);
 
-                // ── This week stats (calendar week) ──────────────────────────
                 var calWeekSets = calWeekSessions
                     .Where(s => setsBySessionId.ContainsKey(s.Id))
                     .SelectMany(s => setsBySessionId[s.Id])
@@ -118,10 +97,7 @@ namespace WorkoutTrackerV2.ViewModels
                 SetsThisWeek = calWeekSets.Count;
                 VolumeThisWeek = calWeekSets.Sum(s => s.Weight * s.Reps);
 
-                // ── Most trained muscle group (rolling 7 days) ────────────────
                 ComputeMostTrainedMuscleGroup(rollingWeekSessions, setsBySessionId, exerciseDict);
-
-                // ── Motivational message (pure CPU, no await needed) ──────────
                 SetMotivationalMessage();
             }
             catch (Exception ex)
@@ -136,9 +112,6 @@ namespace WorkoutTrackerV2.ViewModels
         #endregion
 
         #region "MOST TRAINED MUSCLE GROUP"
-        // FIX: Now synchronous — all data is pre-fetched in LoadData.
-        // No longer triggers a second GetAllExercisesAsync call or its own
-        // GetSetsForSessionAsync fan-out.
         private void ComputeMostTrainedMuscleGroup(
             List<WorkoutSession> sessions,
             Dictionary<int, IEnumerable<WorkoutSet>> setsBySessionId,
@@ -146,22 +119,14 @@ namespace WorkoutTrackerV2.ViewModels
         {
             try
             {
-                if (sessions.Count == 0)
-                {
-                    MostTrainedMuscleGroup = string.Empty;
-                    return;
-                }
+                if (sessions.Count == 0) { MostTrainedMuscleGroup = string.Empty; return; }
 
                 var flatSets = sessions
                     .Where(s => setsBySessionId.ContainsKey(s.Id))
                     .SelectMany(s => setsBySessionId[s.Id])
                     .ToList();
 
-                if (flatSets.Count == 0)
-                {
-                    MostTrainedMuscleGroup = string.Empty;
-                    return;
-                }
+                if (flatSets.Count == 0) { MostTrainedMuscleGroup = string.Empty; return; }
 
                 var topGroup = flatSets
                     .Where(s => exerciseDict.ContainsKey(s.ExerciseId))
@@ -170,7 +135,6 @@ namespace WorkoutTrackerV2.ViewModels
                     .FirstOrDefault()?.Key ?? string.Empty;
 
                 MostTrainedMuscleGroup = topGroup;
-
                 MostTrainedMuscleGroupColor = topGroup switch
                 {
                     "Chest" => "#4A90D9",
@@ -182,10 +146,7 @@ namespace WorkoutTrackerV2.ViewModels
                     _ => "#1F77F0"
                 };
             }
-            catch
-            {
-                MostTrainedMuscleGroup = string.Empty;
-            }
+            catch { MostTrainedMuscleGroup = string.Empty; }
         }
         #endregion
 
@@ -200,31 +161,28 @@ namespace WorkoutTrackerV2.ViewModels
             var hour = DateTime.Now.Hour;
             var timeGreeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
 
-            // FIX: Assign both message properties in one logical block.
-            // Each assignment fires a property-changed notification; grouping them
-            // here makes the intent clear and keeps the UI update atomic.
             (MotivationalMessage, MotivationalSubMessage) = daysSinceLastWorkout switch
             {
-                0 => ("Great work today! 🔥",
-                      "You already crushed a session. Rest up or go again!"),
-                1 => ($"{timeGreeting}! Ready to go? 💪",
-                      "Yesterday's session was great. Keep the momentum going!"),
-                2 => ("Time to get back at it! 🏋️",
-                      "It's been 2 days. Your muscles are rested and ready."),
-                <= 5 => ("Don't break the habit! ⚡",
+                0 => ("Great work today! \U0001f525",
+                         "You already crushed a session. Rest up or go again!"),
+                1 => ($"{timeGreeting}! Ready to go? \U0001f4aa",
+                         "Yesterday's session was great. Keep the momentum going!"),
+                2 => ("Time to get back at it! \U0001f3cb\ufe0f",
+                         "It's been 2 days. Your muscles are rested and ready."),
+                <= 5 => ("Don't break the habit! \u26a1",
                          $"{daysSinceLastWorkout} days since your last session. Let's go!"),
                 _ when TotalWorkouts == 0
-                      => ("Welcome! Let's get started 🚀",
-                          "Log your first workout to start tracking your progress."),
-                _ => ("Welcome back! 👋",
-                          "It's been a while. Every session counts — let's go!")
+                     => ("Welcome! Let's get started \U0001f680",
+                         "Log your first workout to start tracking your progress."),
+                _ => ("Welcome back! \U0001f44b",
+                         "It's been a while. Every session counts \u2014 let's go!")
             };
 
             StreakSubtitle = CurrentStreak switch
             {
                 0 => "Start your streak today",
-                1 => "1 day — keep it going!",
-                >= 7 => $"{CurrentStreak} days — you're on fire! 🔥",
+                1 => "1 day \u2014 keep it going!",
+                >= 7 => $"{CurrentStreak} days \u2014 you're on fire! \U0001f525",
                 _ => $"{CurrentStreak} days in a row"
             };
         }
