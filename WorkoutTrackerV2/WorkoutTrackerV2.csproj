@@ -106,6 +106,9 @@
 		<MauiXaml Update="Views\TemplatePickerView.xaml">
 		  <Generator>MSBuild:Compile</Generator>
 		</MauiXaml>
+		<MauiXaml Update="Views\WeightConverterView.xaml">
+		  <Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
 		<MauiXaml Update="Views\WorkoutDetailView.xaml">
 			<Generator>MSBuild:Compile</Generator>
 		</MauiXaml>

@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.Input;
 using System.Collections.ObjectModel;
 using WorkoutTrackerV2.Models;
 using WorkoutTrackerV2.Services;
+using WorkoutTrackerV2.Views;
 
 namespace WorkoutTrackerV2.ViewModels
 {
@@ -219,6 +220,9 @@ namespace WorkoutTrackerV2.ViewModels
 
         [RelayCommand]
         private static Task ViewOneRepMaxCalculator() => Shell.Current.GoToAsync(Routes.OneRmCalculator);
+
+        [RelayCommand]
+        private static Task ViewWeightConverter() => Shell.Current.GoToAsync(Routes.WeightConverterCalculator);
         #endregion
     }
 }
