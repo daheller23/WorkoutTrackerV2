@@ -216,6 +216,9 @@ namespace WorkoutTrackerV2.ViewModels
 
         [RelayCommand]
         private static Task ViewPlateCalculator() => Shell.Current.GoToAsync(Routes.PlateCalculator);
+
+        [RelayCommand]
+        private static Task ViewOneRepMaxCalculator() => Shell.Current.GoToAsync(Routes.OneRmCalculator);
         #endregion
     }
 }

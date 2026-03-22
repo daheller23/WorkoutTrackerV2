@@ -21,6 +21,7 @@ namespace WorkoutTrackerV2
         public const string CreateExercise = "createexercise";
         public const string BodyWeight = "bodyweight";
         public const string PlateCalculator = "platecalculator";
+        public const string OneRmCalculator = "onerepmaxcalculator";
         public const string Back = "..";
     }
 }

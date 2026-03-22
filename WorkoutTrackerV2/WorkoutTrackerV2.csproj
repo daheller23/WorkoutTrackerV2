@@ -91,6 +91,9 @@
 		<MauiXaml Update="Views\MuscleGroupProgressView.xaml">
 		  <Generator>MSBuild:Compile</Generator>
 		</MauiXaml>
+		<MauiXaml Update="Views\OneRepMaxCalculatorView.xaml">
+		  <Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
 		<MauiXaml Update="Views\PersonalRecordsView.xaml">
 		  <Generator>MSBuild:Compile</Generator>
 		</MauiXaml>

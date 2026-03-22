@@ -24,6 +24,7 @@ namespace WorkoutTrackerV2
             Routing.RegisterRoute(Routes.CreateExercise, typeof(CreateExerciseView));
             Routing.RegisterRoute(Routes.BodyWeight, typeof(BodyWeightView));
             Routing.RegisterRoute(Routes.PlateCalculator, typeof(PlateCalculatorView));
+            Routing.RegisterRoute(Routes.OneRmCalculator, typeof(OneRepMaxCalculatorView));
         }
     }
 }

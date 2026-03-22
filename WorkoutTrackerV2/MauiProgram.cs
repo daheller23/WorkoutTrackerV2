@@ -115,6 +115,9 @@ namespace WorkoutTrackerV2
             s.AddTransient<PlateCalculatorViewModel>();
             s.AddTransient<PlateCalculatorView>();
 
+            s.AddTransient<OneRepMaxCalculatorViewModel>();
+            s.AddTransient<OneRepMaxCalculatorView>();
+
             return builder.Build();
         }
     }
