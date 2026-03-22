@@ -367,11 +367,6 @@ namespace WorkoutTrackerV2.ViewModels
         }
         #endregion
 
-        #region "VIEW SETTINGS"
-        [RelayCommand]
-        private static Task ViewSettings() => Shell.Current.GoToAsync(Routes.Settings);
-        #endregion
-
         #region "LOAD FROM TEMPLATE SETS"
         [RelayCommand]
         private async Task LoadFromTemplateSets((WorkoutTemplate template, List<WorkoutTemplateSet> sets) args)

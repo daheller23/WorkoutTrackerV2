@@ -29,7 +29,7 @@
                     Command="{Binding GoBackCommand}"
                     BackgroundColor="Transparent" TextColor="#1F77F0"
                     FontSize="14" Padding="0" HorizontalOptions="Start"/>
-            <Label Text="🏆 Personal Records"
+            <Label Text="Personal Records"
                    FontSize="32" FontAttributes="Bold"
                    TextColor="#1F77F0" CharacterSpacing="0.5"/>
             <Label Text="Your best lifts of all time"
@@ -91,7 +91,7 @@
                 <!-- ── Records List ───────────────────────────────────────── -->
                 <CollectionView ItemsSource="{Binding Records}" SelectionMode="None">
                     <CollectionView.EmptyView>
-                        <StackLayout Padding="40,80" Spacing="16" HorizontalOptions="Center">
+                        <StackLayout Padding="40,80" Spacing="16" HorizontalOptions="Center" VerticalOptions="Center">
                             <Label Text="🏆" FontSize="48" HorizontalOptions="Center"/>
                             <Label Text="No personal records yet"
                                    FontSize="16" FontAttributes="Bold" TextColor="#999999"

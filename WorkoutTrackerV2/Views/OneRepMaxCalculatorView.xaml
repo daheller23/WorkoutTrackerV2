@@ -20,7 +20,7 @@
                     Command="{Binding GoBackCommand}"
                     BackgroundColor="Transparent" TextColor="#1F77F0"
                     FontSize="14" Padding="0" HorizontalOptions="Start"/>
-            <Label Text="🏆 1RM Calculator"
+            <Label Text="1RM Calculator"
                    FontSize="32" FontAttributes="Bold"
                    TextColor="#1F77F0" CharacterSpacing="0.5"/>
             <Label Text="Estimate your one-rep max"

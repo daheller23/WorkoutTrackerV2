@@ -30,7 +30,7 @@
                     FontSize="14" Padding="0" HorizontalOptions="Start"/>
             <Grid ColumnDefinitions="*,Auto">
                 <StackLayout Grid.Column="0" Spacing="2">
-                    <Label Text="⚖️ Body Weight"
+                    <Label Text="Body Weight"
                            FontSize="32" FontAttributes="Bold"
                            TextColor="#1F77F0" CharacterSpacing="0.5"/>
                     <Label Text="Track your progress over time"

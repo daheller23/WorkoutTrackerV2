@@ -20,7 +20,7 @@
                     Command="{Binding GoBackCommand}"
                     BackgroundColor="Transparent" TextColor="#1F77F0"
                     FontSize="14" Padding="0" HorizontalOptions="Start"/>
-            <Label Text="🏋️ Plate Calculator"
+            <Label Text="Plate Calculator"
                    FontSize="32" FontAttributes="Bold"
                    TextColor="#1F77F0" CharacterSpacing="0.5"/>
             <Label Text="How to load the bar for any weight"

@@ -27,7 +27,7 @@
             <!-- ── Header ───────────────────────────────────────────────────── -->
             <Grid BackgroundColor="#FFFFFF" Padding="24,16,24,24" ColumnDefinitions="*,Auto">
                 <StackLayout Grid.Column="0" Spacing="4">
-                    <Label Text="&#x1F4AA; Workouts"
+                    <Label Text="Replify"
                        FontSize="32"
                        FontAttributes="Bold"
                        TextColor="#1F77F0"
