@@ -344,7 +344,15 @@ namespace WorkoutTrackerV2.ViewModels
 
         #region "CLEAR"
         [RelayCommand]
-        private void Clear() => ResetForm();
+        private async Task Clear()
+        {
+            bool confirmed = await Shell.Current.DisplayAlertAsync("Clear Workout Session", "Are you sure you want to clear this workout session?", "Yes", "No");
+            if (!confirmed)
+            {
+                return;
+            }               
+            ResetForm();
+        }
         #endregion
 
         #region "CLEAR SELECTED EXERCISE"
