@@ -14,6 +14,7 @@
 		<AndroidEnableProfiledAot>false</AndroidEnableProfiledAot>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 		<NoWarn>MVVMTK0045</NoWarn>
+		<MauiEnableXalmCBindingWithSourceCompilation>true</MauiEnableXalmCBindingWithSourceCompilation>
 
 		<!-- Display name -->
 		<ApplicationTitle>Replify</ApplicationTitle>
