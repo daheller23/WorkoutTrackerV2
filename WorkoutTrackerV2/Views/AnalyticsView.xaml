@@ -7,15 +7,9 @@
              xmlns:models="clr-namespace:WorkoutTrackerV2.Models"
              xmlns:controls="clr-namespace:WorkoutTrackerV2.Controls"
              x:DataType="vm:AnalyticsViewModel"
-             BackgroundColor="#FAFAFA">
+             BackgroundColor="#F4F5F7">
 
     <ContentPage.Resources>
-        <!--
-            FIX 8: DaysToColorConverter and DaysToTextColorConverter removed.
-            Time period pills now use DataTriggers on IsSelected — zero converter
-            invocations per tap instead of 2 × 6 = 12.
-            BoolToTrendConverter and IsNotEmptyConverter retained — no alternative.
-        -->
         <converters:BoolToTrendConverter x:Key="BoolToTrendConverter"/>
         <converters:IsNotEmptyConverter x:Key="IsNotEmptyConverter"/>
     </ContentPage.Resources>
@@ -24,298 +18,305 @@
 
     <Grid RowDefinitions="Auto,*" RowSpacing="0">
 
-        <!-- ── Header ─────────────────────────────────────────────────────── -->
-        <StackLayout Grid.Row="0" BackgroundColor="#FFFFFF" Padding="24,16,24,24" Spacing="4">
-            <Label Text="Analytics"
-                   FontSize="32" FontAttributes="Bold"
-                   TextColor="#1F77F0" CharacterSpacing="0.5"/>
-            <Label Text="Track your progress over time"
-                   FontSize="13" TextColor="#999999"/>
-        </StackLayout>
+        <Border Grid.Row="0" BackgroundColor="#FFFFFF" StrokeThickness="0" ZIndex="1">
+            <Border.Shadow>
+                <Shadow Brush="#000000" Offset="0,4" Radius="12" Opacity="0.04" />
+            </Border.Shadow>
+            <VerticalStackLayout Padding="24,16,24,20" Spacing="24">
 
-        <ScrollView Grid.Row="1">
-            <StackLayout Padding="20,24" Spacing="24">
+                <VerticalStackLayout Spacing="2">
+                    <Label Text="Analytics"
+                           FontSize="32" FontAttributes="Bold"
+                           TextColor="#1A1A1A" CharacterSpacing="0.5"/>
+                    <Label Text="Track your progress over time" FontSize="14" TextColor="#737373"/>
+                </VerticalStackLayout>
 
-                <!-- ── Time Period Pills ──────────────────────────────────────
-                     FIX 8: BindableLayout over TimePeriodPills replaces 6 hard-coded
-                     Border elements each running 2 converters. DataTriggers on
-                     IsSelected handle colour with zero converter overhead.
-                     FIX: CommandParameter changed from string to int — SetTimePeriod
-                     now accepts int directly so no TryParse needed in the ViewModel. -->
-                <StackLayout Spacing="10">
-                    <Label Text="TIME PERIOD"
-                           FontSize="11" FontAttributes="Bold"
-                           TextColor="#999999" CharacterSpacing="1"/>
-                    <!-- BindableLayout requires a Layout panel as host — FlexLayout
-                         distributes pills horizontally with equal spacing.           -->
-                    <FlexLayout Direction="Row"
-                                JustifyContent="SpaceBetween"
-                                AlignItems="Center"
-                                BindableLayout.ItemsSource="{Binding TimePeriodPills}">
-                        <BindableLayout.ItemTemplate>
-                            <DataTemplate x:DataType="vm:TimePeriodPillViewModel">
-                                <Border StrokeThickness="0" Padding="0">
-                                    <Border.StrokeShape>
-                                        <RoundRectangle CornerRadius="20"/>
-                                    </Border.StrokeShape>
-                                    <Border.Triggers>
-                                        <DataTrigger TargetType="Border" Binding="{Binding IsSelected}" Value="True">
-                                            <Setter Property="BackgroundColor" Value="#1F77F0"/>
-                                        </DataTrigger>
-                                        <DataTrigger TargetType="Border" Binding="{Binding IsSelected}" Value="False">
-                                            <Setter Property="BackgroundColor" Value="#EEEEEE"/>
-                                        </DataTrigger>
-                                    </Border.Triggers>
-                                    <Border.GestureRecognizers>
-                                        <TapGestureRecognizer
-                                            Command="{Binding Source={RelativeSource AncestorType={x:Type vm:AnalyticsViewModel}}, Path=SetTimePeriodCommand}"
-                                            CommandParameter="{Binding DaysString}"/>
-                                    </Border.GestureRecognizers>
-                                    <Label Text="{Binding Label}"
-                                           FontSize="11" FontAttributes="Bold"
-                                           HorizontalOptions="Center"
-                                           Padding="14,8">
-                                        <Label.Triggers>
-                                            <DataTrigger TargetType="Label" Binding="{Binding IsSelected}" Value="True">
-                                                <Setter Property="TextColor" Value="#FFFFFF"/>
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="TIME PERIOD" FontSize="11" FontAttributes="Bold" TextColor="#A3A3A3" CharacterSpacing="1"/>
+                    <Border BackgroundColor="#F4F5F7" StrokeThickness="0" Padding="2">
+                        <Border.StrokeShape>
+                            <RoundRectangle CornerRadius="10"/>
+                        </Border.StrokeShape>
+                        <FlexLayout Direction="Row" JustifyContent="SpaceBetween" AlignItems="Center" BindableLayout.ItemsSource="{Binding TimePeriodPills}">
+                            <BindableLayout.ItemTemplate>
+                                <DataTemplate x:DataType="vm:TimePeriodPillViewModel">
+                                    <Border StrokeThickness="0" Padding="0" FlexLayout.Grow="1" Margin="2">
+                                        <Border.StrokeShape>
+                                            <RoundRectangle CornerRadius="8"/>
+                                        </Border.StrokeShape>
+                                        <Border.Triggers>
+                                            <DataTrigger TargetType="Border" Binding="{Binding IsSelected}" Value="True">
+                                                <Setter Property="BackgroundColor" Value="#FFFFFF"/>
+                                                <Setter Property="Shadow">
+                                                    <Setter.Value>
+                                                        <Shadow Brush="#000000" Offset="0,2" Radius="4" Opacity="0.05"/>
+                                                    </Setter.Value>
+                                                </Setter>
                                             </DataTrigger>
-                                            <DataTrigger TargetType="Label" Binding="{Binding IsSelected}" Value="False">
-                                                <Setter Property="TextColor" Value="#666666"/>
+                                            <DataTrigger TargetType="Border" Binding="{Binding IsSelected}" Value="False">
+                                                <Setter Property="BackgroundColor" Value="Transparent"/>
                                             </DataTrigger>
-                                        </Label.Triggers>
-                                    </Label>
-                                </Border>
-                            </DataTemplate>
-                        </BindableLayout.ItemTemplate>
-                    </FlexLayout>
-                </StackLayout>
+                                        </Border.Triggers>
+                                        <Border.GestureRecognizers>
+                                            <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type vm:AnalyticsViewModel}}, Path=SetTimePeriodCommand}" CommandParameter="{Binding DaysString}"/>
+                                        </Border.GestureRecognizers>
+                                        <Label Text="{Binding Label}" FontSize="13" FontAttributes="Bold" HorizontalOptions="Center" Padding="0,10">
+                                            <Label.Triggers>
+                                                <DataTrigger TargetType="Label" Binding="{Binding IsSelected}" Value="True">
+                                                    <Setter Property="TextColor" Value="#1A1A1A"/>
+                                                </DataTrigger>
+                                                <DataTrigger TargetType="Label" Binding="{Binding IsSelected}" Value="False">
+                                                    <Setter Property="TextColor" Value="#A3A3A3"/>
+                                                </DataTrigger>
+                                            </Label.Triggers>
+                                        </Label>
+                                    </Border>
+                                </DataTemplate>
+                            </BindableLayout.ItemTemplate>
+                        </FlexLayout>
+                    </Border>
+                </VerticalStackLayout>
+            </VerticalStackLayout>
+        </Border>
 
-                <!-- ── Summary Stats ─────────────────────────────────────────── -->
-                <StackLayout Spacing="10">
-                    <Label Text="OVERVIEW"
-                           FontSize="11" FontAttributes="Bold"
-                           TextColor="#999999" CharacterSpacing="1"/>
-                    <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto"
-                          ColumnSpacing="12" RowSpacing="12">
-                        <StackLayout Grid.Row="0" Grid.Column="0" BackgroundColor="#1F77F0" Padding="16,16,16,12" Spacing="4">
-                            <Label Text="VOLUME" FontSize="10" TextColor="#FFFFFF" FontAttributes="Bold" CharacterSpacing="1" Opacity="0.8"/>
-                            <Label Text="{Binding TotalVolumeLifted, StringFormat='{0:F0}'}" FontSize="28" FontAttributes="Bold" TextColor="#FFFFFF"/>
-                            <Label Text="{Binding WeightUnitLabel, StringFormat='total {0} lifted'}" FontSize="10" TextColor="#FFFFFF" Opacity="0.8"/>
-                            <controls:SparklineView Data="{Binding VolumeSparkline}" LineColor="#FFFFFF" BackgroundColorHex="#1F77F0" HeightRequest="44" Margin="0,4,0,0"/>
-                        </StackLayout>
-                        <StackLayout Grid.Row="0" Grid.Column="1" BackgroundColor="#4CAF50" Padding="16,16,16,12" Spacing="4">
-                            <Label Text="AVG VOLUME" FontSize="10" TextColor="#FFFFFF" FontAttributes="Bold" CharacterSpacing="1" Opacity="0.8"/>
-                            <Label Text="{Binding AverageVolume, StringFormat='{0:F0}'}" FontSize="28" FontAttributes="Bold" TextColor="#FFFFFF"/>
-                            <Label Text="per workout" FontSize="10" TextColor="#FFFFFF" Opacity="0.8"/>
-                            <controls:SparklineView Data="{Binding AvgVolumeSparkline}" LineColor="#FFFFFF" BackgroundColorHex="#4CAF50" HeightRequest="44" Margin="0,4,0,0"/>
-                        </StackLayout>
-                        <StackLayout Grid.Row="1" Grid.Column="0" BackgroundColor="#FF9800" Padding="16,16,16,12" Spacing="4">
-                            <Label Text="SETS" FontSize="10" TextColor="#FFFFFF" FontAttributes="Bold" CharacterSpacing="1" Opacity="0.8"/>
-                            <Label Text="{Binding TotalSets}" FontSize="28" FontAttributes="Bold" TextColor="#FFFFFF"/>
-                            <Label Text="completed" FontSize="10" TextColor="#FFFFFF" Opacity="0.8"/>
-                            <controls:SparklineView Data="{Binding SetsSparkline}" LineColor="#FFFFFF" BackgroundColorHex="#FF9800" HeightRequest="44" Margin="0,4,0,0"/>
-                        </StackLayout>
-                        <StackLayout Grid.Row="1" Grid.Column="1" BackgroundColor="#FF6B6B" Padding="16,16,16,12" Spacing="4">
-                            <Label Text="DAYS" FontSize="10" TextColor="#FFFFFF" FontAttributes="Bold" CharacterSpacing="1" Opacity="0.8"/>
-                            <Label Text="{Binding DailyStats.Count}" FontSize="28" FontAttributes="Bold" TextColor="#FFFFFF"/>
-                            <Label Text="worked out" FontSize="10" TextColor="#FFFFFF" Opacity="0.8"/>
-                            <controls:SparklineView Data="{Binding DaysSparkline}" LineColor="#FFFFFF" BackgroundColorHex="#FF6B6B" HeightRequest="44" Margin="0,4,0,0"/>
-                        </StackLayout>
+        <ScrollView Grid.Row="1" VerticalScrollBarVisibility="Never">
+            <VerticalStackLayout Padding="20,24,20,40" Spacing="24">
+
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="OVERVIEW" FontSize="12" FontAttributes="Bold" TextColor="#A3A3A3" CharacterSpacing="1" Margin="4,0,0,0"/>
+                    <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto" ColumnSpacing="12" RowSpacing="12">
+
+                        <Border Grid.Row="0" Grid.Column="0" BackgroundColor="#1F77F0" StrokeThickness="0">
+                            <Border.StrokeShape>
+                                <RoundRectangle CornerRadius="14"/>
+                            </Border.StrokeShape>
+                            <VerticalStackLayout Padding="16,16,16,12" Spacing="2">
+                                <Label Text="VOLUME" FontSize="11" TextColor="#FFFFFF" FontAttributes="Bold" CharacterSpacing="1" Opacity="0.8"/>
+                                <Label Text="{Binding TotalVolumeLifted, StringFormat='{0:F0}'}" FontSize="28" FontAttributes="Bold" TextColor="#FFFFFF"/>
+                                <Label Text="{Binding WeightUnitLabel, StringFormat='total {0} lifted'}" FontSize="11" TextColor="#FFFFFF" Opacity="0.8"/>
+                                <controls:SparklineView Data="{Binding VolumeSparkline}" LineColor="#FFFFFF" BackgroundColorHex="#1F77F0" HeightRequest="44" Margin="0,8,0,0"/>
+                            </VerticalStackLayout>
+                        </Border>
+
+                        <Border Grid.Row="0" Grid.Column="1" BackgroundColor="#388E3C" StrokeThickness="0">
+                            <Border.StrokeShape>
+                                <RoundRectangle CornerRadius="14"/>
+                            </Border.StrokeShape>
+                            <VerticalStackLayout Padding="16,16,16,12" Spacing="2">
+                                <Label Text="AVG VOLUME" FontSize="11" TextColor="#FFFFFF" FontAttributes="Bold" CharacterSpacing="1" Opacity="0.8"/>
+                                <Label Text="{Binding AverageVolume, StringFormat='{0:F0}'}" FontSize="28" FontAttributes="Bold" TextColor="#FFFFFF"/>
+                                <Label Text="per workout" FontSize="11" TextColor="#FFFFFF" Opacity="0.8"/>
+                                <controls:SparklineView Data="{Binding AvgVolumeSparkline}" LineColor="#FFFFFF" BackgroundColorHex="#388E3C" HeightRequest="44" Margin="0,8,0,0"/>
+                            </VerticalStackLayout>
+                        </Border>
+
+                        <Border Grid.Row="1" Grid.Column="0" BackgroundColor="#F57C00" StrokeThickness="0">
+                            <Border.StrokeShape>
+                                <RoundRectangle CornerRadius="14"/>
+                            </Border.StrokeShape>
+                            <VerticalStackLayout Padding="16,16,16,12" Spacing="2">
+                                <Label Text="SETS" FontSize="11" TextColor="#FFFFFF" FontAttributes="Bold" CharacterSpacing="1" Opacity="0.8"/>
+                                <Label Text="{Binding TotalSets}" FontSize="28" FontAttributes="Bold" TextColor="#FFFFFF"/>
+                                <Label Text="completed" FontSize="11" TextColor="#FFFFFF" Opacity="0.8"/>
+                                <controls:SparklineView Data="{Binding SetsSparkline}" LineColor="#FFFFFF" BackgroundColorHex="#F57C00" HeightRequest="44" Margin="0,8,0,0"/>
+                            </VerticalStackLayout>
+                        </Border>
+
+                        <Border Grid.Row="1" Grid.Column="1" BackgroundColor="#E53935" StrokeThickness="0">
+                            <Border.StrokeShape>
+                                <RoundRectangle CornerRadius="14"/>
+                            </Border.StrokeShape>
+                            <VerticalStackLayout Padding="16,16,16,12" Spacing="2">
+                                <Label Text="DAYS" FontSize="11" TextColor="#FFFFFF" FontAttributes="Bold" CharacterSpacing="1" Opacity="0.8"/>
+                                <Label Text="{Binding DailyStats.Count}" FontSize="28" FontAttributes="Bold" TextColor="#FFFFFF"/>
+                                <Label Text="worked out" FontSize="11" TextColor="#FFFFFF" Opacity="0.8"/>
+                                <controls:SparklineView Data="{Binding DaysSparkline}" LineColor="#FFFFFF" BackgroundColorHex="#E53935" HeightRequest="44" Margin="0,8,0,0"/>
+                            </VerticalStackLayout>
+                        </Border>
+
                     </Grid>
-                </StackLayout>
+                </VerticalStackLayout>
 
-                <!-- ── Best Week ──────────────────────────────────────────────── -->
-                <StackLayout BackgroundColor="#FFFFFF" Padding="16" Spacing="6">
-                    <Label Text="BEST WEEK"
-                           FontSize="11" FontAttributes="Bold"
-                           TextColor="#999999" CharacterSpacing="1"/>
-                    <Label Text="{Binding BestWeekLabel}"
-                           FontSize="14" FontAttributes="Bold" TextColor="#1F77F0"/>
-                    <StackLayout Orientation="Horizontal" Spacing="4">
-                        <Label Text="{Binding BestWeekVolume, StringFormat='{0:F0}'}"
-                               FontSize="12" TextColor="#999999"/>
-                        <Label Text="{Binding WeightUnitLabel, StringFormat='total {0} volume'}"
-                               FontSize="12" TextColor="#999999"/>
-                    </StackLayout>
-                    <Label Text="{Binding BestWeekMuscleGroups}"
-                           FontSize="11" TextColor="#999999"
-                           IsVisible="{Binding BestWeekMuscleGroups, Converter={StaticResource IsNotEmptyConverter}}"/>
-                </StackLayout>
-
-                <!-- ── Workout Heatmap ────────────────────────────────────────── -->
-                <StackLayout Spacing="10">
-                    <Grid ColumnDefinitions="Auto,*,Auto">
-                        <Button Grid.Column="0"
-                                Text="←" Command="{Binding PreviousMonthCommand}"
-                                BackgroundColor="Transparent" TextColor="#1F77F0"
-                                FontSize="18" Padding="12,8" BorderWidth="0" MinimumWidthRequest="44"/>
-                        <Label Grid.Column="1"
-                               Text="{Binding HeatmapTitle}"
-                               FontSize="12" FontAttributes="Bold" TextColor="#1F77F0"
-                               HorizontalOptions="Center" VerticalOptions="Center"/>
-                        <Button Grid.Column="2"
-                                Text="→" Command="{Binding NextMonthCommand}"
-                                BackgroundColor="Transparent" TextColor="#1F77F0"
-                                FontSize="18" Padding="12,8" BorderWidth="0" MinimumWidthRequest="44"/>
+                <Border BackgroundColor="#FFFFFF" StrokeThickness="0">
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="14"/>
+                    </Border.StrokeShape>
+                    <Border.Shadow>
+                        <Shadow Brush="#000000" Offset="0,2" Radius="8" Opacity="0.04" />
+                    </Border.Shadow>
+                    <Grid ColumnDefinitions="Auto,*" Padding="16" ColumnSpacing="16">
+                        <Border Grid.Column="0" BackgroundColor="#F0F7FF" StrokeThickness="0" WidthRequest="44" HeightRequest="44" VerticalOptions="Start">
+                            <Border.StrokeShape>
+                                <RoundRectangle CornerRadius="12"/>
+                            </Border.StrokeShape>
+                            <Label Text="⭐" FontSize="20" HorizontalOptions="Center" VerticalOptions="Center"/>
+                        </Border>
+                        <VerticalStackLayout Grid.Column="1" Spacing="4" VerticalOptions="Center">
+                            <Label Text="BEST WEEK" FontSize="11" FontAttributes="Bold" TextColor="#A3A3A3" CharacterSpacing="1"/>
+                            <Label Text="{Binding BestWeekLabel}" FontSize="15" FontAttributes="Bold" TextColor="#1F77F0"/>
+                            <HorizontalStackLayout Spacing="4">
+                                <Label Text="{Binding BestWeekVolume, StringFormat='{0:F0}'}" FontSize="13" TextColor="#737373" FontAttributes="Bold"/>
+                                <Label Text="{Binding WeightUnitLabel, StringFormat='total {0} volume'}" FontSize="13" TextColor="#737373"/>
+                            </HorizontalStackLayout>
+                            <Label Text="{Binding BestWeekMuscleGroups}" FontSize="12" TextColor="#A3A3A3" IsVisible="{Binding BestWeekMuscleGroups, Converter={StaticResource IsNotEmptyConverter}}"/>
+                        </VerticalStackLayout>
                     </Grid>
-                    <StackLayout BackgroundColor="#FFFFFF" Padding="16" Spacing="12">
-                        <controls:WorkoutHeatmapView
-                            HeatmapData="{Binding HeatmapData}"
-                            Month="{Binding HeatmapMonth}"
-                            HeightRequest="240"/>
-                        <StackLayout Orientation="Horizontal" HorizontalOptions="End" Spacing="6">
-                            <Label Text="Less" FontSize="10" TextColor="#999999" VerticalOptions="Center"/>
-                            <BoxView Color="#F0F0F0" WidthRequest="14" HeightRequest="14" CornerRadius="3"/>
-                            <BoxView Color="#C8E6FF" WidthRequest="14" HeightRequest="14" CornerRadius="3"/>
-                            <BoxView Color="#7EC0F8" WidthRequest="14" HeightRequest="14" CornerRadius="3"/>
-                            <BoxView Color="#4499F4" WidthRequest="14" HeightRequest="14" CornerRadius="3"/>
-                            <BoxView Color="#1F77F0" WidthRequest="14" HeightRequest="14" CornerRadius="3"/>
-                            <Label Text="More" FontSize="10" TextColor="#999999" VerticalOptions="Center"/>
-                        </StackLayout>
-                    </StackLayout>
-                </StackLayout>
+                </Border>
 
-                <!-- ── Top Exercises ──────────────────────────────────────────────
-                     FIX 9: CollectionView replaced with BindableLayout — TopExercises
-                     is always at most 5 items; CollectionView virtualization overhead
-                     is wasted on a fixed micro-list inside a ScrollView.             -->
-                <StackLayout Spacing="10">
-                    <Label Text="TOP EXERCISES"
-                           FontSize="11" FontAttributes="Bold"
-                           TextColor="#999999" CharacterSpacing="1"/>
+                <Border BackgroundColor="#FFFFFF" StrokeThickness="0">
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="14"/>
+                    </Border.StrokeShape>
+                    <Border.Shadow>
+                        <Shadow Brush="#000000" Offset="0,2" Radius="8" Opacity="0.04" />
+                    </Border.Shadow>
+                    <Grid ColumnDefinitions="Auto,*" Padding="16" ColumnSpacing="16">
+                        <Label Grid.Column="0" Text="{Binding InsightEmoji}" FontSize="36" VerticalOptions="Center"/>
+                        <VerticalStackLayout Grid.Column="1" Spacing="4" VerticalOptions="Center">
+                            <Label Text="INSIGHT" FontSize="11" FontAttributes="Bold" TextColor="#A3A3A3" CharacterSpacing="1"/>
+                            <Label Text="{Binding InsightMessage}" FontSize="14" TextColor="#1A1A1A" LineBreakMode="WordWrap"/>
+                        </VerticalStackLayout>
+                    </Grid>
+                </Border>
 
-                    <StackLayout IsVisible="{Binding TopExercises.Count, Converter={StaticResource IsNotEmptyConverter}, ConverterParameter=Inverse}"
-                                 Padding="20,40" Spacing="8" HorizontalOptions="Center">
-                        <Label Text="📊" FontSize="40" HorizontalOptions="Center"/>
-                        <Label Text="No exercise data yet" FontSize="13" TextColor="#999999" HorizontalOptions="Center"/>
-                    </StackLayout>
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="TOP EXERCISES" FontSize="12" FontAttributes="Bold" TextColor="#A3A3A3" CharacterSpacing="1" Margin="4,0,0,0"/>
 
-                    <StackLayout BindableLayout.ItemsSource="{Binding TopExercises}" Spacing="2">
-                        <BindableLayout.ItemTemplate>
-                            <DataTemplate x:DataType="models:ExerciseProgress">
-                                <Grid ColumnDefinitions="*,Auto,Auto,Auto"
-                                      ColumnSpacing="16"
-                                      Padding="16,14"
-                                      BackgroundColor="#FFFFFF"
-                                      Margin="0,0,0,2">
-                                    <Label Grid.Column="0"
-                                           Text="{Binding ExerciseName}"
-                                           FontSize="13" FontAttributes="Bold" TextColor="#000000"
-                                           VerticalOptions="Center"/>
-                                    <StackLayout Grid.Column="1" Spacing="2" HorizontalOptions="Center">
-                                        <Label Text="MAX" FontSize="10" TextColor="#999999" HorizontalOptions="Center" CharacterSpacing="1"/>
-                                        <StackLayout Orientation="Horizontal" Spacing="4" HorizontalOptions="Center">
-                                            <Label Text="{Binding MaxWeight, StringFormat='{0:F0}'}"
-                                                   FontSize="13" FontAttributes="Bold" TextColor="#4CAF50" VerticalOptions="Center"/>
-                                            <Label Text="{Binding IsTrending, Converter={StaticResource BoolToTrendConverter}}"
-                                                   FontSize="10" VerticalOptions="Center"/>
-                                        </StackLayout>
-                                    </StackLayout>
-                                    <StackLayout Grid.Column="2" Spacing="2" HorizontalOptions="Center">
-                                        <Label Text="AVG" FontSize="10" TextColor="#999999" HorizontalOptions="Center" CharacterSpacing="1"/>
-                                        <Label Text="{Binding AverageWeight, StringFormat='{0:F0}'}"
-                                               FontSize="13" FontAttributes="Bold" TextColor="#FF9800" HorizontalOptions="Center"/>
-                                    </StackLayout>
-                                    <StackLayout Grid.Column="3" Spacing="2" HorizontalOptions="Center">
-                                        <Label Text="REPS" FontSize="10" TextColor="#999999" HorizontalOptions="Center" CharacterSpacing="1"/>
-                                        <Label Text="{Binding TotalReps}"
-                                               FontSize="13" FontAttributes="Bold" TextColor="#1F77F0" HorizontalOptions="Center"/>
-                                    </StackLayout>
-                                </Grid>
-                            </DataTemplate>
-                        </BindableLayout.ItemTemplate>
-                    </StackLayout>
-                </StackLayout>
+                    <Border BackgroundColor="#FFFFFF" StrokeThickness="0">
+                        <Border.StrokeShape>
+                            <RoundRectangle CornerRadius="14"/>
+                        </Border.StrokeShape>
+                        <Border.Shadow>
+                            <Shadow Brush="#000000" Offset="0,2" Radius="8" Opacity="0.04" />
+                        </Border.Shadow>
 
-                <!-- ── Strength Progress ──────────────────────────────────────────
-                     FIX 9: CollectionView replaced with BindableLayout — same
-                     reasoning as TopExercises above.                               -->
-                <StackLayout Spacing="10">
-                    <Label Text="STRENGTH PROGRESS"
-                           FontSize="11" FontAttributes="Bold"
-                           TextColor="#999999" CharacterSpacing="1"/>
+                        <VerticalStackLayout BindableLayout.ItemsSource="{Binding TopExercises}" Spacing="0">
 
-                    <StackLayout IsVisible="{Binding MuscleGroupProgress.Count, Converter={StaticResource IsNotEmptyConverter}, ConverterParameter=Inverse}"
-                                 Padding="20,40" Spacing="8" HorizontalOptions="Center">
-                        <Label Text="📈" FontSize="40" HorizontalOptions="Center"/>
-                        <Label Text="No progress data yet" FontSize="13" TextColor="#999999" HorizontalOptions="Center"/>
-                    </StackLayout>
+                            <BindableLayout.EmptyView>
+                                <VerticalStackLayout Padding="20,40" Spacing="12" HorizontalOptions="Center">
+                                    <Label Text="📊" FontSize="48" HorizontalOptions="Center"/>
+                                    <Label Text="No exercise data yet" FontSize="15" FontAttributes="Bold" TextColor="#1A1A1A" HorizontalOptions="Center"/>
+                                    <Label Text="Log more sets to see your top movements" FontSize="13" TextColor="#A3A3A3" HorizontalOptions="Center"/>
+                                </VerticalStackLayout>
+                            </BindableLayout.EmptyView>
 
-                    <StackLayout BindableLayout.ItemsSource="{Binding MuscleGroupProgress}" Spacing="2">
-                        <BindableLayout.ItemTemplate>
-                            <DataTemplate x:DataType="models:MuscleGroupProgress">
-                                <Grid ColumnDefinitions="Auto,*,Auto"
-                                      ColumnSpacing="12"
-                                      Padding="16,14"
-                                      BackgroundColor="#FFFFFF"
-                                      Margin="0,0,0,2">
-                                    <Grid.GestureRecognizers>
-                                        <TapGestureRecognizer
-                                            Command="{Binding Source={RelativeSource AncestorType={x:Type vm:AnalyticsViewModel}}, Path=SelectMuscleGroupProgressCommand}"
-                                            CommandParameter="{Binding .}"/>
-                                    </Grid.GestureRecognizers>
-                                    <Label Grid.Column="0"
-                                           Text="{Binding IsTrending, Converter={StaticResource BoolToTrendConverter}}"
-                                           FontSize="20" VerticalOptions="Center"/>
-                                    <StackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
-                                        <Label Text="{Binding MuscleGroup}"
-                                               FontSize="14" FontAttributes="Bold" TextColor="#000000"/>
-                                        <StackLayout Orientation="Horizontal" Spacing="4">
-                                            <Label FontSize="11" TextColor="#999999">
-                                                <Label.Text>
-                                                    <MultiBinding StringFormat="{}{0} exercises · Max {1:F0}">
-                                                        <Binding Path="Exercises.Count"/>
-                                                        <Binding Path="LatestMaxWeight"/>
-                                                    </MultiBinding>
-                                                </Label.Text>
-                                            </Label>
-                                            <Label Text="{Binding Source={RelativeSource AncestorType={x:Type vm:AnalyticsViewModel}}, Path=WeightUnitLabel}"
-                                                   FontSize="11" TextColor="#999999"/>
-                                        </StackLayout>
-                                    </StackLayout>
-                                    <Label Grid.Column="2"
-                                           Text="→" FontSize="18" TextColor="#1F77F0" VerticalOptions="Center"/>
-                                </Grid>
-                            </DataTemplate>
-                        </BindableLayout.ItemTemplate>
-                    </StackLayout>
-                </StackLayout>
+                            <BindableLayout.ItemTemplate>
+                                <DataTemplate x:DataType="models:ExerciseProgress">
+                                    <VerticalStackLayout>
+                                        <Grid ColumnDefinitions="*,Auto,Auto,Auto" ColumnSpacing="16" Padding="16">
+                                            <Label Grid.Column="0" Text="{Binding ExerciseName}" FontSize="14" FontAttributes="Bold" TextColor="#1A1A1A" VerticalOptions="Center"/>
 
-                <!-- ── Personal Records ───────────────────────────────────────── -->
-                <StackLayout BackgroundColor="#FFF8E1" Padding="16" Spacing="0">
-                    <StackLayout.GestureRecognizers>
+                                            <VerticalStackLayout Grid.Column="1" Spacing="2" HorizontalOptions="Center">
+                                                <Label Text="MAX" FontSize="10" FontAttributes="Bold" TextColor="#A3A3A3" HorizontalOptions="Center"/>
+                                                <HorizontalStackLayout Spacing="4" HorizontalOptions="Center">
+                                                    <Label Text="{Binding MaxWeight, StringFormat='{0:F0}'}" FontSize="14" FontAttributes="Bold" TextColor="#388E3C" VerticalOptions="Center"/>
+                                                    <Label Text="{Binding IsTrending, Converter={StaticResource BoolToTrendConverter}}" FontSize="12" VerticalOptions="Center"/>
+                                                </HorizontalStackLayout>
+                                            </VerticalStackLayout>
+
+                                            <VerticalStackLayout Grid.Column="2" Spacing="2" HorizontalOptions="Center">
+                                                <Label Text="AVG" FontSize="10" FontAttributes="Bold" TextColor="#A3A3A3" HorizontalOptions="Center"/>
+                                                <Label Text="{Binding AverageWeight, StringFormat='{0:F0}'}" FontSize="14" FontAttributes="Bold" TextColor="#F57C00" HorizontalOptions="Center"/>
+                                            </VerticalStackLayout>
+
+                                            <VerticalStackLayout Grid.Column="3" Spacing="2" HorizontalOptions="Center" WidthRequest="40">
+                                                <Label Text="REPS" FontSize="10" FontAttributes="Bold" TextColor="#A3A3A3" HorizontalOptions="Center"/>
+                                                <Label Text="{Binding TotalReps}" FontSize="14" FontAttributes="Bold" TextColor="#1F77F0" HorizontalOptions="Center"/>
+                                            </VerticalStackLayout>
+                                        </Grid>
+                                        <BoxView HeightRequest="1" Color="#F4F5F7" Margin="16,0"/>
+                                    </VerticalStackLayout>
+                                </DataTemplate>
+                            </BindableLayout.ItemTemplate>
+                        </VerticalStackLayout>
+                    </Border>
+                </VerticalStackLayout>
+
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="STRENGTH PROGRESS" FontSize="12" FontAttributes="Bold" TextColor="#A3A3A3" CharacterSpacing="1" Margin="4,0,0,0"/>
+
+                    <Border BackgroundColor="#FFFFFF" StrokeThickness="0">
+                        <Border.StrokeShape>
+                            <RoundRectangle CornerRadius="14"/>
+                        </Border.StrokeShape>
+                        <Border.Shadow>
+                            <Shadow Brush="#000000" Offset="0,2" Radius="8" Opacity="0.04" />
+                        </Border.Shadow>
+
+                        <VerticalStackLayout BindableLayout.ItemsSource="{Binding MuscleGroupProgress}" Spacing="0">
+
+                            <BindableLayout.EmptyView>
+                                <VerticalStackLayout Padding="20,40" Spacing="12" HorizontalOptions="Center">
+                                    <Label Text="📈" FontSize="48" HorizontalOptions="Center"/>
+                                    <Label Text="No progress data yet" FontSize="15" FontAttributes="Bold" TextColor="#1A1A1A" HorizontalOptions="Center"/>
+                                    <Label Text="Complete workouts to track strength trends" FontSize="13" TextColor="#A3A3A3" HorizontalOptions="Center"/>
+                                </VerticalStackLayout>
+                            </BindableLayout.EmptyView>
+
+                            <BindableLayout.ItemTemplate>
+                                <DataTemplate x:DataType="models:MuscleGroupProgress">
+                                    <VerticalStackLayout>
+                                        <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="16" Padding="16">
+                                            <Grid.GestureRecognizers>
+                                                <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type vm:AnalyticsViewModel}}, Path=SelectMuscleGroupProgressCommand}" CommandParameter="{Binding .}"/>
+                                            </Grid.GestureRecognizers>
+
+                                            <Border Grid.Column="0" BackgroundColor="#F4F5F7" StrokeThickness="0" WidthRequest="40" HeightRequest="40" VerticalOptions="Center">
+                                                <Border.StrokeShape>
+                                                    <RoundRectangle CornerRadius="10"/>
+                                                </Border.StrokeShape>
+                                                <Label Text="{Binding IsTrending, Converter={StaticResource BoolToTrendConverter}}" FontSize="18" HorizontalOptions="Center" VerticalOptions="Center"/>
+                                            </Border>
+
+                                            <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
+                                                <Label Text="{Binding MuscleGroup}" FontSize="15" FontAttributes="Bold" TextColor="#1A1A1A"/>
+                                                <Label FontSize="13" TextColor="#737373">
+                                                    <Label.Text>
+                                                        <MultiBinding StringFormat="{}{0} exercises · Max {1:F0} {2}">
+                                                            <Binding Path="Exercises.Count"/>
+                                                            <Binding Path="LatestMaxWeight"/>
+                                                            <Binding Source="{RelativeSource AncestorType={x:Type vm:AnalyticsViewModel}}" Path="WeightUnitLabel"/>
+                                                        </MultiBinding>
+                                                    </Label.Text>
+                                                </Label>
+                                            </VerticalStackLayout>
+
+                                            <Label Grid.Column="2" Text="›" FontSize="24" TextColor="#D1D1D1" VerticalOptions="Center"/>
+                                        </Grid>
+                                        <BoxView HeightRequest="1" Color="#F4F5F7" Margin="16,0"/>
+                                    </VerticalStackLayout>
+                                </DataTemplate>
+                            </BindableLayout.ItemTemplate>
+                        </VerticalStackLayout>
+                    </Border>
+                </VerticalStackLayout>
+
+                <Border BackgroundColor="#FFF8E1" StrokeThickness="0" Margin="0,0,0,16">
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="14"/>
+                    </Border.StrokeShape>
+                    <Border.Shadow>
+                        <Shadow Brush="#000000" Offset="0,2" Radius="8" Opacity="0.04" />
+                    </Border.Shadow>
+                    <Border.GestureRecognizers>
                         <TapGestureRecognizer Command="{Binding ViewPersonalRecordsCommand}"/>
-                    </StackLayout.GestureRecognizers>
-                    <Grid ColumnDefinitions="Auto,*,Auto">
-                        <Label Grid.Column="0" Text="🏆" FontSize="24"
-                               VerticalOptions="Center" Margin="0,0,12,0"/>
-                        <StackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
-                            <Label Text="Personal Records" FontSize="15" FontAttributes="Bold" TextColor="#FF9800"/>
-                            <Label Text="View your all time best lifts" FontSize="11" TextColor="#999999"/>
-                        </StackLayout>
-                        <Label Grid.Column="2" Text="→" FontSize="18" TextColor="#FF9800" VerticalOptions="Center"/>
+                    </Border.GestureRecognizers>
+                    <Grid ColumnDefinitions="Auto,*,Auto" Padding="16">
+                        <Border Grid.Column="0" BackgroundColor="#FFFFFF" StrokeThickness="0" WidthRequest="44" HeightRequest="44" VerticalOptions="Center" Margin="0,0,16,0">
+                            <Border.StrokeShape>
+                                <RoundRectangle CornerRadius="12"/>
+                            </Border.StrokeShape>
+                            <Label Text="🏆" FontSize="20" HorizontalOptions="Center" VerticalOptions="Center"/>
+                        </Border>
+                        <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
+                            <Label Text="Personal Records" FontSize="15" FontAttributes="Bold" TextColor="#F57C00"/>
+                            <Label Text="View your all time best lifts" FontSize="13" TextColor="#D98A0D"/>
+                        </VerticalStackLayout>
+                        <Label Grid.Column="2" Text="›" FontSize="24" TextColor="#FFB74D" VerticalOptions="Center"/>
                     </Grid>
-                </StackLayout>
+                </Border>
 
-                <!-- ── Insights ────────────────────────────────────────────────── -->
-                <StackLayout BackgroundColor="#FFFFFF" Padding="16" Spacing="8">
-                    <Label Text="INSIGHT"
-                           FontSize="11" FontAttributes="Bold"
-                           TextColor="#999999" CharacterSpacing="1"/>
-                    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
-                        <Label Grid.Column="0"
-                               Text="{Binding InsightEmoji}"
-                               FontSize="32" VerticalOptions="Center"/>
-                        <Label Grid.Column="1"
-                               Text="{Binding InsightMessage}"
-                               FontSize="13" TextColor="#000000"
-                               LineBreakMode="WordWrap" VerticalOptions="Center"/>
-                    </Grid>
-                </StackLayout>
-
-                <Label Text=" " Margin="0,20"/>
-
-            </StackLayout>
+            </VerticalStackLayout>
         </ScrollView>
 
     </Grid>

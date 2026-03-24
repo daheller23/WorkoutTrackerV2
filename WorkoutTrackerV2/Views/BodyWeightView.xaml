@@ -8,7 +8,7 @@
              x:DataType="vm:BodyWeightViewModel"
              xmlns:converters="clr-namespace:WorkoutTrackerV2.Converters"
              xmlns:sys="clr-namespace:System;assembly=netstandard"
-             BackgroundColor="#FAFAFA">
+             BackgroundColor="#F4F5F7">
 
     <ContentPage.Resources>
         <converters:InverseBoolConverter x:Key="InverseBoolConverter"/>
@@ -22,282 +22,329 @@
 
     <Grid RowDefinitions="Auto,*" RowSpacing="0">
 
-        <!-- ── Header ─────────────────────────────────────────────────────── -->
-        <StackLayout Grid.Row="0" BackgroundColor="#FFFFFF" Padding="24,16,24,24" Spacing="4">
-            <Button Text="← Back"
-                    Command="{Binding GoBackCommand}"
-                    BackgroundColor="Transparent" TextColor="#1F77F0"
-                    FontSize="14" Padding="0" HorizontalOptions="Start"/>
-            <Grid ColumnDefinitions="*,Auto">
-                <StackLayout Grid.Column="0" Spacing="2">
-                    <Label Text="Body Weight"
-                           FontSize="32" FontAttributes="Bold"
-                           TextColor="#1F77F0" CharacterSpacing="0.5"/>
-                    <Label Text="Track your progress over time"
-                           FontSize="13" TextColor="#999999"/>
-                </StackLayout>
-                <Button Grid.Column="1"
-                        Text="+ Log"
-                        Command="{Binding ShowAddEntryCommand}"
-                        BackgroundColor="#1F77F0" TextColor="#FFFFFF"
-                        FontSize="13" FontAttributes="Bold"
-                        Padding="16,10" CornerRadius="20" BorderWidth="0"
-                        VerticalOptions="Center"/>
-            </Grid>
-        </StackLayout>
+        <Border Grid.Row="0" BackgroundColor="#FFFFFF" StrokeThickness="0" ZIndex="1">
+            <Border.Shadow>
+                <Shadow Brush="#000000" Offset="0,4" Radius="12" Opacity="0.04" />
+            </Border.Shadow>
+            <VerticalStackLayout Padding="24,16,24,20" Spacing="20">
 
+                <Button Text="← Back"
+                        Command="{Binding GoBackCommand}"
+                        BackgroundColor="Transparent" TextColor="#1F77F0"
+                        FontSize="15" FontAttributes="Bold" Padding="0" HorizontalOptions="Start" HeightRequest="30"/>
 
-        <ScrollView Grid.Row="1">
-            <StackLayout Padding="20,20" Spacing="20">
+                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                    <VerticalStackLayout Grid.Column="0" Spacing="2" VerticalOptions="Center">
+                        <Label Text="Body Weight"
+                               FontSize="32" FontAttributes="Bold"
+                               TextColor="#1A1A1A" CharacterSpacing="0.5"/>
+                        <Label Text="Track your progress over time"
+                               FontSize="14" TextColor="#737373"/>
+                    </VerticalStackLayout>
 
-                <!-- ── Add Entry Panel ───────────────────────────────────────
-                     Slides in when IsAddingEntry is true.                     -->
-                <StackLayout IsVisible="{Binding IsAddingEntry}"
-                             BackgroundColor="#FFFFFF"
-                             Padding="16" Spacing="12">
-                    <Label Text="LOG WEIGHT"
-                           FontSize="11" FontAttributes="Bold"
-                           TextColor="#999999" CharacterSpacing="1"/>
-                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
-                        <Entry Grid.Column="0"
-                               Text="{Binding NewWeight}"
-                               Placeholder="e.g. 175.5"
-                               Keyboard="Numeric"
-                               BackgroundColor="#F5F5F5"
-                               TextColor="#000000"
-                               FontSize="16"/>
-                        <Label Grid.Column="1"
-                               Text="{Binding WeightUnitLabel}"
-                               FontSize="14" TextColor="#999999"
-                               VerticalOptions="Center"/>
-                    </Grid>
-                    <Entry Text="{Binding NewNotes}"
-                           Placeholder="Optional note (e.g. morning, post-workout)"
-                           BackgroundColor="#F5F5F5"
-                           TextColor="#000000"
-                           FontSize="13"/>
-                    <StackLayout Spacing="6">
-                        <Label Text="DATE"
-                               FontSize="11" FontAttributes="Bold"
-                               TextColor="#999999" CharacterSpacing="1"/>
-                        <DatePicker Date="{Binding NewDate}"
-                                    BackgroundColor="#F5F5F5"
-                                    TextColor="#000000"
-                                    Format="MMM dd, yyyy"
-                                    MaximumDate="{x:Static sys:DateTime.Today}"/>
-                    </StackLayout>
-                    <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
-                        <Button Grid.Column="0"
-                                Text="Cancel"
-                                Command="{Binding CancelAddEntryCommand}"
-                                BackgroundColor="Transparent" TextColor="#FF6B6B"
-                                FontAttributes="Bold" FontSize="14"
-                                Padding="0,12" CornerRadius="10"
-                                BorderWidth="1" BorderColor="#FF6B6B"/>
-                        <Button Grid.Column="1"
-                                Text="Save"
-                                Command="{Binding SaveEntryCommand}"
-                                BackgroundColor="#1F77F0" TextColor="#FFFFFF"
-                                FontAttributes="Bold" FontSize="14"
-                                Padding="0,12" CornerRadius="10" BorderWidth="0"/>
-                    </Grid>
-                </StackLayout>
+                    <Button Grid.Column="1"
+                            Text="+ Log"
+                            Command="{Binding ShowAddEntryCommand}"
+                            BackgroundColor="#1F77F0" TextColor="#FFFFFF"
+                            FontSize="14" FontAttributes="Bold"
+                            Padding="20,0" HeightRequest="44" CornerRadius="22" BorderWidth="0"
+                            VerticalOptions="Center">
+                        <Button.Shadow>
+                            <Shadow Brush="#1F77F0" Offset="0,4" Radius="8" Opacity="0.25"/>
+                        </Button.Shadow>
+                    </Button>
+                </Grid>
 
-                <!-- ── Time Period Pills ───────────────────────────────────── -->
-                <FlexLayout Direction="Row"
-                            JustifyContent="SpaceBetween"
-                            AlignItems="Center"
-                            BindableLayout.ItemsSource="{Binding TimePeriodPills}">
-                    <BindableLayout.ItemTemplate>
-                        <DataTemplate x:DataType="vm:TimePeriodPillViewModel">
-                            <Border StrokeThickness="0" Padding="0">
-                                <Border.StrokeShape>
-                                    <RoundRectangle CornerRadius="20"/>
-                                </Border.StrokeShape>
-                                <Border.Triggers>
-                                    <DataTrigger TargetType="Border" Binding="{Binding IsSelected}" Value="True">
-                                        <Setter Property="BackgroundColor" Value="#1F77F0"/>
-                                    </DataTrigger>
-                                    <DataTrigger TargetType="Border" Binding="{Binding IsSelected}" Value="False">
-                                        <Setter Property="BackgroundColor" Value="#EEEEEE"/>
-                                    </DataTrigger>
-                                </Border.Triggers>
-                                <Border.GestureRecognizers>
-                                    <TapGestureRecognizer
-                                        Command="{Binding Source={RelativeSource AncestorType={x:Type vm:BodyWeightViewModel}}, Path=SetTimePeriodCommand}"
-                                        CommandParameter="{Binding DaysString}"/>
-                                </Border.GestureRecognizers>
-                                <Label Text="{Binding Label}"
-                                       FontSize="12" FontAttributes="Bold"
-                                       HorizontalOptions="Center" Padding="14,8">
-                                    <Label.Triggers>
-                                        <DataTrigger TargetType="Label" Binding="{Binding IsSelected}" Value="True">
-                                            <Setter Property="TextColor" Value="#FFFFFF"/>
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="TIME PERIOD" FontSize="11" FontAttributes="Bold" TextColor="#A3A3A3" CharacterSpacing="1"/>
+                    <FlexLayout Direction="Row"
+                                JustifyContent="SpaceBetween"
+                                AlignItems="Center"
+                                BindableLayout.ItemsSource="{Binding TimePeriodPills}">
+                        <BindableLayout.ItemTemplate>
+                            <DataTemplate x:DataType="vm:TimePeriodPillViewModel">
+                                <Border StrokeThickness="0" Padding="0">
+                                    <Border.StrokeShape>
+                                        <RoundRectangle CornerRadius="12"/>
+                                    </Border.StrokeShape>
+                                    <Border.Triggers>
+                                        <DataTrigger TargetType="Border" Binding="{Binding IsSelected}" Value="True">
+                                            <Setter Property="BackgroundColor" Value="#1F77F0"/>
                                         </DataTrigger>
-                                        <DataTrigger TargetType="Label" Binding="{Binding IsSelected}" Value="False">
-                                            <Setter Property="TextColor" Value="#666666"/>
+                                        <DataTrigger TargetType="Border" Binding="{Binding IsSelected}" Value="False">
+                                            <Setter Property="BackgroundColor" Value="#F4F5F7"/>
                                         </DataTrigger>
-                                    </Label.Triggers>
-                                </Label>
-                            </Border>
-                        </DataTemplate>
-                    </BindableLayout.ItemTemplate>
-                </FlexLayout>
-
-                <!-- ── Empty state ────────────────────────────────────────── -->
-                <StackLayout IsVisible="{Binding HasData, Converter={x:StaticResource InverseBoolConverter}}"
-                             Padding="40,40" Spacing="16" HorizontalOptions="Center">
-                    <Label Text="⚖️" FontSize="48" HorizontalOptions="Center"/>
-                    <Label Text="No entries yet"
-                           FontSize="16" FontAttributes="Bold" TextColor="#999999"
-                           HorizontalOptions="Center"/>
-                    <Label Text="Tap + Log to record your first weight"
-                           FontSize="12" TextColor="#D0D0D0"
-                           HorizontalOptions="Center" HorizontalTextAlignment="Center"/>
-                </StackLayout>
-
-                <!-- ── Chart ────────────────────────────────────────────────
-                     Only shown when there are at least 2 entries.             -->
-                <StackLayout IsVisible="{Binding HasChart}"
-                             BackgroundColor="#FFFFFF" Padding="16" Spacing="12">
-                    <Label Text="WEIGHT OVER TIME"
-                           FontSize="11" FontAttributes="Bold"
-                           TextColor="#999999" CharacterSpacing="1"/>
-                    <microcharts:ChartView Chart="{Binding Chart}"
-                                          HeightRequest="220"/>
-                </StackLayout>
-
-                <!-- ── Stats Cards ──────────────────────────────────────────
-                     Current / Starting / Change                               -->
-                <StackLayout IsVisible="{Binding HasData}" Spacing="12">
-                    <Label Text="STATS"
-                           FontSize="11" FontAttributes="Bold"
-                           TextColor="#999999" CharacterSpacing="1"/>
-
-                    <Grid ColumnDefinitions="*,*,*" ColumnSpacing="12">
-                        <!-- Current -->
-                        <StackLayout BackgroundColor="#FFFFFF" Padding="14,16" Spacing="4">
-                            <Label Text="CURRENT" FontSize="10" TextColor="#1F77F0"
-                                   FontAttributes="Bold" CharacterSpacing="1" HorizontalOptions="Center"/>
-                            <Label Text="{Binding CurrentWeightLabel}"
-                                   FontSize="18" FontAttributes="Bold" TextColor="#1F77F0"
-                                   HorizontalOptions="Center"/>
-                        </StackLayout>
-                        <!-- Starting -->
-                        <StackLayout Grid.Column="1" BackgroundColor="#FFFFFF" Padding="14,16" Spacing="4">
-                            <Label Text="STARTING" FontSize="10" TextColor="#999999"
-                                   FontAttributes="Bold" CharacterSpacing="1" HorizontalOptions="Center"/>
-                            <Label Text="{Binding StartingWeightLabel}"
-                                   FontSize="18" FontAttributes="Bold" TextColor="#999999"
-                                   HorizontalOptions="Center"/>
-                        </StackLayout>
-                        <!-- Change -->
-                        <StackLayout Grid.Column="2" BackgroundColor="#FFFFFF" Padding="14,16" Spacing="4">
-                            <Label Text="CHANGE" FontSize="10" TextColor="#999999"
-                                   FontAttributes="Bold" CharacterSpacing="1" HorizontalOptions="Center"/>
-                            <Label Text="{Binding ChangeLabel}"
-                                   FontSize="18" FontAttributes="Bold"
-                                   TextColor="{Binding ChangeColor}"
-                                   HorizontalOptions="Center"/>
-                        </StackLayout>
-                    </Grid>
-
-                    <!-- Weekly avg / Low / High -->
-                    <Grid ColumnDefinitions="*,*,*" ColumnSpacing="12">
-                        <StackLayout BackgroundColor="#FFFFFF" Padding="14,16" Spacing="4">
-                            <Label Text="7-DAY AVG" FontSize="10" TextColor="#9C27B0"
-                                   FontAttributes="Bold" CharacterSpacing="1" HorizontalOptions="Center"/>
-                            <Label Text="{Binding WeeklyAverageLabel}"
-                                   FontSize="18" FontAttributes="Bold" TextColor="#9C27B0"
-                                   HorizontalOptions="Center"/>
-                        </StackLayout>
-                        <StackLayout Grid.Column="1" BackgroundColor="#FFFFFF" Padding="14,16" Spacing="4">
-                            <Label Text="LOWEST" FontSize="10" TextColor="#4CAF50"
-                                   FontAttributes="Bold" CharacterSpacing="1" HorizontalOptions="Center"/>
-                            <Label Text="{Binding PersonalLowLabel}"
-                                   FontSize="18" FontAttributes="Bold" TextColor="#4CAF50"
-                                   HorizontalOptions="Center"/>
-                        </StackLayout>
-                        <StackLayout Grid.Column="2" BackgroundColor="#FFFFFF" Padding="14,16" Spacing="4">
-                            <Label Text="HIGHEST" FontSize="10" TextColor="#FF9800"
-                                   FontAttributes="Bold" CharacterSpacing="1" HorizontalOptions="Center"/>
-                            <Label Text="{Binding PersonalHighLabel}"
-                                   FontSize="18" FontAttributes="Bold" TextColor="#FF9800"
-                                   HorizontalOptions="Center"/>
-                        </StackLayout>
-                    </Grid>
-
-                    <!-- BMI card — only shown when height is set in Settings -->
-                    <StackLayout IsVisible="{Binding HasBmi}"
-                                 BackgroundColor="#FFFFFF" Padding="16" Spacing="4">
-                        <Label Text="BMI" FontSize="10" TextColor="#999999"
-                               FontAttributes="Bold" CharacterSpacing="1"/>
-                        <Grid ColumnDefinitions="Auto,*">
-                            <Label Grid.Column="0"
-                                   Text="{Binding BmiLabel}"
-                                   FontSize="26" FontAttributes="Bold" TextColor="#1F77F0"/>
-                            <StackLayout Grid.Column="1" Spacing="2"
-                                         VerticalOptions="Center" Margin="12,0,0,0">
-                                <Label Text="{Binding BmiCategory}"
-                                       FontSize="14" FontAttributes="Bold" TextColor="#1F77F0"/>
-                                <Label Text="Set your height in Settings for BMI"
-                                       FontSize="11" TextColor="#999999"
-                                       IsVisible="{Binding HasBmi, Converter={x:StaticResource InverseBoolConverter}}"/>
-                            </StackLayout>
-                        </Grid>
-                    </StackLayout>
-                </StackLayout>
-
-                <!-- ── Entry Log ─────────────────────────────────────────── -->
-                <StackLayout IsVisible="{Binding HasData}" Spacing="12">
-                    <Label Text="HISTORY"
-                           FontSize="11" FontAttributes="Bold"
-                           TextColor="#999999" CharacterSpacing="1"/>
-
-                    <CollectionView ItemsSource="{Binding Entries}" SelectionMode="None">
-                        <CollectionView.ItemTemplate>
-                            <DataTemplate x:DataType="models:BodyWeightEntry">
-                                <Grid ColumnDefinitions="*,Auto,Auto"
-                                      ColumnSpacing="12"
-                                      Padding="16,12"
-                                      BackgroundColor="#FFFFFF"
-                                      Margin="0,0,0,2">
-                                    <StackLayout Grid.Column="0" Spacing="2">
-                                        <Label Text="{Binding Date, StringFormat='{0:MMM d, yyyy · h:mm tt}'}"
-                                               FontSize="13" TextColor="#000000"/>
-                                        <Label Text="{Binding Notes}"
-                                               FontSize="11" TextColor="#999999"
-                                               IsVisible="{Binding Notes, Converter={x:StaticResource IsNotEmptyConverter}}"/>
-                                    </StackLayout>
-                                    <Label Grid.Column="1"
-                                           FontSize="15" FontAttributes="Bold"
-                                           TextColor="#1F77F0" VerticalOptions="Center">
-                                        <Label.Text>
-                                            <MultiBinding StringFormat="{}{0:F1} {1}">
-                                                <Binding Path="Weight"/>
-                                                <Binding Path="Unit"/>
-                                            </MultiBinding>
-                                        </Label.Text>
+                                    </Border.Triggers>
+                                    <Border.GestureRecognizers>
+                                        <TapGestureRecognizer
+                                            Command="{Binding Source={RelativeSource AncestorType={x:Type vm:BodyWeightViewModel}}, Path=SetTimePeriodCommand}"
+                                            CommandParameter="{Binding DaysString}"/>
+                                    </Border.GestureRecognizers>
+                                    <Label Text="{Binding Label}"
+                                           FontSize="13" FontAttributes="Bold"
+                                           HorizontalOptions="Center" Padding="16,10">
+                                        <Label.Triggers>
+                                            <DataTrigger TargetType="Label" Binding="{Binding IsSelected}" Value="True">
+                                                <Setter Property="TextColor" Value="#FFFFFF"/>
+                                            </DataTrigger>
+                                            <DataTrigger TargetType="Label" Binding="{Binding IsSelected}" Value="False">
+                                                <Setter Property="TextColor" Value="#737373"/>
+                                            </DataTrigger>
+                                        </Label.Triggers>
                                     </Label>
-                                    <Button Grid.Column="2"
-                                            Text="✕"
-                                            Command="{Binding Source={RelativeSource AncestorType={x:Type vm:BodyWeightViewModel}}, Path=DeleteEntryCommand}"
-                                            CommandParameter="{Binding .}"
-                                            BackgroundColor="Transparent" TextColor="#FF6B6B"
-                                            FontSize="14" Padding="0"
-                                            WidthRequest="36" HeightRequest="36"
-                                            BorderWidth="0" VerticalOptions="Center"/>
-                                </Grid>
+                                </Border>
                             </DataTemplate>
-                        </CollectionView.ItemTemplate>
-                    </CollectionView>
-                </StackLayout>
+                        </BindableLayout.ItemTemplate>
+                    </FlexLayout>
+                </VerticalStackLayout>
+            </VerticalStackLayout>
+        </Border>
 
-                <Label Text=" " Margin="0,8"/>
+        <ScrollView Grid.Row="1" VerticalScrollBarVisibility="Never">
+            <VerticalStackLayout Padding="20,24,20,40" Spacing="24">
 
-            </StackLayout>
+                <Border IsVisible="{Binding IsAddingEntry}" BackgroundColor="#FFFFFF" StrokeThickness="0">
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="14"/>
+                    </Border.StrokeShape>
+                    <Border.Shadow>
+                        <Shadow Brush="#000000" Offset="0,4" Radius="12" Opacity="0.08" />
+                    </Border.Shadow>
+                    <VerticalStackLayout Padding="20" Spacing="16">
+
+                        <Label Text="LOG WEIGHT" FontSize="12" FontAttributes="Bold" TextColor="#A3A3A3" CharacterSpacing="1"/>
+
+                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="16">
+                            <Border Grid.Column="0" BackgroundColor="#F4F5F7" StrokeThickness="0" HeightRequest="48">
+                                <Border.StrokeShape>
+                                    <RoundRectangle CornerRadius="10"/>
+                                </Border.StrokeShape>
+                                <Entry Text="{Binding NewWeight}"
+                                       Placeholder="e.g. 175.5"
+                                       Keyboard="Numeric"
+                                       BackgroundColor="Transparent"
+                                       TextColor="#1A1A1A"
+                                       FontAttributes="Bold"
+                                       FontSize="16"
+                                       Margin="12,0"/>
+                            </Border>
+                            <Label Grid.Column="1" Text="{Binding WeightUnitLabel}" FontSize="16" FontAttributes="Bold" TextColor="#A3A3A3" VerticalOptions="Center"/>
+                        </Grid>
+
+                        <Border BackgroundColor="#F4F5F7" StrokeThickness="0" HeightRequest="48">
+                            <Border.StrokeShape>
+                                <RoundRectangle CornerRadius="10"/>
+                            </Border.StrokeShape>
+                            <Entry Text="{Binding NewNotes}"
+                                   Placeholder="Optional note (e.g. morning, post-workout)"
+                                   BackgroundColor="Transparent"
+                                   TextColor="#1A1A1A"
+                                   FontSize="14"
+                                   Margin="12,0"/>
+                        </Border>
+
+                        <VerticalStackLayout Spacing="8">
+                            <Label Text="DATE" FontSize="11" FontAttributes="Bold" TextColor="#A3A3A3" CharacterSpacing="1"/>
+                            <Border BackgroundColor="#F4F5F7" StrokeThickness="0" HeightRequest="48">
+                                <Border.StrokeShape>
+                                    <RoundRectangle CornerRadius="10"/>
+                                </Border.StrokeShape>
+                                <DatePicker Date="{Binding NewDate}"
+                                            BackgroundColor="Transparent"
+                                            TextColor="#1A1A1A"
+                                            Format="MMM dd, yyyy"
+                                            MaximumDate="{x:Static sys:DateTime.Today}"
+                                            Margin="12,0"/>
+                            </Border>
+                        </VerticalStackLayout>
+
+                        <Grid ColumnDefinitions="*,*" ColumnSpacing="12" Margin="0,8,0,0">
+                            <Button Grid.Column="0" Text="Cancel" Command="{Binding CancelAddEntryCommand}" BackgroundColor="Transparent" TextColor="#FF6B6B" FontAttributes="Bold" FontSize="15" Padding="0,14" CornerRadius="10" BorderWidth="1" BorderColor="#FFEAEA"/>
+                            <Button Grid.Column="1" Text="Save" Command="{Binding SaveEntryCommand}" BackgroundColor="#1F77F0" TextColor="#FFFFFF" FontAttributes="Bold" FontSize="15" Padding="0,14" CornerRadius="10" BorderWidth="0">
+                                <Button.Shadow>
+                                    <Shadow Brush="#1F77F0" Offset="0,4" Radius="8" Opacity="0.2"/>
+                                </Button.Shadow>
+                            </Button>
+                        </Grid>
+                    </VerticalStackLayout>
+                </Border>
+
+                <VerticalStackLayout IsVisible="{Binding HasData, Converter={x:StaticResource InverseBoolConverter}}" Padding="20,60" Spacing="16" HorizontalOptions="Center">
+                    <Label Text="⚖️" FontSize="56" HorizontalOptions="Center"/>
+                    <Label Text="No entries yet" FontSize="18" FontAttributes="Bold" TextColor="#1A1A1A" HorizontalOptions="Center"/>
+                    <Label Text="Tap + Log to record your first weight and track your progress over time." FontSize="14" TextColor="#A3A3A3" HorizontalOptions="Center" HorizontalTextAlignment="Center" Margin="0,0,0,20"/>
+                </VerticalStackLayout>
+
+                <Border IsVisible="{Binding HasChart}" BackgroundColor="#FFFFFF" StrokeThickness="0">
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="14"/>
+                    </Border.StrokeShape>
+                    <Border.Shadow>
+                        <Shadow Brush="#000000" Offset="0,2" Radius="8" Opacity="0.04" />
+                    </Border.Shadow>
+                    <VerticalStackLayout Padding="16,20" Spacing="16">
+                        <Label Text="WEIGHT OVER TIME" FontSize="12" FontAttributes="Bold" TextColor="#A3A3A3" CharacterSpacing="1"/>
+                        <microcharts:ChartView Chart="{Binding Chart}" HeightRequest="220"/>
+                    </VerticalStackLayout>
+                </Border>
+
+                <VerticalStackLayout IsVisible="{Binding HasData}" Spacing="12">
+                    <Label Text="STATS" FontSize="12" FontAttributes="Bold" TextColor="#A3A3A3" CharacterSpacing="1" Margin="4,0,0,0"/>
+
+                    <VerticalStackLayout Spacing="12">
+                        <Grid ColumnDefinitions="*,*,*" ColumnSpacing="12">
+                            <Border Grid.Column="0" BackgroundColor="#FFFFFF" StrokeThickness="0">
+                                <Border.StrokeShape>
+                                    <RoundRectangle CornerRadius="12"/>
+                                </Border.StrokeShape>
+                                <Border.Shadow>
+                                    <Shadow Brush="#000000" Offset="0,2" Radius="6" Opacity="0.03" />
+                                </Border.Shadow>
+                                <VerticalStackLayout Padding="8,16" Spacing="6" HorizontalOptions="Center">
+                                    <Label Text="CURRENT" FontSize="10" TextColor="#A3A3A3" FontAttributes="Bold" CharacterSpacing="1" HorizontalOptions="Center"/>
+                                    <Label Text="{Binding CurrentWeightLabel}" FontSize="18" FontAttributes="Bold" TextColor="#1F77F0" HorizontalOptions="Center"/>
+                                </VerticalStackLayout>
+                            </Border>
+
+                            <Border Grid.Column="1" BackgroundColor="#FFFFFF" StrokeThickness="0">
+                                <Border.StrokeShape>
+                                    <RoundRectangle CornerRadius="12"/>
+                                </Border.StrokeShape>
+                                <Border.Shadow>
+                                    <Shadow Brush="#000000" Offset="0,2" Radius="6" Opacity="0.03" />
+                                </Border.Shadow>
+                                <VerticalStackLayout Padding="8,16" Spacing="6" HorizontalOptions="Center">
+                                    <Label Text="STARTING" FontSize="10" TextColor="#A3A3A3" FontAttributes="Bold" CharacterSpacing="1" HorizontalOptions="Center"/>
+                                    <Label Text="{Binding StartingWeightLabel}" FontSize="18" FontAttributes="Bold" TextColor="#737373" HorizontalOptions="Center"/>
+                                </VerticalStackLayout>
+                            </Border>
+
+                            <Border Grid.Column="2" BackgroundColor="#FFFFFF" StrokeThickness="0">
+                                <Border.StrokeShape>
+                                    <RoundRectangle CornerRadius="12"/>
+                                </Border.StrokeShape>
+                                <Border.Shadow>
+                                    <Shadow Brush="#000000" Offset="0,2" Radius="6" Opacity="0.03" />
+                                </Border.Shadow>
+                                <VerticalStackLayout Padding="8,16" Spacing="6" HorizontalOptions="Center">
+                                    <Label Text="CHANGE" FontSize="10" TextColor="#A3A3A3" FontAttributes="Bold" CharacterSpacing="1" HorizontalOptions="Center"/>
+                                    <Label Text="{Binding ChangeLabel}" FontSize="18" FontAttributes="Bold" TextColor="{Binding ChangeColor}" HorizontalOptions="Center"/>
+                                </VerticalStackLayout>
+                            </Border>
+                        </Grid>
+
+                        <Grid ColumnDefinitions="*,*,*" ColumnSpacing="12">
+                            <Border Grid.Column="0" BackgroundColor="#FFFFFF" StrokeThickness="0">
+                                <Border.StrokeShape>
+                                    <RoundRectangle CornerRadius="12"/>
+                                </Border.StrokeShape>
+                                <Border.Shadow>
+                                    <Shadow Brush="#000000" Offset="0,2" Radius="6" Opacity="0.03" />
+                                </Border.Shadow>
+                                <VerticalStackLayout Padding="8,16" Spacing="6" HorizontalOptions="Center">
+                                    <Label Text="7-DAY AVG" FontSize="10" TextColor="#A3A3A3" FontAttributes="Bold" CharacterSpacing="1" HorizontalOptions="Center"/>
+                                    <Label Text="{Binding WeeklyAverageLabel}" FontSize="18" FontAttributes="Bold" TextColor="#9C27B0" HorizontalOptions="Center"/>
+                                </VerticalStackLayout>
+                            </Border>
+
+                            <Border Grid.Column="1" BackgroundColor="#FFFFFF" StrokeThickness="0">
+                                <Border.StrokeShape>
+                                    <RoundRectangle CornerRadius="12"/>
+                                </Border.StrokeShape>
+                                <Border.Shadow>
+                                    <Shadow Brush="#000000" Offset="0,2" Radius="6" Opacity="0.03" />
+                                </Border.Shadow>
+                                <VerticalStackLayout Padding="8,16" Spacing="6" HorizontalOptions="Center">
+                                    <Label Text="LOWEST" FontSize="10" TextColor="#A3A3A3" FontAttributes="Bold" CharacterSpacing="1" HorizontalOptions="Center"/>
+                                    <Label Text="{Binding PersonalLowLabel}" FontSize="18" FontAttributes="Bold" TextColor="#4CAF50" HorizontalOptions="Center"/>
+                                </VerticalStackLayout>
+                            </Border>
+
+                            <Border Grid.Column="2" BackgroundColor="#FFFFFF" StrokeThickness="0">
+                                <Border.StrokeShape>
+                                    <RoundRectangle CornerRadius="12"/>
+                                </Border.StrokeShape>
+                                <Border.Shadow>
+                                    <Shadow Brush="#000000" Offset="0,2" Radius="6" Opacity="0.03" />
+                                </Border.Shadow>
+                                <VerticalStackLayout Padding="8,16" Spacing="6" HorizontalOptions="Center">
+                                    <Label Text="HIGHEST" FontSize="10" TextColor="#A3A3A3" FontAttributes="Bold" CharacterSpacing="1" HorizontalOptions="Center"/>
+                                    <Label Text="{Binding PersonalHighLabel}" FontSize="18" FontAttributes="Bold" TextColor="#FF9800" HorizontalOptions="Center"/>
+                                </VerticalStackLayout>
+                            </Border>
+                        </Grid>
+                    </VerticalStackLayout>
+
+                    <Border IsVisible="{Binding HasBmi}" BackgroundColor="#FFFFFF" StrokeThickness="0" Margin="0,4,0,0">
+                        <Border.StrokeShape>
+                            <RoundRectangle CornerRadius="14"/>
+                        </Border.StrokeShape>
+                        <Border.Shadow>
+                            <Shadow Brush="#000000" Offset="0,2" Radius="8" Opacity="0.04" />
+                        </Border.Shadow>
+                        <VerticalStackLayout Padding="20,16" Spacing="8">
+                            <Label Text="BMI" FontSize="11" TextColor="#A3A3A3" FontAttributes="Bold" CharacterSpacing="1"/>
+                            <Grid ColumnDefinitions="Auto,*">
+                                <Label Grid.Column="0" Text="{Binding BmiLabel}" FontSize="32" FontAttributes="Bold" TextColor="#1F77F0" VerticalOptions="Center"/>
+                                <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center" Margin="16,0,0,0">
+                                    <Label Text="{Binding BmiCategory}" FontSize="15" FontAttributes="Bold" TextColor="#1F77F0"/>
+                                    <Label Text="Set your height in Settings for BMI" FontSize="12" TextColor="#A3A3A3" IsVisible="{Binding HasBmi, Converter={x:StaticResource InverseBoolConverter}}"/>
+                                </VerticalStackLayout>
+                            </Grid>
+                        </VerticalStackLayout>
+                    </Border>
+                </VerticalStackLayout>
+
+                <VerticalStackLayout IsVisible="{Binding HasData}" Spacing="10">
+                    <Label Text="HISTORY" FontSize="12" FontAttributes="Bold" TextColor="#A3A3A3" CharacterSpacing="1" Margin="4,0,0,0"/>
+
+                    <Border BackgroundColor="#FFFFFF" StrokeThickness="0">
+                        <Border.StrokeShape>
+                            <RoundRectangle CornerRadius="14"/>
+                        </Border.StrokeShape>
+                        <Border.Shadow>
+                            <Shadow Brush="#000000" Offset="0,2" Radius="8" Opacity="0.04" />
+                        </Border.Shadow>
+                        <VerticalStackLayout BindableLayout.ItemsSource="{Binding Entries}" Spacing="0">
+                            <BindableLayout.ItemTemplate>
+                                <DataTemplate x:DataType="models:BodyWeightEntry">
+                                    <VerticalStackLayout>
+                                        <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="16" Padding="16">
+
+                                            <VerticalStackLayout Grid.Column="0" Spacing="4" VerticalOptions="Center">
+                                                <Label Text="{Binding Date, StringFormat='{0:MMM d, yyyy · h:mm tt}'}" FontSize="14" FontAttributes="Bold" TextColor="#1A1A1A"/>
+                                                <Label Text="{Binding Notes}" FontSize="12" TextColor="#A3A3A3" IsVisible="{Binding Notes, Converter={x:StaticResource IsNotEmptyConverter}}"/>
+                                            </VerticalStackLayout>
+
+                                            <Label Grid.Column="1" FontSize="16" FontAttributes="Bold" TextColor="#1F77F0" VerticalOptions="Center">
+                                                <Label.Text>
+                                                    <MultiBinding StringFormat="{}{0:F1} {1}">
+                                                        <Binding Path="Weight"/>
+                                                        <Binding Path="Unit"/>
+                                                    </MultiBinding>
+                                                </Label.Text>
+                                            </Label>
+
+                                            <Button Grid.Column="2"
+                                                    Text="✕"
+                                                    Command="{Binding Source={RelativeSource AncestorType={x:Type vm:BodyWeightViewModel}}, Path=DeleteEntryCommand}"
+                                                    CommandParameter="{Binding .}"
+                                                    BackgroundColor="#FFEAEA" TextColor="#FF6B6B"
+                                                    FontSize="15" FontAttributes="Bold" Padding="0"
+                                                    WidthRequest="36" HeightRequest="36" CornerRadius="8"
+                                                    BorderWidth="0" VerticalOptions="Center"/>
+                                        </Grid>
+
+                                        <BoxView HeightRequest="1" Color="#F4F4F4" Margin="16,0"/>
+                                    </VerticalStackLayout>
+                                </DataTemplate>
+                            </BindableLayout.ItemTemplate>
+                        </VerticalStackLayout>
+                    </Border>
+                </VerticalStackLayout>
+
+            </VerticalStackLayout>
         </ScrollView>
 
     </Grid>
-
 </ContentPage>

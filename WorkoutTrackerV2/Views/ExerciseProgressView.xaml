@@ -6,7 +6,7 @@
              xmlns:models="clr-namespace:WorkoutTrackerV2.Models"
              xmlns:microcharts="clr-namespace:Microcharts.Maui;assembly=Microcharts.Maui"
              x:DataType="vm:ExerciseProgressViewModel"
-             BackgroundColor="#FAFAFA">
+             BackgroundColor="#F4F5F7">
 
     <Shell.BackButtonBehavior>
         <BackButtonBehavior IsVisible="False" IsEnabled="False"/>
@@ -14,131 +14,156 @@
 
     <Grid RowDefinitions="Auto,*" RowSpacing="0">
 
-        <!-- ── Header ─────────────────────────────────────────────────────── -->
-        <StackLayout Grid.Row="0" BackgroundColor="#FFFFFF" Padding="24,16,24,24" Spacing="4">
-            <Button Text="← Back"
-                    Command="{Binding GoBackCommand}"
-                    BackgroundColor="Transparent" TextColor="#1F77F0"
-                    FontSize="14" Padding="0" HorizontalOptions="Start"/>
-            <Label Text="{Binding Exercise.ExerciseName}"
-                   FontSize="32" FontAttributes="Bold"
-                   TextColor="#1F77F0" CharacterSpacing="0.5"/>
-            <Label Text="{Binding Exercise.MuscleGroup}"
-                   FontSize="13" TextColor="#999999"/>
-        </StackLayout>
+        <Border Grid.Row="0" BackgroundColor="#FFFFFF" StrokeThickness="0" ZIndex="1">
+            <Border.Shadow>
+                <Shadow Brush="#000000" Offset="0,4" Radius="12" Opacity="0.04" />
+            </Border.Shadow>
+            <VerticalStackLayout Padding="24,16,24,20" Spacing="20">
+                <Button Text="← Back"
+                        Command="{Binding GoBackCommand}"
+                        BackgroundColor="Transparent" TextColor="#1F77F0"
+                        FontSize="15" FontAttributes="Bold" Padding="0" HorizontalOptions="Start" HeightRequest="30"/>
+                <VerticalStackLayout Spacing="2">
+                    <Label Text="{Binding Exercise.ExerciseName}"
+                           FontSize="32" FontAttributes="Bold"
+                           TextColor="#1A1A1A" CharacterSpacing="0.5"/>
+                    <Label Text="{Binding Exercise.MuscleGroup}"
+                           FontSize="14" TextColor="#737373"/>
+                </VerticalStackLayout>
+            </VerticalStackLayout>
+        </Border>
 
-        <ScrollView Grid.Row="1">
-            <StackLayout Padding="20,24" Spacing="20">
+        <ScrollView Grid.Row="1" VerticalScrollBarVisibility="Never">
+            <VerticalStackLayout Padding="20,24,20,40" Spacing="24">
 
-                <!-- ── Stats Row ──────────────────────────────────────────── -->
                 <Grid ColumnDefinitions="*,*,*" ColumnSpacing="12">
-                    <StackLayout BackgroundColor="#F0F7FF" Padding="16,20" Spacing="6">
-                        <Label Text="MAX" FontSize="10" TextColor="#1F77F0"
-                               FontAttributes="Bold" CharacterSpacing="1" HorizontalOptions="Center"/>
-                        <Label Text="{Binding Exercise.MaxWeight, StringFormat='{0:F0}'}"
-                               FontSize="26" FontAttributes="Bold" TextColor="#1F77F0"
-                               HorizontalOptions="Center"/>
-                        <Label Text="{Binding WeightUnitLabel}" FontSize="10" TextColor="#1F77F0" HorizontalOptions="Center"/>
-                    </StackLayout>
-                    <StackLayout Grid.Column="1" BackgroundColor="#F1F8F1" Padding="16,20" Spacing="6">
-                        <Label Text="AVG" FontSize="10" TextColor="#4CAF50"
-                               FontAttributes="Bold" CharacterSpacing="1" HorizontalOptions="Center"/>
-                        <Label Text="{Binding Exercise.AverageWeight, StringFormat='{0:F0}'}"
-                               FontSize="26" FontAttributes="Bold" TextColor="#4CAF50"
-                               HorizontalOptions="Center"/>
-                        <Label Text="{Binding WeightUnitLabel}" FontSize="10" TextColor="#4CAF50" HorizontalOptions="Center"/>
-                    </StackLayout>
-                    <StackLayout Grid.Column="2" BackgroundColor="#FFF8E1" Padding="16,20" Spacing="6">
-                        <Label Text="REPS" FontSize="10" TextColor="#FF9800"
-                               FontAttributes="Bold" CharacterSpacing="1" HorizontalOptions="Center"/>
-                        <Label Text="{Binding Exercise.TotalReps}"
-                               FontSize="26" FontAttributes="Bold" TextColor="#FF9800"
-                               HorizontalOptions="Center"/>
-                        <Label Text="total" FontSize="10" TextColor="#FF9800" HorizontalOptions="Center"/>
-                    </StackLayout>
+                    <Border Grid.Column="0" BackgroundColor="#F0F7FF" StrokeThickness="0">
+                        <Border.StrokeShape>
+                            <RoundRectangle CornerRadius="12"/>
+                        </Border.StrokeShape>
+                        <VerticalStackLayout Padding="12,16" Spacing="4">
+                            <Label Text="MAX" FontSize="10" TextColor="#1F77F0" FontAttributes="Bold" CharacterSpacing="1" HorizontalOptions="Center"/>
+                            <Label Text="{Binding Exercise.MaxWeight, StringFormat='{0:F0}'}" FontSize="24" FontAttributes="Bold" TextColor="#1F77F0" HorizontalOptions="Center"/>
+                            <Label Text="{Binding WeightUnitLabel}" FontSize="11" FontAttributes="Bold" TextColor="#1F77F0" HorizontalOptions="Center" Opacity="0.7"/>
+                        </VerticalStackLayout>
+                    </Border>
+                    <Border Grid.Column="1" BackgroundColor="#E8F5E9" StrokeThickness="0">
+                        <Border.StrokeShape>
+                            <RoundRectangle CornerRadius="12"/>
+                        </Border.StrokeShape>
+                        <VerticalStackLayout Padding="12,16" Spacing="4">
+                            <Label Text="AVG" FontSize="10" TextColor="#4CAF50" FontAttributes="Bold" CharacterSpacing="1" HorizontalOptions="Center"/>
+                            <Label Text="{Binding Exercise.AverageWeight, StringFormat='{0:F0}'}" FontSize="24" FontAttributes="Bold" TextColor="#4CAF50" HorizontalOptions="Center"/>
+                            <Label Text="{Binding WeightUnitLabel}" FontSize="11" FontAttributes="Bold" TextColor="#4CAF50" HorizontalOptions="Center" Opacity="0.7"/>
+                        </VerticalStackLayout>
+                    </Border>
+                    <Border Grid.Column="2" BackgroundColor="#FFF8E1" StrokeThickness="0">
+                        <Border.StrokeShape>
+                            <RoundRectangle CornerRadius="12"/>
+                        </Border.StrokeShape>
+                        <VerticalStackLayout Padding="12,16" Spacing="4">
+                            <Label Text="REPS" FontSize="10" TextColor="#FF9800" FontAttributes="Bold" CharacterSpacing="1" HorizontalOptions="Center"/>
+                            <Label Text="{Binding Exercise.TotalReps}" FontSize="24" FontAttributes="Bold" TextColor="#FF9800" HorizontalOptions="Center"/>
+                            <Label Text="total" FontSize="11" FontAttributes="Bold" TextColor="#FF9800" HorizontalOptions="Center" Opacity="0.7"/>
+                        </VerticalStackLayout>
+                    </Border>
                 </Grid>
 
-                <!-- ── Chart ──────────────────────────────────────────────── -->
-                <StackLayout BackgroundColor="#FFFFFF" Padding="16" Spacing="12">
-                    <Label Text="WEIGHT OVER TIME"
-                           FontSize="11" FontAttributes="Bold"
-                           TextColor="#999999" CharacterSpacing="1"/>
-                    <microcharts:ChartView Chart="{Binding Chart}" HeightRequest="260"/>
-                </StackLayout>
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="WEIGHT OVER TIME" FontSize="12" FontAttributes="Bold" TextColor="#A3A3A3" CharacterSpacing="1" Margin="4,0,0,0"/>
+                    <Border BackgroundColor="#FFFFFF" StrokeThickness="0">
+                        <Border.StrokeShape>
+                            <RoundRectangle CornerRadius="14"/>
+                        </Border.StrokeShape>
+                        <Border.Shadow>
+                            <Shadow Brush="#000000" Offset="0,2" Radius="8" Opacity="0.04" />
+                        </Border.Shadow>
+                        <VerticalStackLayout Padding="16,20">
+                            <microcharts:ChartView Chart="{Binding Chart}" HeightRequest="260"/>
+                        </VerticalStackLayout>
+                    </Border>
+                </VerticalStackLayout>
 
-                <!-- ── Estimated 1RM ─────────────────────────────────────── -->
-                <StackLayout IsVisible="{Binding HasOneRepMax}"
-                             BackgroundColor="#FFFFFF" Padding="16" Spacing="8">
-                    <Label Text="ESTIMATED 1 REP MAX"
-                           FontSize="11" FontAttributes="Bold"
-                           TextColor="#999999" CharacterSpacing="1"/>
-                    <Grid ColumnDefinitions="*,Auto">
-                        <StackLayout Grid.Column="0" Spacing="2">
-                            <Label Text="{Binding EstimatedOneRepMax}"
-                                   FontSize="32" FontAttributes="Bold"
-                                   TextColor="#1F77F0"/>
-                            <Label FontSize="11" TextColor="#999999">
-                                <Label.Text>
-                                    <MultiBinding StringFormat="{}Based on {0:F0} {1} × {2} reps ({3} formula)">
-                                        <Binding Path="Exercise.MaxWeight"/>
-                                        <Binding Path="WeightUnitLabel"/>
-                                        <Binding Path="Exercise.RepsAtMaxWeight"/>
-                                        <Binding Path="FormulaLabel"/>
-                                    </MultiBinding>
-                                </Label.Text>
-                            </Label>
-                        </StackLayout>
-                        <Label Grid.Column="1"
-                               Text="🏋️"
-                               FontSize="36"
-                               VerticalOptions="Center"
-                               Opacity="0.3"/>
-                    </Grid>
-                    <Label Text="⚠️ Estimate only — always warm up properly before attempting a true max."
-                           FontSize="10" TextColor="#AAAAAA" LineBreakMode="WordWrap"/>
-                </StackLayout>
-
-                <!-- ── Set History ────────────────────────────────────────── -->
-                <StackLayout Spacing="12">
-                    <Label Text="SET HISTORY"
-                           FontSize="11" FontAttributes="Bold"
-                           TextColor="#999999" CharacterSpacing="1"/>
-                    <CollectionView ItemsSource="{Binding Exercise.Sets}" SelectionMode="None">
-                        <CollectionView.EmptyView>
-                            <Label Text="No sets recorded"
-                                   FontSize="13" TextColor="#D0D0D0"
-                                   HorizontalOptions="Center" Margin="0,20"/>
-                        </CollectionView.EmptyView>
-                        <CollectionView.ItemTemplate>
-                            <DataTemplate x:DataType="models:WorkoutSet">
-                                <Grid ColumnDefinitions="*,Auto,Auto"
-                                      ColumnSpacing="16"
-                                      Padding="16,12"
-                                      BackgroundColor="#FFFFFF"
-                                      Margin="0,0,0,2">
-                                    <Label Grid.Column="0"
-                                           Text="{Binding CreatedDate, StringFormat='{0:MMM d, yyyy}'}"
-                                           FontSize="13" TextColor="#000000" VerticalOptions="Center"/>
-                                    <Label Grid.Column="1"
-                                           Text="{Binding Reps, StringFormat='{0} reps'}"
-                                           FontSize="13" FontAttributes="Bold"
-                                           TextColor="#1F77F0" VerticalOptions="Center"/>
-                                    <Label Grid.Column="2"
-                                           FontSize="13" TextColor="#999999" VerticalOptions="Center">
+                <VerticalStackLayout Spacing="10" IsVisible="{Binding HasOneRepMax}">
+                    <Label Text="ESTIMATED 1 REP MAX" FontSize="12" FontAttributes="Bold" TextColor="#A3A3A3" CharacterSpacing="1" Margin="4,0,0,0"/>
+                    <Border BackgroundColor="#FFFFFF" StrokeThickness="0">
+                        <Border.StrokeShape>
+                            <RoundRectangle CornerRadius="14"/>
+                        </Border.StrokeShape>
+                        <Border.Shadow>
+                            <Shadow Brush="#000000" Offset="0,2" Radius="8" Opacity="0.04" />
+                        </Border.Shadow>
+                        <VerticalStackLayout Padding="20,16" Spacing="16">
+                            <Grid ColumnDefinitions="*,Auto">
+                                <VerticalStackLayout Grid.Column="0" Spacing="4" VerticalOptions="Center">
+                                    <Label Text="{Binding EstimatedOneRepMax}" FontSize="36" FontAttributes="Bold" TextColor="#1F77F0"/>
+                                    <Label FontSize="12" TextColor="#737373" LineBreakMode="WordWrap">
                                         <Label.Text>
-                                            <MultiBinding StringFormat="{}{0} {1}">
-                                                <Binding Path="Weight"/>
-                                                <Binding Path="WeightUnit"/>
+                                            <MultiBinding StringFormat="{}Based on {0:F0} {1} × {2} reps ({3} formula)">
+                                                <Binding Path="Exercise.MaxWeight"/>
+                                                <Binding Path="WeightUnitLabel"/>
+                                                <Binding Path="Exercise.RepsAtMaxWeight"/>
+                                                <Binding Path="FormulaLabel"/>
                                             </MultiBinding>
                                         </Label.Text>
                                     </Label>
-                                </Grid>
-                            </DataTemplate>
-                        </CollectionView.ItemTemplate>
-                    </CollectionView>
-                </StackLayout>
+                                </VerticalStackLayout>
+                                <Label Grid.Column="1" Text="🏋️" FontSize="42" VerticalOptions="Center" Opacity="0.2"/>
+                            </Grid>
+                            <BoxView HeightRequest="1" Color="#F4F5F7"/>
+                            <Label Text="⚠️ Estimate only — always warm up properly before attempting a true max." FontSize="11" TextColor="#A3A3A3" LineBreakMode="WordWrap"/>
+                        </VerticalStackLayout>
+                    </Border>
+                </VerticalStackLayout>
 
-            </StackLayout>
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="SET HISTORY" FontSize="12" FontAttributes="Bold" TextColor="#A3A3A3" CharacterSpacing="1" Margin="4,0,0,0"/>
+                    <Border BackgroundColor="#FFFFFF" StrokeThickness="0">
+                        <Border.StrokeShape>
+                            <RoundRectangle CornerRadius="14"/>
+                        </Border.StrokeShape>
+                        <Border.Shadow>
+                            <Shadow Brush="#000000" Offset="0,2" Radius="8" Opacity="0.04" />
+                        </Border.Shadow>
+
+                        <CollectionView ItemsSource="{Binding Exercise.Sets}" SelectionMode="None">
+                            <CollectionView.EmptyView>
+                                <Label Text="No sets recorded" FontSize="14" FontAttributes="Bold" TextColor="#A3A3A3" HorizontalOptions="Center" Margin="0,32"/>
+                            </CollectionView.EmptyView>
+                            <CollectionView.ItemTemplate>
+                                <DataTemplate x:DataType="models:WorkoutSet">
+                                    <VerticalStackLayout>
+                                        <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="16" Padding="16,16">
+
+                                            <Label Grid.Column="0" Text="{Binding CreatedDate, StringFormat='{0:MMM d, yyyy}'}" FontSize="15" FontAttributes="Bold" TextColor="#1A1A1A" VerticalOptions="Center"/>
+
+                                            <Border Grid.Column="1" BackgroundColor="#F0F7FF" StrokeThickness="0" Padding="10,6" VerticalOptions="Center">
+                                                <Border.StrokeShape>
+                                                    <RoundRectangle CornerRadius="8"/>
+                                                </Border.StrokeShape>
+                                                <Label Text="{Binding Reps, StringFormat='{0} reps'}" FontSize="12" FontAttributes="Bold" TextColor="#1F77F0"/>
+                                            </Border>
+
+                                            <Label Grid.Column="2" FontSize="15" FontAttributes="Bold" TextColor="#737373" VerticalOptions="Center">
+                                                <Label.Text>
+                                                    <MultiBinding StringFormat="{}{0} {1}">
+                                                        <Binding Path="Weight"/>
+                                                        <Binding Path="WeightUnit"/>
+                                                    </MultiBinding>
+                                                </Label.Text>
+                                            </Label>
+
+                                        </Grid>
+
+                                        <BoxView HeightRequest="1" Color="#F4F4F4" Margin="16,0"/>
+                                    </VerticalStackLayout>
+                                </DataTemplate>
+                            </CollectionView.ItemTemplate>
+                        </CollectionView>
+                    </Border>
+                </VerticalStackLayout>
+
+            </VerticalStackLayout>
         </ScrollView>
 
     </Grid>

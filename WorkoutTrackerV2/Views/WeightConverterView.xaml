@@ -4,210 +4,180 @@
              x:Class="WorkoutTrackerV2.Views.WeightConverterView"
              xmlns:vm="clr-namespace:WorkoutTrackerV2.ViewModels"
              x:DataType="vm:WeightConverterViewModel"
-             BackgroundColor="#FAFAFA">
+             BackgroundColor="#F4F5F7">
 
     <Shell.NavBarIsVisible>False</Shell.NavBarIsVisible>
+    <Shell.BackButtonBehavior>
+        <BackButtonBehavior IsVisible="False" IsEnabled="False"/>
+    </Shell.BackButtonBehavior>
 
     <Grid RowDefinitions="Auto,*" RowSpacing="0">
 
-        <StackLayout Grid.Row="0" BackgroundColor="#FFFFFF"
-                     Padding="24,16,24,24" Spacing="4">
-            <Button Text="← Back"
-                    Command="{Binding GoBackCommand}"
-                    BackgroundColor="Transparent" TextColor="#1F77F0"
-                    FontSize="14" Padding="0" HorizontalOptions="Start"/>
-            <Label Text="Weight Converter"
-                   FontSize="32" FontAttributes="Bold"
-                   TextColor="#1F77F0" CharacterSpacing="0.5"/>
-            <Label Text="Quickly switch between Lbs and Kg"
-                   FontSize="13" TextColor="#999999"/>
-        </StackLayout>
+        <Border Grid.Row="0" BackgroundColor="#FFFFFF" StrokeThickness="0" ZIndex="1">
+            <Border.Shadow>
+                <Shadow Brush="#000000" Offset="0,4" Radius="12" Opacity="0.04" />
+            </Border.Shadow>
+            <VerticalStackLayout Padding="24,16,24,20" Spacing="20">
+                <Button Text="← Back"
+                        Command="{Binding GoBackCommand}"
+                        BackgroundColor="Transparent" TextColor="#1F77F0"
+                        FontSize="15" FontAttributes="Bold" Padding="0" HorizontalOptions="Start" HeightRequest="30"/>
+                <VerticalStackLayout Spacing="2">
+                    <Label Text="Weight Converter"
+                           FontSize="32" FontAttributes="Bold"
+                           TextColor="#1A1A1A" CharacterSpacing="0.5"/>
+                    <Label Text="Quickly switch between Lbs and Kg"
+                           FontSize="14" TextColor="#737373"/>
+                </VerticalStackLayout>
+            </VerticalStackLayout>
+        </Border>
 
-        <ScrollView Grid.Row="1">
-            <StackLayout Padding="20,24" Spacing="24">
+        <ScrollView Grid.Row="1" VerticalScrollBarVisibility="Never">
+            <VerticalStackLayout Padding="20,24,20,40" Spacing="24">
 
-                <StackLayout Spacing="10">
-                    <Label Text="CONVERSION"
-                           FontSize="11" FontAttributes="Bold"
-                           TextColor="#999999" CharacterSpacing="1"/>
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="CONVERSION" FontSize="12" FontAttributes="Bold" TextColor="#A3A3A3" CharacterSpacing="1" Margin="4,0,0,0"/>
+                    <Border BackgroundColor="#FFFFFF" StrokeThickness="0">
+                        <Border.StrokeShape>
+                            <RoundRectangle CornerRadius="14"/>
+                        </Border.StrokeShape>
+                        <Border.Shadow>
+                            <Shadow Brush="#000000" Offset="0,2" Radius="8" Opacity="0.04" />
+                        </Border.Shadow>
+                        <VerticalStackLayout Padding="20" Spacing="20">
 
-                    <StackLayout BackgroundColor="#FFFFFF" Padding="20" Spacing="16">
+                            <VerticalStackLayout Spacing="8">
+                                <Label Text="{Binding InputLabel}" FontSize="12" FontAttributes="Bold" TextColor="#A3A3A3"/>
+                                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                                    <Border Grid.Column="0" BackgroundColor="#F4F5F7" StrokeThickness="0" HeightRequest="56">
+                                        <Border.StrokeShape>
+                                            <RoundRectangle CornerRadius="12"/>
+                                        </Border.StrokeShape>
+                                        <Entry Text="{Binding InputValue, Mode=TwoWay}"
+                                               Keyboard="Numeric"
+                                               FontSize="24" FontAttributes="Bold" TextColor="#1A1A1A"
+                                               BackgroundColor="Transparent" Placeholder="0" PlaceholderColor="#B0B0B0"
+                                               HorizontalTextAlignment="Center" Margin="8,0"/>
+                                    </Border>
+                                    <Label Grid.Column="1" Text="{Binding InputUnit}" FontSize="16" FontAttributes="Bold" TextColor="#A3A3A3" VerticalOptions="Center" WidthRequest="35"/>
+                                </Grid>
+                            </VerticalStackLayout>
 
-                        <StackLayout Spacing="6">
-                            <Label Text="{Binding InputLabel}"
-                                   FontSize="12" TextColor="#999999"/>
-                            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
-                                <Entry Grid.Column="0"
-                                       Text="{Binding InputValue, Mode=TwoWay}"
-                                       Keyboard="Numeric"
-                                       FontSize="22" FontAttributes="Bold"
-                                       TextColor="#1F77F0"
-                                       BackgroundColor="#F5F5F5"
-                                       Placeholder="0"
-                                       PlaceholderColor="#DDDDDD"
-                                       HorizontalTextAlignment="Center"/>
-                                <Label Grid.Column="1"
-                                       Text="{Binding InputUnit}"
-                                       FontSize="15" FontAttributes="Bold"
-                                       TextColor="#BBBBBB"
-                                       VerticalOptions="Center"
-                                       WidthRequest="35"/>
-                            </Grid>
-                        </StackLayout>
+                            <Button Text="⇄ Switch Units"
+                                    Command="{Binding SwitchUnitsCommand}"
+                                    BackgroundColor="#F0F7FF" TextColor="#1F77F0"
+                                    FontAttributes="Bold" FontSize="15"
+                                    Padding="0,14" CornerRadius="12" BorderWidth="0"/>
 
-                        <Button Text="⇄ Switch Units"
-                                Command="{Binding SwitchUnitsCommand}"
-                                BackgroundColor="#1F77F0" TextColor="#FFFFFF"
-                                FontAttributes="Bold" FontSize="14"
-                                Padding="0,12" CornerRadius="10" BorderWidth="0"/>
+                            <BoxView HeightRequest="1" Color="#F4F5F7" Margin="0,4"/>
 
-                        <BoxView HeightRequest="0.5" Color="#F0F0F0" Margin="0,4"/>
+                            <VerticalStackLayout Spacing="2">
+                                <Label Text="{Binding ResultLabel}" FontSize="12" FontAttributes="Bold" TextColor="#A3A3A3"/>
+                                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12" Padding="0,4,0,0">
+                                    <Label Grid.Column="0" Text="{Binding CalculatedValue, StringFormat='{0:F2}'}" FontSize="36" FontAttributes="Bold" TextColor="#1F77F0" VerticalOptions="Center"/>
+                                    <Label Grid.Column="1" Text="{Binding ResultUnit}" FontSize="20" FontAttributes="Bold" TextColor="#A3A3A3" VerticalOptions="Center" WidthRequest="35" Margin="0,6,0,0"/>
+                                </Grid>
+                            </VerticalStackLayout>
 
-                        <StackLayout Spacing="6">
-                            <Label Text="{Binding ResultLabel}"
-                                   FontSize="12" TextColor="#999999"/>
-                            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
-                                <Border Grid.Column="0" BackgroundColor="#F5F5F5" 
-                                        StrokeThickness="0" HeightRequest="48">
+                        </VerticalStackLayout>
+                    </Border>
+                </VerticalStackLayout>
+
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="OLYMPIC PLATE REFERENCE" FontSize="12" FontAttributes="Bold" TextColor="#A3A3A3" CharacterSpacing="1" Margin="4,0,0,0"/>
+                    <Border BackgroundColor="#FFFFFF" StrokeThickness="0">
+                        <Border.StrokeShape>
+                            <RoundRectangle CornerRadius="14"/>
+                        </Border.StrokeShape>
+                        <Border.Shadow>
+                            <Shadow Brush="#000000" Offset="0,2" Radius="8" Opacity="0.04" />
+                        </Border.Shadow>
+                        <VerticalStackLayout Padding="20,8" Spacing="0">
+
+                            <Grid ColumnDefinitions="Auto, *, Auto" Padding="0,16">
+                                <Border Grid.Column="0" WidthRequest="16" HeightRequest="16" BackgroundColor="#E53935" StrokeThickness="0" VerticalOptions="Center">
                                     <Border.StrokeShape>
-                                        <RoundRectangle CornerRadius="0"/>
+                                        <RoundRectangle CornerRadius="8"/>
                                     </Border.StrokeShape>
-                                    <Label Text="{Binding CalculatedValue, StringFormat='{0:F2}'}"
-                                           FontSize="22" FontAttributes="Bold"
-                                           TextColor="#111111"
-                                           HorizontalOptions="Center"
-                                           VerticalOptions="Center"/>
                                 </Border>
-                                <Label Grid.Column="1"
-                                       Text="{Binding ResultUnit}"
-                                       FontSize="15" FontAttributes="Bold"
-                                       TextColor="#BBBBBB"
-                                       VerticalOptions="Center"
-                                       WidthRequest="35"/>
+                                <Label Grid.Column="1" Text="Red Plate" Margin="16,0" FontSize="15" FontAttributes="Bold" TextColor="#1A1A1A" VerticalOptions="Center"/>
+                                <Label Grid.Column="2" Text="25 kg = 55.1 lbs" FontSize="14" FontAttributes="Bold" TextColor="#A3A3A3" VerticalOptions="Center"/>
                             </Grid>
-                        </StackLayout>
+                            <BoxView HeightRequest="1" Color="#F4F5F7"/>
 
-                    </StackLayout>
-                </StackLayout>
+                            <Grid ColumnDefinitions="Auto, *, Auto" Padding="0,16">
+                                <Border Grid.Column="0" WidthRequest="16" HeightRequest="16" BackgroundColor="#1F77F0" StrokeThickness="0" VerticalOptions="Center">
+                                    <Border.StrokeShape>
+                                        <RoundRectangle CornerRadius="8"/>
+                                    </Border.StrokeShape>
+                                </Border>
+                                <Label Grid.Column="1" Text="Blue Plate" Margin="16,0" FontSize="15" FontAttributes="Bold" TextColor="#1A1A1A" VerticalOptions="Center"/>
+                                <Label Grid.Column="2" Text="20 kg = 44.1 lbs" FontSize="14" FontAttributes="Bold" TextColor="#A3A3A3" VerticalOptions="Center"/>
+                            </Grid>
+                            <BoxView HeightRequest="1" Color="#F4F5F7"/>
 
-                <StackLayout Spacing="10">
-                    <Label Text="OLYMPIC PLATE REFERENCE"
-                       FontSize="11" FontAttributes="Bold"
-                       TextColor="#999999" CharacterSpacing="1"/>
+                            <Grid ColumnDefinitions="Auto, *, Auto" Padding="0,16">
+                                <Border Grid.Column="0" WidthRequest="16" HeightRequest="16" BackgroundColor="#FFCA28" StrokeThickness="0" VerticalOptions="Center">
+                                    <Border.StrokeShape>
+                                        <RoundRectangle CornerRadius="8"/>
+                                    </Border.StrokeShape>
+                                </Border>
+                                <Label Grid.Column="1" Text="Yellow Plate" Margin="16,0" FontSize="15" FontAttributes="Bold" TextColor="#1A1A1A" VerticalOptions="Center"/>
+                                <Label Grid.Column="2" Text="15 kg = 33.1 lbs" FontSize="14" FontAttributes="Bold" TextColor="#A3A3A3" VerticalOptions="Center"/>
+                            </Grid>
+                            <BoxView HeightRequest="1" Color="#F4F5F7"/>
 
-                    <StackLayout BackgroundColor="#FFFFFF" Padding="20" Spacing="0">
+                            <Grid ColumnDefinitions="Auto, *, Auto" Padding="0,16">
+                                <Border Grid.Column="0" WidthRequest="16" HeightRequest="16" BackgroundColor="#43A047" StrokeThickness="0" VerticalOptions="Center">
+                                    <Border.StrokeShape>
+                                        <RoundRectangle CornerRadius="8"/>
+                                    </Border.StrokeShape>
+                                </Border>
+                                <Label Grid.Column="1" Text="Green Plate" Margin="16,0" FontSize="15" FontAttributes="Bold" TextColor="#1A1A1A" VerticalOptions="Center"/>
+                                <Label Grid.Column="2" Text="10 kg = 22.0 lbs" FontSize="14" FontAttributes="Bold" TextColor="#A3A3A3" VerticalOptions="Center"/>
+                            </Grid>
+                            <BoxView HeightRequest="1" Color="#F4F5F7"/>
 
-                        <Grid ColumnDefinitions="Auto, *, Auto" Padding="0,12">
-                            <Border Grid.Column="0" WidthRequest="12" HeightRequest="12" 
-                                BackgroundColor="#E53935" StrokeThickness="0">
-                                <Border.StrokeShape>
-                                    <RoundRectangle CornerRadius="6"/>
-                                </Border.StrokeShape>
-                            </Border>
-                            <Label Grid.Column="1" Text="Red Plate" Margin="12,0"
-                                FontSize="14" FontAttributes="Bold" TextColor="#111111" VerticalOptions="Center"/>
-                            <Label Grid.Column="2" Text="25 kg  =  55.1 lbs" 
-                                FontSize="14" TextColor="#1F77F0" FontAttributes="Bold" VerticalOptions="Center"/>
-                        </Grid>
-                        
-                        <BoxView HeightRequest="0.5" Color="#F0F0F0"/>
+                            <Grid ColumnDefinitions="Auto, *, Auto" Padding="0,16">
+                                <Border Grid.Column="0" WidthRequest="16" HeightRequest="16" BackgroundColor="#FFFFFF" Stroke="#E0E0E0" StrokeThickness="2" VerticalOptions="Center">
+                                    <Border.StrokeShape>
+                                        <RoundRectangle CornerRadius="8"/>
+                                    </Border.StrokeShape>
+                                </Border>
+                                <Label Grid.Column="1" Text="White Plate" Margin="16,0" FontSize="15" FontAttributes="Bold" TextColor="#1A1A1A" VerticalOptions="Center"/>
+                                <Label Grid.Column="2" Text="5 kg = 11.0 lbs" FontSize="14" FontAttributes="Bold" TextColor="#A3A3A3" VerticalOptions="Center"/>
+                            </Grid>
+                            <BoxView HeightRequest="1" Color="#F4F5F7"/>
 
-                        <Grid ColumnDefinitions="Auto, *, Auto" Padding="0,12">
-                            <Border Grid.Column="0" WidthRequest="12" HeightRequest="12" 
-                                BackgroundColor="#1F77F0" StrokeThickness="0">
-                                <Border.StrokeShape>
-                                    <RoundRectangle CornerRadius="6"/>
-                                </Border.StrokeShape>
-                            </Border>
-                            <Label Grid.Column="1" Text="Blue Plate" Margin="12,0"
-                                FontSize="14" FontAttributes="Bold" TextColor="#111111" VerticalOptions="Center"/>
-                            <Label Grid.Column="2" Text="20 kg  =  44.1 lbs" 
-                                FontSize="14" TextColor="#1F77F0" FontAttributes="Bold" VerticalOptions="Center"/>
-                        </Grid>
-                        
-                        <BoxView HeightRequest="0.5" Color="#F0F0F0"/>
+                            <Grid ColumnDefinitions="Auto, *, Auto" Padding="0,16">
+                                <Border Grid.Column="0" WidthRequest="16" HeightRequest="16" BackgroundColor="#333333" StrokeThickness="0" VerticalOptions="Center">
+                                    <Border.StrokeShape>
+                                        <RoundRectangle CornerRadius="8"/>
+                                    </Border.StrokeShape>
+                                </Border>
+                                <Label Grid.Column="1" Text="Black Plate" Margin="16,0" FontSize="15" FontAttributes="Bold" TextColor="#1A1A1A" VerticalOptions="Center"/>
+                                <Label Grid.Column="2" Text="2.5 kg = 5.5 lbs" FontSize="14" FontAttributes="Bold" TextColor="#A3A3A3" VerticalOptions="Center"/>
+                            </Grid>
+                            <BoxView HeightRequest="1" Color="#F4F5F7"/>
 
-                        <Grid ColumnDefinitions="Auto, *, Auto" Padding="0,12">
-                            <Border Grid.Column="0" WidthRequest="12" HeightRequest="12" 
-                                BackgroundColor="#FDD835" StrokeThickness="0">
-                                <Border.StrokeShape>
-                                    <RoundRectangle CornerRadius="6"/>
-                                </Border.StrokeShape>
-                            </Border>
-                            <Label Grid.Column="1" Text="Yellow Plate" Margin="12,0"
-                                FontSize="14" FontAttributes="Bold" TextColor="#111111" VerticalOptions="Center"/>
-                            <Label Grid.Column="2" Text="15 kg  =  33.1 lbs" 
-                                FontSize="14" TextColor="#1F77F0" FontAttributes="Bold" VerticalOptions="Center"/>
-                        </Grid>
-                        
-                        <BoxView HeightRequest="0.5" Color="#F0F0F0"/>
+                            <Grid ColumnDefinitions="Auto, *, Auto" Padding="0,16">
+                                <Border Grid.Column="0" WidthRequest="16" HeightRequest="16" BackgroundColor="#BDBDBD" StrokeThickness="0" VerticalOptions="Center">
+                                    <Border.StrokeShape>
+                                        <RoundRectangle CornerRadius="8"/>
+                                    </Border.StrokeShape>
+                                </Border>
+                                <Label Grid.Column="1" Text="Silver Plate" Margin="16,0" FontSize="15" FontAttributes="Bold" TextColor="#1A1A1A" VerticalOptions="Center"/>
+                                <Label Grid.Column="2" Text="1.25 kg = 2.8 lbs" FontSize="14" FontAttributes="Bold" TextColor="#A3A3A3" VerticalOptions="Center"/>
+                            </Grid>
 
-                        <Grid ColumnDefinitions="Auto, *, Auto" Padding="0,12">
-                            <Border Grid.Column="0" WidthRequest="12" HeightRequest="12" 
-                                BackgroundColor="#43A047" StrokeThickness="0">
-                                <Border.StrokeShape>
-                                    <RoundRectangle CornerRadius="6"/>
-                                </Border.StrokeShape>
-                            </Border>
-                            <Label Grid.Column="1" Text="Green Plate" Margin="12,0"
-                                FontSize="14" FontAttributes="Bold" TextColor="#111111" VerticalOptions="Center"/>
-                            <Label Grid.Column="2" Text="10 kg  =  22.0 lbs" 
-                                FontSize="14" TextColor="#1F77F0" FontAttributes="Bold" VerticalOptions="Center"/>
-                        </Grid>
+                        </VerticalStackLayout>
+                    </Border>
 
-                        <BoxView HeightRequest="0.5" Color="#F0F0F0"/>
+                    <Label Text="Standard Olympic bars weigh 20kg (44.1 lbs) or 15kg (33.1 lbs)."
+                           FontSize="12" TextColor="#A3A3A3" HorizontalTextAlignment="Center" Margin="0,8,0,0"/>
+                </VerticalStackLayout>
 
-                        <Grid ColumnDefinitions="Auto, *, Auto" Padding="0,12">
-                            <Border Grid.Column="0" WidthRequest="12" HeightRequest="12" 
-                                BackgroundColor="#FFFFFF" Stroke="#EEEEEE" StrokeThickness="1">
-                                <Border.StrokeShape>
-                                    <RoundRectangle CornerRadius="6"/>
-                                </Border.StrokeShape>
-                            </Border>
-                            <Label Grid.Column="1" Text="White Plate" Margin="12,0"
-                                FontSize="14" FontAttributes="Bold" TextColor="#111111" VerticalOptions="Center"/>
-                            <Label Grid.Column="2" Text="5 kg  =  11.0 lbs" 
-                                FontSize="14" TextColor="#1F77F0" FontAttributes="Bold" VerticalOptions="Center"/>
-                        </Grid>
-                        
-                        <BoxView HeightRequest="0.5" Color="#F0F0F0"/>
-
-                        <Grid ColumnDefinitions="Auto, *, Auto" Padding="0,12">
-                            <Border Grid.Column="0" WidthRequest="12" HeightRequest="12" 
-                                BackgroundColor="#333333" StrokeThickness="0">
-                                <Border.StrokeShape>
-                                    <RoundRectangle CornerRadius="6"/>
-                                </Border.StrokeShape>
-                            </Border>
-                            <Label Grid.Column="1" Text="Black Plate" Margin="12,0"
-                                FontSize="14" FontAttributes="Bold" TextColor="#111111" VerticalOptions="Center"/>
-                            <Label Grid.Column="2" Text="2.5 kg  =  5.5 lbs" 
-                                FontSize="14" TextColor="#1F77F0" FontAttributes="Bold" VerticalOptions="Center"/>
-                        </Grid>
-                        
-                        <BoxView HeightRequest="0.5" Color="#F0F0F0"/>
-
-                        <Grid ColumnDefinitions="Auto, *, Auto" Padding="0,12">
-                            <Border Grid.Column="0" WidthRequest="12" HeightRequest="12" 
-                                BackgroundColor="#BDBDBD" StrokeThickness="0">
-                                <Border.StrokeShape>
-                                    <RoundRectangle CornerRadius="6"/>
-                                </Border.StrokeShape>
-                            </Border>
-                            <Label Grid.Column="1" Text="Silver Plate" Margin="12,0"
-                                FontSize="14" FontAttributes="Bold" TextColor="#111111" VerticalOptions="Center"/>
-                            <Label Grid.Column="2" Text="1.25 kg  =  2.8 lbs" 
-                                FontSize="14" TextColor="#1F77F0" FontAttributes="Bold" VerticalOptions="Center"/>
-                        </Grid>
-
-                    </StackLayout>
-
-                    <Label Text="Standard Olympic bars are usually 20kg (44.1 lbs) or 15kg (33 lbs)."
-                       FontSize="11" TextColor="#BBBBBB" 
-                       HorizontalTextAlignment="Center" Margin="0,5,0,20"/>
-                </StackLayout>
-
-            </StackLayout>
+            </VerticalStackLayout>
         </ScrollView>
     </Grid>
 </ContentPage>
