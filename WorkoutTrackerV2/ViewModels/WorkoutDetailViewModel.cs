@@ -125,12 +125,6 @@ namespace WorkoutTrackerV2.ViewModels
                 TotalVolume = totalVolume;
                 TotalReps = totalReps;
 
-                await Shell.Current.DisplayAlertAsync("TEST", $"TotalReps: {TotalReps}\n" +
-                                                              $"TotalSets: {TotalSets}\n" +
-                                                              $"TotalVolume: {TotalVolume}\n" +
-                                                              $"Group Count: {groups.Count}\n" +
-                                                              $"MuscleGroupSet: {muscleGroupSet.Count}\n", "OK");
-
                 // FIX 8: Build chip VMs with pre-computed color and emoji.
                 MuscleGroupChips = muscleGroupSet
                     .OrderBy(m => m)
