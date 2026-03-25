@@ -103,8 +103,7 @@ namespace WorkoutTrackerV2.ViewModels
                 ExerciseGroups = new ObservableCollection<ExerciseGroup>(groups);
 
                 // FIX 2+3: Single loop computes TotalSets, TotalVolume, TotalReps,
-                // and collects distinct muscle groups — replaces four separate LINQ
-                // passes (Sum, SelectMany+Sum, SelectMany+Sum, Select+Distinct+OrderBy).
+                // and collects distinct muscle groups.
                 int totalSets = 0;
                 double totalVolume = 0;
                 int totalReps = 0;
@@ -114,16 +113,25 @@ namespace WorkoutTrackerV2.ViewModels
                 {
                     totalSets += g.Sets.Count;
                     muscleGroupSet.Add(g.Exercise.MuscleGroup);
+
+                    // NEW FIX: Calculate the total reps ONLY for this specific exercise card.
+                    // (Assuming your ExerciseGroup model has a property called TotalReps or similar)
+                    int groupTotalReps = 0;
+
                     foreach (var s in g.Sets)
                     {
                         totalVolume += s.Weight * s.Reps;
-                        totalReps += s.Reps;
+                        totalReps += s.Reps;        // This keeps the grand total accurate
+                        groupTotalReps += s.Reps;   // This isolates the count for this card
                     }
+
+                    // Assign the localized count to the card itself
+                    g.TotalReps = groupTotalReps;
                 }
 
                 TotalSets = totalSets;
                 TotalVolume = totalVolume;
-                TotalReps = totalReps;
+                TotalReps = totalReps; // Grand total assigned to the page
 
                 // FIX 8: Build chip VMs with pre-computed color and emoji.
                 MuscleGroupChips = muscleGroupSet

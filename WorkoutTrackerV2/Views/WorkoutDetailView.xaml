@@ -250,7 +250,7 @@
                                             <HorizontalStackLayout Grid.Column="1" Spacing="16">
                                                 <HorizontalStackLayout Spacing="6">
                                                     <Label Text="Total Reps:" FontSize="12" FontAttributes="Bold" TextColor="#A3A3A3" VerticalOptions="Center"/>
-                                                    <Label Text="{Binding Source={RelativeSource AncestorType={x:Type vm:WorkoutDetailViewModel}}, Path=TotalReps}" FontSize="12" FontAttributes="Bold" TextColor="#1F77F0" VerticalOptions="Center"/>
+                                                    <Label Text="{Binding TotalReps}" FontSize="12" FontAttributes="Bold" TextColor="#1F77F0" VerticalOptions="Center"/>
                                                 </HorizontalStackLayout>
                                                 <HorizontalStackLayout Spacing="6">
                                                     <Label Text="Max:" FontSize="12" FontAttributes="Bold" TextColor="#A3A3A3" VerticalOptions="Center"/>
