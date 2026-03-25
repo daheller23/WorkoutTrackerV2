@@ -24,7 +24,7 @@ namespace WorkoutTrackerV2.Models
         public double CompletionProgress => Sets.Count == 0 ? 0 : (double)CompletedSets / Sets.Count;
 
         public int TotalReps { get; private set; }
-        public double MaxWeight { get; private set; }
+        [ObservableProperty] private double _maxWeight = 0;
 
         // ── Last session display ──────────────────────────────────────────────
         [ObservableProperty] private string _lastSessionSummary = string.Empty;

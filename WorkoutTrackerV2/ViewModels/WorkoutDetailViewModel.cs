@@ -89,6 +89,10 @@ namespace WorkoutTrackerV2.ViewModels
                     else
                     {
                         var group = new ExerciseGroup(exercise);
+                        if (allTimeMaxByExercise.TryGetValue(set.ExerciseId, out var maxWght))
+                        {
+                            group.MaxWeight = maxWght;
+                        }
                         group.Sets.Add(set);
                         groups.Add(group);
                     }
@@ -120,6 +124,12 @@ namespace WorkoutTrackerV2.ViewModels
                 TotalSets = totalSets;
                 TotalVolume = totalVolume;
                 TotalReps = totalReps;
+
+                await Shell.Current.DisplayAlertAsync("TEST", $"TotalReps: {TotalReps}\n" +
+                                                              $"TotalSets: {TotalSets}\n" +
+                                                              $"TotalVolume: {TotalVolume}\n" +
+                                                              $"Group Count: {groups.Count}\n" +
+                                                              $"MuscleGroupSet: {muscleGroupSet.Count}\n", "OK");
 
                 // FIX 8: Build chip VMs with pre-computed color and emoji.
                 MuscleGroupChips = muscleGroupSet
