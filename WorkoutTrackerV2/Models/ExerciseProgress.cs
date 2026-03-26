@@ -7,6 +7,7 @@
         public string MuscleGroup { get; set; } = string.Empty;
         public List<WorkoutSet> Sets { get; set; } = [];
         public double MaxWeight { get; set; }
+        public int RepsAtMaxWeight { get; set; }
         public double AverageWeight { get; set; }
         public int TotalReps { get; set; }
         public List<ProgressPoint> Points { get; set; } = [];
