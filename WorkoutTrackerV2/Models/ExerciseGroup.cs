@@ -26,6 +26,15 @@ namespace WorkoutTrackerV2.Models
         [ObservableProperty] private int _totalReps = 0;
         [ObservableProperty] private double _maxWeight = 0;
 
+        // ── Expansion state ───────────────────────────────────────────────────
+        [ObservableProperty] private bool _isExpanded = true;
+
+        [RelayCommand]
+        private void ToggleExpanded()
+        {
+            IsExpanded = !IsExpanded;
+        }
+
         // ── Last session display ──────────────────────────────────────────────
         [ObservableProperty] private string _lastSessionSummary = string.Empty;
         [ObservableProperty] private bool _hasLastSession;
