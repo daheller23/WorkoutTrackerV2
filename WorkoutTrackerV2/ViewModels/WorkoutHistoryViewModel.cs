@@ -18,6 +18,9 @@ namespace WorkoutTrackerV2.ViewModels
         [ObservableProperty] private int _selectedDays = 30;
         [ObservableProperty] private string _sessionCountLabel = string.Empty;
 
+        // NEW: Search query property
+        [ObservableProperty] private string _searchQuery = string.Empty;
+
         // FIX 9: Pill VMs — constructed once, IsSelected toggled on SelectedDays change.
         public List<TimePeriodPillViewModel> TimePeriodPills { get; } =
         [
@@ -37,6 +40,12 @@ namespace WorkoutTrackerV2.ViewModels
                 pill.IsSelected = pill.Days == value;
             // FIX 1: Call async method directly instead of LoadSessionsCommand.Execute().
             _ = LoadSessionsAsync();
+        }
+
+        // NEW: Automatically filters the list when the user types
+        partial void OnSearchQueryChanged(string value)
+        {
+            RebuildGroups();
         }
         #endregion
 
@@ -136,7 +145,17 @@ namespace WorkoutTrackerV2.ViewModels
             var expandedState = GroupedSessions
                 .ToDictionary(gs => gs.Title, gs => gs.IsExpanded);
 
-            var grouped = _allSessions
+            // UPDATED: Filter the sessions based on the search query
+            var filteredSessions = string.IsNullOrWhiteSpace(SearchQuery)
+                ? _allSessions
+                : _allSessions.Where(s =>
+                    (!string.IsNullOrEmpty(s.Session.DayName) && s.Session.DayName.Contains(SearchQuery, StringComparison.OrdinalIgnoreCase)) ||
+                    (!string.IsNullOrEmpty(s.Session.Notes) && s.Session.Notes.Contains(SearchQuery, StringComparison.OrdinalIgnoreCase)) ||
+                    (!string.IsNullOrEmpty(s.MuscleGroup) && s.MuscleGroup.Contains(SearchQuery, StringComparison.OrdinalIgnoreCase))
+                ).ToList();
+
+            // Use the filteredSessions instead of _allSessions
+            var grouped = filteredSessions
                 .GroupBy(s => GetGroupKey(s.Session.Date.Date))
                 .Select(g =>
                 {
