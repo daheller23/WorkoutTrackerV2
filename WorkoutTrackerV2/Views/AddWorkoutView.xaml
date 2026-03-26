@@ -150,17 +150,17 @@
                                                 </VerticalStackLayout>
 
                                                 <Button Grid.Column="2"
-                                                    Text="{Binding IsExpanded, Converter={StaticResource BoolToChevronConverter}}"
-                                                    Command="{Binding ToggleExpandedCommand}"
-                                                    FontSize="16"
-                                                    TextColor="#A3A3A3"
-                                                    BackgroundColor="Transparent"
-                                                    BorderWidth="0"
-                                                    WidthRequest="48"
-                                                    HeightRequest="48"
-                                                    Padding="0"
-                                                    VerticalOptions="Center"
-                                                    Margin="0,16,0,0" />
+                                                        Text="{Binding IsExpanded, Converter={StaticResource BoolToChevronConverter}}"
+                                                        Command="{Binding ToggleExpandedCommand}"
+                                                        FontSize="16"
+                                                        TextColor="#A3A3A3"
+                                                        BackgroundColor="Transparent"
+                                                        BorderWidth="0"
+                                                        WidthRequest="48"
+                                                        HeightRequest="48"
+                                                        Padding="0"
+                                                        VerticalOptions="Center"
+                                                        Margin="0,16,0,0" />
 
                                                 <Border Grid.Column="3" BackgroundColor="#F0F7FF" StrokeThickness="0" VerticalOptions="Center" Padding="10,6" Margin="0,16,0,0">
                                                     <Border.StrokeShape>
@@ -251,7 +251,7 @@
                                                     </Label>
                                                 </Grid>
 
-                                                <Grid ColumnDefinitions="36,32,*,*,80" ColumnSpacing="8" Margin="16,0,16,4" IsVisible="{Binding HasSets}">
+                                                <Grid ColumnDefinitions="36,32,*,*,80" ColumnSpacing="8" Padding="16,0,16,4" IsVisible="{Binding HasSets}">
                                                     <Label Grid.Column="0" Text=""/>
                                                     <Label Grid.Column="1" Text="SET" FontSize="11" TextColor="#A3A3A3" FontAttributes="Bold" HorizontalOptions="Center"/>
                                                     <Label Grid.Column="2" Text="REPS" FontSize="11" TextColor="#A3A3A3" FontAttributes="Bold" HorizontalOptions="Center"/>
@@ -259,13 +259,13 @@
                                                     <Label Grid.Column="4" Text=""/>
                                                 </Grid>
 
-                                                <VerticalStackLayout BindableLayout.ItemsSource="{Binding Sets}" Spacing="6" Margin="16,0">
+                                                <VerticalStackLayout BindableLayout.ItemsSource="{Binding Sets}" Spacing="2" Margin="0">
                                                     <BindableLayout.EmptyView>
                                                         <Label Text="No sets yet — tap + Add Set to get started" FontSize="13" TextColor="#B0B0B0" HorizontalOptions="Center" Margin="0,8,0,8"/>
                                                     </BindableLayout.EmptyView>
                                                     <BindableLayout.ItemTemplate>
                                                         <DataTemplate x:DataType="models:WorkoutSet">
-                                                            <Grid ColumnDefinitions="36,32,*,*,80" ColumnSpacing="8" BackgroundColor="{Binding RowBackground}" Padding="0,2">
+                                                            <Grid ColumnDefinitions="36,32,*,*,80" ColumnSpacing="8" BackgroundColor="{Binding RowBackground}" Padding="16,6">
 
                                                                 <Border Grid.Column="0" WidthRequest="32" HeightRequest="32" VerticalOptions="Center" StrokeThickness="2">
                                                                     <Border.StrokeShape>
