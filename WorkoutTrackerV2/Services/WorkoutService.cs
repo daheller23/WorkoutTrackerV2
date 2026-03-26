@@ -1,4 +1,5 @@
 ﻿using SQLite;
+using WorkoutTrackerV2.Helpers;
 using WorkoutTrackerV2.Models;
 
 namespace WorkoutTrackerV2.Services
@@ -35,6 +36,8 @@ namespace WorkoutTrackerV2.Services
                 await _database.CreateTableAsync<WorkoutSet>();
                 await _database.CreateTableAsync<WorkoutTemplate>();
                 await _database.CreateTableAsync<WorkoutTemplateSet>();
+
+                await ExerciseMigrationHelper.RunSubMuscleMigrationAsync(_database);
 
                 if (await _database.Table<Exercise>().CountAsync() == 0)
                     await SeedDefaultExercises();

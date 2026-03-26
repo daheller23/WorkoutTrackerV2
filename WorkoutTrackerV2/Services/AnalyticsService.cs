@@ -113,6 +113,10 @@ namespace WorkoutTrackerV2.Services
                 ExerciseId = exerciseId,
                 ExerciseName = exercise?.Name ?? string.Empty,
                 MuscleGroup = exercise?.MuscleGroup ?? string.Empty,
+
+                // NEW: Pass the SubMuscleGroup up to the UI
+                SubMuscleGroup = exercise?.SubMuscleGroup ?? "General",
+
                 Sets = sets,
                 MaxWeight = maxWeight,
                 AverageWeight = sets.Count > 0 ? totalWeight / sets.Count : 0,
@@ -272,6 +276,10 @@ namespace WorkoutTrackerV2.Services
                 ExerciseId = exercise.Id,
                 ExerciseName = exercise.Name,
                 MuscleGroup = exercise.MuscleGroup,
+
+                // NEW: Pass the SubMuscleGroup up to the UI
+                SubMuscleGroup = exercise.SubMuscleGroup ?? "General",
+
                 Sets = sets,
                 MaxWeight = maxWeight,
                 AverageWeight = sets.Count > 0 ? totalWeight / sets.Count : 0,

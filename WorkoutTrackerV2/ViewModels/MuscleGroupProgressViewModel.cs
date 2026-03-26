@@ -32,12 +32,15 @@ namespace WorkoutTrackerV2.ViewModels
         [ObservableProperty] private int _totalReps;
         [ObservableProperty] private double _maxWeight;
 
-        // FIX 6: Pre-computed color string exposed as a property so the XAML header
-        // can bind directly instead of running MuscleGroupColorConverter twice.
+        // Volume Distribution Properties
+        [ObservableProperty] private DonutChart? _volumeChart;
+        [ObservableProperty] private ObservableCollection<VolumeDistributionItem> _volumeDistribution = [];
+
+        // FIX: Added explicit boolean for UI visibility toggling
+        [ObservableProperty] private bool _hasVolumeData;
+
         [ObservableProperty] private string _muscleGroupColor = "#1F77F0";
 
-        // Reuses TimePeriodPillViewModel from AnalyticsViewModel — constructed once,
-        // IsSelected toggled when SelectedDays changes.
         public List<TimePeriodPillViewModel> TimePeriodPills { get; } =
         [
             new() { Label = "All", Days = 0  },
@@ -54,7 +57,6 @@ namespace WorkoutTrackerV2.ViewModels
         {
             if (string.IsNullOrEmpty(value)) return;
 
-            // FIX 6: Compute the color once when MuscleGroup is set.
             MuscleGroupColor = value switch
             {
                 "Chest" => "#4A90D9",
@@ -66,20 +68,16 @@ namespace WorkoutTrackerV2.ViewModels
                 _ => "#1F77F0"
             };
 
-            // FIX 1: Call async method directly instead of LoadDataCommand.Execute().
             _ = LoadDataAsync();
         }
 
         partial void OnSelectedDaysChanged(int value)
         {
-            // FIX 4: Guard replaces the _isInitialized flag — same intent, no extra field.
             if (string.IsNullOrEmpty(MuscleGroup)) return;
 
-            // Update pill selection state.
             foreach (var pill in TimePeriodPills)
                 pill.IsSelected = pill.Days == value;
 
-            // FIX 1: Call async method directly.
             _ = LoadDataAsync();
         }
         #endregion
@@ -108,7 +106,6 @@ namespace WorkoutTrackerV2.ViewModels
                 var progress = await analyticsService.GetProgressForMuscleGroupAsync(
                     MuscleGroup, SelectedDays);
 
-                // Assign chart colors and improvement labels by index.
                 for (int i = 0; i < progress.Count; i++)
                 {
                     progress[i].ChartColor = ChartColors[i % ChartColors.Length];
@@ -123,8 +120,6 @@ namespace WorkoutTrackerV2.ViewModels
                     }
                 }
 
-                // FIX 3: Find top exercise once — reused for TopExerciseName and
-                // BuildCombinedChart instead of calling OrderByDescending twice.
                 var top = progress.Count > 0
                     ? progress.OrderByDescending(e => e.MaxWeight).First()
                     : null;
@@ -132,21 +127,65 @@ namespace WorkoutTrackerV2.ViewModels
 
                 Exercises = new ObservableCollection<ExerciseProgress>(progress);
 
-                // FIX 2: Single loop computes all three summary stats instead of
-                // three separate LINQ passes (Sum+Sum+Max) over the same list.
                 int sets = 0, reps = 0;
                 double maxWeight = 0;
                 foreach (var e in progress)
                 {
-                    sets += e.Sets.Count;
+                    sets += e.Sets?.Count ?? 0;
                     reps += e.TotalReps;
                     if (e.MaxWeight > maxWeight) maxWeight = e.MaxWeight;
                 }
+
                 TotalSets = sets;
                 TotalReps = reps;
                 MaxWeight = maxWeight;
 
-                // FIX 3: Pass the already-found top exercise — no second sort needed.
+                // Calculate Volume Distribution by SubMuscleGroup
+                if (TotalSets > 0 && progress.Count > 0)
+                {
+                    var groupedVolume = progress
+                        .GroupBy(e => string.IsNullOrEmpty(e.SubMuscleGroup) ? "General" : e.SubMuscleGroup)
+                        .Select((g, index) => new VolumeDistributionItem
+                        {
+                            Name = g.Key,
+                            Sets = g.Sum(e => e.Sets?.Count ?? 0),
+                            ColorHex = ChartColors[index % ChartColors.Length]
+                        })
+                        .OrderByDescending(v => v.Sets)
+                        .ToList();
+
+                    var chartEntries = new List<ChartEntry>();
+
+                    foreach (var item in groupedVolume)
+                    {
+                        item.Percentage = (double)item.Sets / TotalSets;
+                        chartEntries.Add(new ChartEntry(item.Sets)
+                        {
+                            Color = SkiaSharp.SKColor.Parse(item.ColorHex)
+                        });
+                    }
+
+                    VolumeDistribution = new ObservableCollection<VolumeDistributionItem>(groupedVolume);
+                    VolumeChart = new DonutChart
+                    {
+                        Entries = chartEntries,
+                        BackgroundColor = SkiaSharp.SKColors.Transparent,
+                        HoleRadius = 0.65f,
+                        LabelTextSize = 0 // Keep the donut clean without labels sticking out
+                    };
+
+                    // FIX: Flip the visibility toggle to true
+                    HasVolumeData = true;
+                }
+                else
+                {
+                    VolumeDistribution.Clear();
+                    VolumeChart = null;
+
+                    // FIX: Flip the visibility toggle to false
+                    HasVolumeData = false;
+                }
+
                 BuildCombinedChart(top);
             }
             catch (Exception ex)
@@ -177,12 +216,21 @@ namespace WorkoutTrackerV2.ViewModels
         #endregion
 
         #region "BUILD COMBINED CHART"
-        // FIX 3: Accepts the pre-found top exercise instead of re-sorting Exercises.
         private void BuildCombinedChart(ExerciseProgress? topExercise)
         {
             if (topExercise?.Points.Count == 0 || topExercise is null) return;
             CombinedChart = ChartHelper.BuildProgressChart(topExercise.Points);
         }
         #endregion
+    }
+
+    // Helper Class for the Breakdown List
+    public class VolumeDistributionItem
+    {
+        public string Name { get; set; } = string.Empty;
+        public int Sets { get; set; }
+        public double Percentage { get; set; }
+        public string DisplayPercentage => $"{Percentage:P0}";
+        public string ColorHex { get; set; } = "#1F77F0";
     }
 }

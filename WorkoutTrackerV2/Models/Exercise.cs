@@ -8,6 +8,7 @@ namespace WorkoutTrackerV2.Models
         public int Id { get; set; } = 0;
         public string Name { get; set; } = string.Empty;
         public string MuscleGroup { get; set; } = string.Empty;
+        public string SubMuscleGroup { get; set; } = "General";
         public DateTime CreatedDate { get; set; } = DateTime.Now;
         public bool IsCustom { get; set; } = false;
         public Color MuscleGroupColor => MuscleGroup switch

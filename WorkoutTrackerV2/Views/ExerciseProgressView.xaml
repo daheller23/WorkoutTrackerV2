@@ -20,15 +20,16 @@
                 <Shadow Brush="#000000" Offset="0,4" Radius="12" Opacity="0.04" />
             </Border.Shadow>
             <Grid ColumnDefinitions="8,*">
+
                 <BoxView Grid.Column="0" BackgroundColor="{Binding MuscleGroupColor}" HorizontalOptions="Fill" VerticalOptions="Fill"/>
 
                 <VerticalStackLayout Grid.Column="1" Padding="20,16,24,20" Spacing="16">
                     <Button Text="← Back" Command="{Binding GoBackCommand}"
-                            BackgroundColor="Transparent" TextColor="#1F77F0"
+                            BackgroundColor="Transparent" TextColor="{Binding MuscleGroupColor}"
                             FontSize="15" FontAttributes="Bold" Padding="0" HorizontalOptions="Start" HeightRequest="30"/>
 
                     <VerticalStackLayout Spacing="2">
-                        <Label Text="{Binding Exercise.ExerciseName}" FontSize="32" FontAttributes="Bold" TextColor="{Binding MuscleGroupColor}" CharacterSpacing="0.5"/>
+                        <Label Text="{Binding Exercise.ExerciseName}" FontSize="32" FontAttributes="Bold" TextColor="#1A1A1A" CharacterSpacing="0.5"/>
                         <HorizontalStackLayout Spacing="8" VerticalOptions="Center">
                             <Label Text="{Binding Exercise.MuscleGroup}" FontSize="14" TextColor="{Binding MuscleGroupColor}" FontAttributes="Bold"/>
                             <BoxView WidthRequest="4" HeightRequest="4" CornerRadius="2" Color="#D1D1D1" VerticalOptions="Center"/>
@@ -124,7 +125,9 @@
                                 </VerticalStackLayout>
                                 <Label Grid.Column="1" Text="🎖️" FontSize="32" VerticalOptions="Center"/>
                             </Grid>
+
                             <ProgressBar Progress="{Binding StrengthPercentage}" ProgressColor="{Binding MuscleGroupColor}" ScaleY="5" VerticalOptions="Center"/>
+
                             <Label Text="{Binding WeightToNextLevel}" FontSize="11" TextColor="#737373" HorizontalOptions="Center" FontAttributes="Italic"/>
                         </VerticalStackLayout>
                     </Border>
@@ -165,7 +168,7 @@
                         </Border.Shadow>
                         <Grid ColumnDefinitions="*,Auto" Padding="24">
                             <VerticalStackLayout Grid.Column="0" Spacing="4">
-                                <Label Text="Estimated 1-Rep Max (Brzycki)" FontSize="11" FontAttributes="Bold" TextColor="#FFFFFF" Opacity="0.8" CharacterSpacing="1"/>
+                                <Label Text="Estimated 1-Rep Max" FontSize="11" FontAttributes="Bold" TextColor="#FFFFFF" Opacity="0.8" CharacterSpacing="1"/>
                                 <HorizontalStackLayout Spacing="6">
                                     <Label Text="{Binding EstimatedOneRepMax}" FontSize="44" FontAttributes="Bold" TextColor="#FFFFFF"/>
                                     <Label Text="{Binding WeightUnitLabel}" FontSize="18" TextColor="#FFFFFF" Opacity="0.7" VerticalOptions="End" Margin="0,0,0,8"/>
@@ -195,7 +198,8 @@
                                                             <Label Text="{Binding Weight}" FontSize="16" FontAttributes="Bold" TextColor="#1A1A1A"/>
                                                             <Label Text="{Binding WeightUnit}" FontSize="12" TextColor="#ADB5BD" VerticalOptions="End" Margin="0,0,0,1"/>
                                                         </HorizontalStackLayout>
-                                                        <Border Grid.Column="1" BackgroundColor="#F0F7FF" StrokeThickness="0" Padding="12,4">
+
+                                                        <Border Grid.Column="1" BackgroundColor="Transparent" StrokeThickness="1" Stroke="#E9ECEF" Padding="12,4">
                                                             <Border.StrokeShape>
                                                                 <RoundRectangle CornerRadius="12"/>
                                                             </Border.StrokeShape>
