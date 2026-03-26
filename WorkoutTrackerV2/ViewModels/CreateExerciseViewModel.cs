@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using System.Collections.ObjectModel;
 using WorkoutTrackerV2.Models;
 using WorkoutTrackerV2.Services;
 
@@ -9,9 +10,6 @@ namespace WorkoutTrackerV2.ViewModels
     {
         #region "OBSERVABLE PROPERTIES"
         [ObservableProperty]
-        // FIX 2: NotifyPropertyChangedFor replaces the manual UpdateHasValidInput()
-        // call — HasValidInput is now recomputed automatically whenever ExerciseName
-        // or SelectedMuscleGroup changes, with no extra method needed.
         [NotifyPropertyChangedFor(nameof(HasValidInput))]
         [NotifyPropertyChangedFor(nameof(PreviewMuscleGroupColor))]
         [NotifyPropertyChangedFor(nameof(PreviewMuscleGroupEmoji))]
@@ -19,14 +17,17 @@ namespace WorkoutTrackerV2.ViewModels
 
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(HasValidInput))]
-        // FIX 3: PreviewMuscleGroupColor and PreviewMuscleGroupEmoji are computed
-        // properties notified here — eliminates MuscleGroupColorConverter,
-        // MuscleGroupEmojiConverter, MuscleGroupFilterColorConverter, and
-        // MuscleGroupFilterTextColorConverter from the XAML entirely.
         [NotifyPropertyChangedFor(nameof(PreviewMuscleGroupColor))]
         [NotifyPropertyChangedFor(nameof(PreviewMuscleGroupEmoji))]
         [NotifyPropertyChangedFor(nameof(MuscleGroupPills))]
         private string _selectedMuscleGroup = string.Empty;
+
+        // NEW: Observable properties for the dynamic sub-muscle region
+        [ObservableProperty] private ObservableCollection<string> _subMuscleGroups = [];
+
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(HasValidInput))]
+        private string _selectedSubMuscleGroup = string.Empty;
 
         [ObservableProperty] private string _nameError = string.Empty;
         [ObservableProperty] private string _muscleGroupError = string.Empty;
@@ -35,13 +36,10 @@ namespace WorkoutTrackerV2.ViewModels
         #endregion
 
         #region "COMPUTED PROPERTIES"
-        // FIX 2: Computed — no backing field, no UpdateHasValidInput() method.
         public bool HasValidInput =>
             !string.IsNullOrWhiteSpace(ExerciseName) &&
             !string.IsNullOrWhiteSpace(SelectedMuscleGroup);
 
-        // FIX 3: Pre-computed color and emoji for the preview card — replaces
-        // MuscleGroupColorConverter and MuscleGroupEmojiConverter bindings.
         public string PreviewMuscleGroupColor => SelectedMuscleGroup switch
         {
             "Chest" => "#4A90D9",
@@ -64,11 +62,6 @@ namespace WorkoutTrackerV2.ViewModels
             _ => "⭐"
         };
 
-        // FIX 3: Pill VMs with pre-computed IsSelected state — replaces
-        // MuscleGroupFilterColorConverter and MuscleGroupFilterTextColorConverter
-        // (2 converter calls × 6 pills = 12 calls per tap).
-        // Returns a new list each time SelectedMuscleGroup changes (only on tap,
-        // not during scroll) — cheap since it's 6 objects.
         public IReadOnlyList<MuscleGroupPillViewModel> MuscleGroupPills =>
         [
             new() { Key = "Chest",     Label = "🔵 Chest",     IsSelected = SelectedMuscleGroup == "Chest" },
@@ -83,15 +76,11 @@ namespace WorkoutTrackerV2.ViewModels
         #region "PARTIAL METHODS"
         partial void OnExerciseNameChanged(string value)
         {
-            // FIX 1: Collapse two property assignments into one — HasNameError = false
-            // and NameError = string.Empty both notify; clear NameError only when
-            // it's set, to avoid an unnecessary notification.
             if (HasNameError)
             {
                 HasNameError = false;
                 NameError = string.Empty;
             }
-            // HasValidInput notified automatically via [NotifyPropertyChangedFor].
         }
 
         partial void OnSelectedMuscleGroupChanged(string value)
@@ -101,8 +90,29 @@ namespace WorkoutTrackerV2.ViewModels
                 HasMuscleGroupError = false;
                 MuscleGroupError = string.Empty;
             }
-            // HasValidInput, PreviewMuscleGroupColor, PreviewMuscleGroupEmoji, and
-            // MuscleGroupPills all notified automatically via [NotifyPropertyChangedFor].
+
+            // NEW: Instantly populate the Sub-Muscle dropdown/pills based on the main selection
+            SubMuscleGroups.Clear();
+            if (string.IsNullOrEmpty(value)) return;
+
+            var subs = value switch
+            {
+                "Chest" => new[] { "Upper Chest", "Mid Chest", "Lower Chest" },
+                "Back" => new[] { "Lats", "Mid Back", "Traps", "Lower Back" },
+                "Legs" => new[] { "Quads", "Hamstrings", "Glutes", "Calves" },
+                "Shoulders" => new[] { "Front Delt", "Side Delt", "Rear Delt" },
+                "Arms" => new[] { "Biceps", "Triceps", "Forearms" },
+                "Core" => new[] { "Abs", "Obliques" },
+                _ => new[] { "General" }
+            };
+
+            foreach (var sub in subs)
+            {
+                SubMuscleGroups.Add(sub);
+            }
+
+            // Auto-select the first option so the user doesn't submit a blank string
+            SelectedSubMuscleGroup = SubMuscleGroups.FirstOrDefault() ?? "General";
         }
         #endregion
 
@@ -142,6 +152,8 @@ namespace WorkoutTrackerV2.ViewModels
                 {
                     Name = ExerciseName.Trim(),
                     MuscleGroup = SelectedMuscleGroup,
+                    // NEW: Pass the Sub-Region to the database
+                    SubMuscleGroup = SelectedSubMuscleGroup,
                     CreatedDate = DateTime.Now,
                     IsCustom = true
                 };
