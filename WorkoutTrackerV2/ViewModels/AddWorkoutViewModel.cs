@@ -34,12 +34,37 @@ namespace WorkoutTrackerV2.ViewModels
         [ObservableProperty] private double _totalVolume;
         [ObservableProperty] private int _totalSets;
         [ObservableProperty] private string _weightUnitLabel = string.Empty;
-
+        [ObservableProperty] private bool _isMenuVisible;
         #endregion
+
+        [RelayCommand]
+        private void ToggleMenu()
+        {
+            IsMenuVisible = !IsMenuVisible;
+        }
 
         // Keyed by ExerciseId — loaded once on first save to avoid a DB call
         // on every set change. null means not yet loaded.
         private Dictionary<int, double>? _prBaselines;
+
+        #region "SHOW TEMPLATE MENU"
+        [RelayCommand]
+        private void HandleMenuAction(string action)
+        {
+            // Close the menu first
+            IsMenuVisible = false;
+
+            // Execute the appropriate command
+            if (action == "Load")
+            {
+                OpenTemplatePickerCommand.Execute(null);
+            }
+            else if (action == "Save")
+            {
+                SaveAsTemplateCommand.Execute(null);
+            }
+        }
+        #endregion
 
         #region "PREPARE FOR TEMPLATE PICKER"
         [RelayCommand]

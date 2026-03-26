@@ -16,421 +16,485 @@
 
     <Shell.NavBarIsVisible>False</Shell.NavBarIsVisible>
 
-    <Grid RowDefinitions="*,Auto" RowSpacing="0">
+    <Grid>
 
-        <ScrollView Grid.Row="0" VerticalScrollBarVisibility="Never">
-            <VerticalStackLayout Padding="20,24,20,40" Spacing="24">
+        <Grid RowDefinitions="*,Auto" RowSpacing="0">
 
-                <Grid ColumnDefinitions="*,Auto">
-                    <VerticalStackLayout Grid.Column="0" Spacing="2">
-                        <Label Text="Log Your Workout"
-                               FontSize="32"
-                               FontAttributes="Bold"
-                               TextColor="#1A1A1A"
-                               CharacterSpacing="0.5"/>
-                        <Label Text="Track your sets and progress"
-                               FontSize="14"
-                               TextColor="#737373"/>
-                    </VerticalStackLayout>
-                </Grid>
+            <ScrollView Grid.Row="0" VerticalScrollBarVisibility="Never">
+                <VerticalStackLayout Padding="20,24,20,40" Spacing="24">
 
-                <Border BackgroundColor="#FFFFFF" StrokeThickness="0">
-                    <Border.StrokeShape>
-                        <RoundRectangle CornerRadius="14"/>
-                    </Border.StrokeShape>
-                    <Border.Shadow>
-                        <Shadow Brush="#000000" Offset="0,2" Radius="8" Opacity="0.04" />
-                    </Border.Shadow>
-                    <VerticalStackLayout Spacing="8" Padding="16,16,16,20">
-                        <Label Text="WORKOUT NAME" FontSize="11" TextColor="#A3A3A3" FontAttributes="Bold" CharacterSpacing="1"/>
-                        <Border BackgroundColor="#F4F5F7" StrokeThickness="0" HeightRequest="48">
-                            <Border.StrokeShape>
-                                <RoundRectangle CornerRadius="10"/>
-                            </Border.StrokeShape>
-                            <Entry Text="{Binding WorkoutName}"
-                                   BackgroundColor="Transparent"
+                    <Grid ColumnDefinitions="*,Auto">
+                        <VerticalStackLayout Grid.Column="0" Spacing="2">
+                            <Label Text="Log Your Workout"
+                                   FontSize="32"
+                                   FontAttributes="Bold"
                                    TextColor="#1A1A1A"
-                                   Placeholder="e.g. Push Day, Leg Day..."
-                                   PlaceholderColor="#B0B0B0"
-                                   FontSize="15"
-                                   Margin="12,0"/>
-                        </Border>
-                    </VerticalStackLayout>
-                </Border>
+                                   CharacterSpacing="0.5"/>
+                            <Label Text="Track your sets and progress"
+                                   FontSize="14"
+                                   TextColor="#737373"/>
+                        </VerticalStackLayout>
 
-                <Border BackgroundColor="#FFFFFF" StrokeThickness="0">
-                    <Border.StrokeShape>
-                        <RoundRectangle CornerRadius="14"/>
-                    </Border.StrokeShape>
-                    <Border.Shadow>
-                        <Shadow Brush="#000000" Offset="0,2" Radius="8" Opacity="0.04" />
-                    </Border.Shadow>
-                    <VerticalStackLayout Spacing="16" Padding="16">
+                        <Button Grid.Column="1"
+                                Text="⋮"
+                                FontSize="28"
+                                FontAttributes="Bold"
+                                TextColor="#1A1A1A"
+                                BackgroundColor="Transparent"
+                                WidthRequest="48"
+                                HeightRequest="48"
+                                Padding="0"
+                                VerticalOptions="Start"
+                                HorizontalOptions="End"
+                                Command="{Binding ToggleMenuCommand}" />
+                    </Grid>
 
-                        <VerticalStackLayout Spacing="8">
-                            <Label Text="DATE" FontSize="11" TextColor="#A3A3A3" FontAttributes="Bold" CharacterSpacing="1"/>
-                            <Border BackgroundColor="#F4F5F7" StrokeThickness="0" HeightRequest="44">
+                    <Border BackgroundColor="#FFFFFF" StrokeThickness="0">
+                        <Border.StrokeShape>
+                            <RoundRectangle CornerRadius="14"/>
+                        </Border.StrokeShape>
+                        <Border.Shadow>
+                            <Shadow Brush="#000000" Offset="0,2" Radius="8" Opacity="0.04" />
+                        </Border.Shadow>
+                        <VerticalStackLayout Spacing="8" Padding="16,16,16,20">
+                            <Label Text="WORKOUT NAME" FontSize="11" TextColor="#A3A3A3" FontAttributes="Bold" CharacterSpacing="1"/>
+                            <Border BackgroundColor="#F4F5F7" StrokeThickness="0" HeightRequest="48">
                                 <Border.StrokeShape>
                                     <RoundRectangle CornerRadius="10"/>
                                 </Border.StrokeShape>
-                                <DatePicker Date="{Binding SelectedDate}" BackgroundColor="Transparent" TextColor="#1A1A1A" Format="MMM dd, yyyy" Margin="12,0"/>
+                                <Entry Text="{Binding WorkoutName}"
+                                       BackgroundColor="Transparent"
+                                       TextColor="#1A1A1A"
+                                       Placeholder="e.g. Push Day, Leg Day..."
+                                       PlaceholderColor="#B0B0B0"
+                                       FontSize="15"
+                                       Margin="12,0"/>
                             </Border>
                         </VerticalStackLayout>
+                    </Border>
 
-                        <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
-                            <VerticalStackLayout Grid.Column="0" Spacing="8">
-                                <Label Text="START" FontSize="11" TextColor="#A3A3A3" FontAttributes="Bold" CharacterSpacing="1"/>
+                    <Border BackgroundColor="#FFFFFF" StrokeThickness="0">
+                        <Border.StrokeShape>
+                            <RoundRectangle CornerRadius="14"/>
+                        </Border.StrokeShape>
+                        <Border.Shadow>
+                            <Shadow Brush="#000000" Offset="0,2" Radius="8" Opacity="0.04" />
+                        </Border.Shadow>
+                        <VerticalStackLayout Spacing="16" Padding="16">
+
+                            <VerticalStackLayout Spacing="8">
+                                <Label Text="DATE" FontSize="11" TextColor="#A3A3A3" FontAttributes="Bold" CharacterSpacing="1"/>
                                 <Border BackgroundColor="#F4F5F7" StrokeThickness="0" HeightRequest="44">
                                     <Border.StrokeShape>
                                         <RoundRectangle CornerRadius="10"/>
                                     </Border.StrokeShape>
-                                    <TimePicker Time="{Binding StartTime}" BackgroundColor="Transparent" TextColor="#1A1A1A" Margin="12,0"/>
+                                    <DatePicker Date="{Binding SelectedDate}" BackgroundColor="Transparent" TextColor="#1A1A1A" Format="MMM dd, yyyy" Margin="12,0"/>
                                 </Border>
                             </VerticalStackLayout>
-                            <VerticalStackLayout Grid.Column="1" Spacing="8">
-                                <Label Text="END" FontSize="11" TextColor="#A3A3A3" FontAttributes="Bold" CharacterSpacing="1"/>
-                                <Border BackgroundColor="#F4F5F7" StrokeThickness="0" HeightRequest="44">
-                                    <Border.StrokeShape>
-                                        <RoundRectangle CornerRadius="10"/>
-                                    </Border.StrokeShape>
-                                    <TimePicker Time="{Binding EndTime}" BackgroundColor="Transparent" TextColor="#1A1A1A" Margin="12,0"/>
-                                </Border>
-                            </VerticalStackLayout>
-                        </Grid>
 
-                        <Label Text="{Binding DayName}" FontSize="15" FontAttributes="Bold" TextColor="#1F77F0" HorizontalOptions="Center" Margin="0,4,0,0"/>
-                    </VerticalStackLayout>
-                </Border>
+                            <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+                                <VerticalStackLayout Grid.Column="0" Spacing="8">
+                                    <Label Text="START" FontSize="11" TextColor="#A3A3A3" FontAttributes="Bold" CharacterSpacing="1"/>
+                                    <Border BackgroundColor="#F4F5F7" StrokeThickness="0" HeightRequest="44">
+                                        <Border.StrokeShape>
+                                            <RoundRectangle CornerRadius="10"/>
+                                        </Border.StrokeShape>
+                                        <TimePicker Time="{Binding StartTime}" BackgroundColor="Transparent" TextColor="#1A1A1A" Margin="12,0"/>
+                                    </Border>
+                                </VerticalStackLayout>
+                                <VerticalStackLayout Grid.Column="1" Spacing="8">
+                                    <Label Text="END" FontSize="11" TextColor="#A3A3A3" FontAttributes="Bold" CharacterSpacing="1"/>
+                                    <Border BackgroundColor="#F4F5F7" StrokeThickness="0" HeightRequest="44">
+                                        <Border.StrokeShape>
+                                            <RoundRectangle CornerRadius="10"/>
+                                        </Border.StrokeShape>
+                                        <TimePicker Time="{Binding EndTime}" BackgroundColor="Transparent" TextColor="#1A1A1A" Margin="12,0"/>
+                                    </Border>
+                                </VerticalStackLayout>
+                            </Grid>
 
-                <VerticalStackLayout Spacing="12">
-                    <Label Text="EXERCISES" FontSize="12" FontAttributes="Bold" TextColor="#A3A3A3" CharacterSpacing="1" Margin="4,0,0,0"/>
+                            <Label Text="{Binding DayName}" FontSize="15" FontAttributes="Bold" TextColor="#1F77F0" HorizontalOptions="Center" Margin="0,4,0,0"/>
+                        </VerticalStackLayout>
+                    </Border>
 
-                    <CollectionView ItemsSource="{Binding ExerciseGroups}" SelectionMode="None">
-                        <CollectionView.EmptyView>
-                            <Label Text="No exercises added yet" FontSize="14" TextColor="#B0B0B0" HorizontalOptions="Center" Margin="0,32"/>
-                        </CollectionView.EmptyView>
-                        <CollectionView.ItemTemplate>
-                            <DataTemplate x:DataType="models:ExerciseGroup">
+                    <VerticalStackLayout Spacing="12">
+                        <Label Text="EXERCISES" FontSize="12" FontAttributes="Bold" TextColor="#A3A3A3" CharacterSpacing="1" Margin="4,0,0,0"/>
 
-                                <Border BackgroundColor="#FFFFFF" StrokeThickness="0" Margin="0,0,0,16">
-                                    <Border.StrokeShape>
-                                        <RoundRectangle CornerRadius="14"/>
-                                    </Border.StrokeShape>
-                                    <Border.Shadow>
-                                        <Shadow Brush="#000000" Offset="0,2" Radius="8" Opacity="0.04" />
-                                    </Border.Shadow>
+                        <CollectionView ItemsSource="{Binding ExerciseGroups}" SelectionMode="None">
+                            <CollectionView.EmptyView>
+                                <Label Text="No exercises added yet" FontSize="14" TextColor="#B0B0B0" HorizontalOptions="Center" Margin="0,32"/>
+                            </CollectionView.EmptyView>
+                            <CollectionView.ItemTemplate>
+                                <DataTemplate x:DataType="models:ExerciseGroup">
 
-                                    <VerticalStackLayout Padding="0,0,0,16" Spacing="0">
+                                    <Border BackgroundColor="#FFFFFF" StrokeThickness="0" Margin="0,0,0,16">
+                                        <Border.StrokeShape>
+                                            <RoundRectangle CornerRadius="14"/>
+                                        </Border.StrokeShape>
+                                        <Border.Shadow>
+                                            <Shadow Brush="#000000" Offset="0,2" Radius="8" Opacity="0.04" />
+                                        </Border.Shadow>
 
-                                        <Grid ColumnDefinitions="6,*,32,Auto,Auto,Auto" ColumnSpacing="10" Padding="0,0,0,12">
+                                        <VerticalStackLayout Padding="0,0,0,16" Spacing="0">
 
-                                            <BoxView Grid.Column="0" BackgroundColor="{Binding Exercise.MuscleGroupColor}" HorizontalOptions="Fill" VerticalOptions="Fill"/>
+                                            <Grid ColumnDefinitions="6,*,32,Auto,Auto,Auto" ColumnSpacing="10" Padding="0,0,0,12">
 
-                                            <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center" Padding="0,16,0,0">
-                                                <VerticalStackLayout.GestureRecognizers>
-                                                    <TapGestureRecognizer Command="{Binding ToggleExpandedCommand}" />
-                                                </VerticalStackLayout.GestureRecognizers>
-                                                <Label Text="{Binding Exercise.Name}" FontSize="16" FontAttributes="Bold" TextColor="#1A1A1A"/>
-                                                <Label Text="{Binding Exercise.MuscleGroup}" FontSize="12" FontAttributes="Bold" TextColor="{Binding Exercise.MuscleGroupColor}"/>
-                                            </VerticalStackLayout>
+                                                <BoxView Grid.Column="0" BackgroundColor="{Binding Exercise.MuscleGroupColor}" HorizontalOptions="Fill" VerticalOptions="Fill"/>
 
-                                            <Button Grid.Column="2"
-                                                Text="{Binding IsExpanded, Converter={StaticResource BoolToChevronConverter}}"
-                                                Command="{Binding ToggleExpandedCommand}"
-                                                FontSize="16"
-                                                TextColor="#A3A3A3"
-                                                BackgroundColor="Transparent"
-                                                BorderWidth="0"
-                                                WidthRequest="48"
-                                                HeightRequest="48"
-                                                Padding="0"
-                                                VerticalOptions="Center"
-                                                Margin="0,16,0,0" />
+                                                <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center" Padding="0,16,0,0">
+                                                    <VerticalStackLayout.GestureRecognizers>
+                                                        <TapGestureRecognizer Command="{Binding ToggleExpandedCommand}" />
+                                                    </VerticalStackLayout.GestureRecognizers>
+                                                    <Label Text="{Binding Exercise.Name}" FontSize="16" FontAttributes="Bold" TextColor="#1A1A1A"/>
+                                                    <Label Text="{Binding Exercise.MuscleGroup}" FontSize="12" FontAttributes="Bold" TextColor="{Binding Exercise.MuscleGroupColor}"/>
+                                                </VerticalStackLayout>
 
-                                            <Border Grid.Column="3" BackgroundColor="#F0F7FF" StrokeThickness="0" VerticalOptions="Center" Padding="10,6" Margin="0,16,0,0">
-                                                <Border.StrokeShape>
-                                                    <RoundRectangle CornerRadius="8"/>
-                                                </Border.StrokeShape>
-                                                <Label Text="{Binding SetCountLabel}" FontSize="12" FontAttributes="Bold" TextColor="#1F77F0"/>
-                                            </Border>
-
-                                            <Picker Grid.Column="4"
-                                                    SelectedItem="{Binding Sets[0].WeightUnit, FallbackValue='lbs'}"
+                                                <Button Grid.Column="2"
+                                                    Text="{Binding IsExpanded, Converter={StaticResource BoolToChevronConverter}}"
+                                                    Command="{Binding ToggleExpandedCommand}"
+                                                    FontSize="16"
+                                                    TextColor="#A3A3A3"
                                                     BackgroundColor="Transparent"
-                                                    TextColor="#737373"
-                                                    FontSize="13"
-                                                    WidthRequest="60"
+                                                    BorderWidth="0"
+                                                    WidthRequest="48"
+                                                    HeightRequest="48"
+                                                    Padding="0"
                                                     VerticalOptions="Center"
-                                                    Margin="0,16,0,0">
-                                                <Picker.ItemsSource>
-                                                    <x:Array Type="{x:Type x:String}">
-                                                        <x:String>lbs</x:String>
-                                                        <x:String>kg</x:String>
-                                                    </x:Array>
-                                                </Picker.ItemsSource>
-                                            </Picker>
+                                                    Margin="0,16,0,0" />
 
-                                            <Button Grid.Column="5" Text="✕"
-                                                    Command="{Binding Source={RelativeSource AncestorType={x:Type vm:AddWorkoutViewModel}}, Path=RemoveExerciseCommand}"
-                                                    CommandParameter="{Binding .}"
-                                                    BackgroundColor="#FFEAEA" TextColor="#FF6B6B"
-                                                    FontSize="14" FontAttributes="Bold"
-                                                    WidthRequest="36" HeightRequest="36"
-                                                    Padding="0" CornerRadius="8" BorderWidth="0"
-                                                    VerticalOptions="Center" Margin="0,16,12,0"/>
-                                        </Grid>
+                                                <Border Grid.Column="3" BackgroundColor="#F0F7FF" StrokeThickness="0" VerticalOptions="Center" Padding="10,6" Margin="0,16,0,0">
+                                                    <Border.StrokeShape>
+                                                        <RoundRectangle CornerRadius="8"/>
+                                                    </Border.StrokeShape>
+                                                    <Label Text="{Binding SetCountLabel}" FontSize="12" FontAttributes="Bold" TextColor="#1F77F0"/>
+                                                </Border>
 
-                                        <VerticalStackLayout IsVisible="{Binding IsExpanded}" Spacing="12">
+                                                <Picker Grid.Column="4"
+                                                        SelectedItem="{Binding Sets[0].WeightUnit, FallbackValue='lbs'}"
+                                                        BackgroundColor="Transparent"
+                                                        TextColor="#737373"
+                                                        FontSize="13"
+                                                        WidthRequest="60"
+                                                        VerticalOptions="Center"
+                                                        Margin="0,16,0,0">
+                                                    <Picker.ItemsSource>
+                                                        <x:Array Type="{x:Type x:String}">
+                                                            <x:String>lbs</x:String>
+                                                            <x:String>kg</x:String>
+                                                        </x:Array>
+                                                    </Picker.ItemsSource>
+                                                </Picker>
 
-                                            <BoxView HeightRequest="1" Color="#F4F4F4" Margin="16,0,16,0"/>
+                                                <Button Grid.Column="5" Text="✕"
+                                                        Command="{Binding Source={RelativeSource AncestorType={x:Type vm:AddWorkoutViewModel}}, Path=RemoveExerciseCommand}"
+                                                        CommandParameter="{Binding .}"
+                                                        BackgroundColor="#FFEAEA" TextColor="#FF6B6B"
+                                                        FontSize="14" FontAttributes="Bold"
+                                                        WidthRequest="36" HeightRequest="36"
+                                                        Padding="0" CornerRadius="8" BorderWidth="0"
+                                                        VerticalOptions="Center" Margin="0,16,12,0"/>
+                                            </Grid>
 
-                                            <VerticalStackLayout IsVisible="{Binding HasLastSession}" Margin="16,0,16,0" Spacing="6">
-                                                <Label Text="{Binding LastSessionSummary}" FontSize="11" FontAttributes="Bold" TextColor="#A3A3A3" CharacterSpacing="0.5"/>
-                                                <FlexLayout Direction="Row" Wrap="Wrap" AlignItems="Center" BindableLayout.ItemsSource="{Binding LastSessionChips}">
+                                            <VerticalStackLayout IsVisible="{Binding IsExpanded}" Spacing="12">
+
+                                                <BoxView HeightRequest="1" Color="#F4F4F4" Margin="16,0,16,0"/>
+
+                                                <VerticalStackLayout IsVisible="{Binding HasLastSession}" Margin="16,0,16,0" Spacing="6">
+                                                    <Label Text="{Binding LastSessionSummary}" FontSize="11" FontAttributes="Bold" TextColor="#A3A3A3" CharacterSpacing="0.5"/>
+                                                    <FlexLayout Direction="Row" Wrap="Wrap" AlignItems="Center" BindableLayout.ItemsSource="{Binding LastSessionChips}">
+                                                        <BindableLayout.ItemTemplate>
+                                                            <DataTemplate x:DataType="x:String">
+                                                                <Border BackgroundColor="#F8F9FA" StrokeThickness="1" Stroke="#E5E7EB" Padding="8,4" Margin="0,0,6,6">
+                                                                    <Border.StrokeShape>
+                                                                        <RoundRectangle CornerRadius="6"/>
+                                                                    </Border.StrokeShape>
+                                                                    <Label Text="{Binding .}" FontSize="12" TextColor="#5A606A" FontAttributes="Bold"/>
+                                                                </Border>
+                                                            </DataTemplate>
+                                                        </BindableLayout.ItemTemplate>
+                                                    </FlexLayout>
+                                                </VerticalStackLayout>
+
+                                                <Border IsVisible="{Binding HasProgressionSuggestion}" StrokeThickness="0" Padding="12,10" Margin="16,0,16,4">
+                                                    <Border.StrokeShape>
+                                                        <RoundRectangle CornerRadius="10"/>
+                                                    </Border.StrokeShape>
+                                                    <Border.Triggers>
+                                                        <DataTrigger TargetType="Border" Binding="{Binding ProgressionIsIncrease}" Value="True">
+                                                            <Setter Property="BackgroundColor" Value="#EDFAEE"/>
+                                                        </DataTrigger>
+                                                        <DataTrigger TargetType="Border" Binding="{Binding ProgressionIsIncrease}" Value="False">
+                                                            <Setter Property="BackgroundColor" Value="#FFF8E1"/>
+                                                        </DataTrigger>
+                                                    </Border.Triggers>
+                                                    <Label Text="{Binding ProgressionSuggestion}" FontSize="12" FontAttributes="Bold" HorizontalOptions="Center">
+                                                        <Label.Triggers>
+                                                            <DataTrigger TargetType="Label" Binding="{Binding ProgressionIsIncrease}" Value="True">
+                                                                <Setter Property="TextColor" Value="#2E7D32"/>
+                                                            </DataTrigger>
+                                                            <DataTrigger TargetType="Label" Binding="{Binding ProgressionIsIncrease}" Value="False">
+                                                                <Setter Property="TextColor" Value="#F57F17"/>
+                                                            </DataTrigger>
+                                                        </Label.Triggers>
+                                                    </Label>
+                                                </Border>
+
+                                                <Grid ColumnDefinitions="*,Auto" Margin="16,0,16,8" IsVisible="{Binding HasSets}">
+                                                    <ProgressBar Grid.Column="0" Progress="{Binding CompletionProgress}" ProgressColor="#4CAF50" VerticalOptions="Center"/>
+                                                    <Label Grid.Column="1" FontSize="12" FontAttributes="Bold" TextColor="#A3A3A3" Margin="8,0,0,0" VerticalOptions="Center">
+                                                        <Label.Text>
+                                                            <MultiBinding StringFormat="{}{0}/{1}">
+                                                                <Binding Path="CompletedSets"/>
+                                                                <Binding Path="TotalSetCount"/>
+                                                            </MultiBinding>
+                                                        </Label.Text>
+                                                    </Label>
+                                                </Grid>
+
+                                                <Grid ColumnDefinitions="36,32,*,*,80" ColumnSpacing="8" Margin="16,0,16,4" IsVisible="{Binding HasSets}">
+                                                    <Label Grid.Column="0" Text=""/>
+                                                    <Label Grid.Column="1" Text="SET" FontSize="11" TextColor="#A3A3A3" FontAttributes="Bold" HorizontalOptions="Center"/>
+                                                    <Label Grid.Column="2" Text="REPS" FontSize="11" TextColor="#A3A3A3" FontAttributes="Bold" HorizontalOptions="Center"/>
+                                                    <Label Grid.Column="3" Text="WEIGHT" FontSize="11" TextColor="#A3A3A3" FontAttributes="Bold" HorizontalOptions="Center"/>
+                                                    <Label Grid.Column="4" Text=""/>
+                                                </Grid>
+
+                                                <VerticalStackLayout BindableLayout.ItemsSource="{Binding Sets}" Spacing="6" Margin="16,0">
+                                                    <BindableLayout.EmptyView>
+                                                        <Label Text="No sets yet — tap + Add Set to get started" FontSize="13" TextColor="#B0B0B0" HorizontalOptions="Center" Margin="0,8,0,8"/>
+                                                    </BindableLayout.EmptyView>
                                                     <BindableLayout.ItemTemplate>
-                                                        <DataTemplate x:DataType="x:String">
-                                                            <Border BackgroundColor="#F8F9FA" StrokeThickness="1" Stroke="#E5E7EB" Padding="8,4" Margin="0,0,6,6">
-                                                                <Border.StrokeShape>
-                                                                    <RoundRectangle CornerRadius="6"/>
-                                                                </Border.StrokeShape>
-                                                                <Label Text="{Binding .}" FontSize="12" TextColor="#5A606A" FontAttributes="Bold"/>
-                                                            </Border>
+                                                        <DataTemplate x:DataType="models:WorkoutSet">
+                                                            <Grid ColumnDefinitions="36,32,*,*,80" ColumnSpacing="8" BackgroundColor="{Binding RowBackground}" Padding="0,2">
+
+                                                                <Border Grid.Column="0" WidthRequest="32" HeightRequest="32" VerticalOptions="Center" StrokeThickness="2">
+                                                                    <Border.StrokeShape>
+                                                                        <RoundRectangle CornerRadius="8"/>
+                                                                    </Border.StrokeShape>
+                                                                    <Border.GestureRecognizers>
+                                                                        <TapGestureRecognizer Command="{Binding ToggleCompletedCommand}" CommandParameter="{Binding ParentGroup.Exercise.MuscleGroup}"/>
+                                                                    </Border.GestureRecognizers>
+                                                                    <Border.Triggers>
+                                                                        <DataTrigger TargetType="Border" Binding="{Binding IsCompleted}" Value="True">
+                                                                            <Setter Property="BackgroundColor" Value="#4CAF50"/>
+                                                                            <Setter Property="Stroke" Value="#4CAF50"/>
+                                                                        </DataTrigger>
+                                                                        <DataTrigger TargetType="Border" Binding="{Binding IsCompleted}" Value="False">
+                                                                            <Setter Property="BackgroundColor" Value="#FFFFFF"/>
+                                                                            <Setter Property="Stroke" Value="#E5E7EB"/>
+                                                                        </DataTrigger>
+                                                                    </Border.Triggers>
+                                                                    <Label Text="{Binding CheckmarkText}" FontSize="16" FontAttributes="Bold" TextColor="#FFFFFF" HorizontalOptions="Center" VerticalOptions="Center"/>
+                                                                </Border>
+
+                                                                <Border Grid.Column="1" BackgroundColor="{Binding NumberBackground}" WidthRequest="28" HeightRequest="28" VerticalOptions="Center" StrokeThickness="0">
+                                                                    <Border.StrokeShape>
+                                                                        <RoundRectangle CornerRadius="6"/>
+                                                                    </Border.StrokeShape>
+                                                                    <Label Text="{Binding SetNumber}" FontSize="12" FontAttributes="Bold" TextColor="{Binding NumberColor}" HorizontalOptions="Center" VerticalOptions="Center"/>
+                                                                </Border>
+
+                                                                <Border Grid.Column="2" BackgroundColor="#F4F5F7" StrokeThickness="0" HeightRequest="40" VerticalOptions="Center">
+                                                                    <Border.StrokeShape>
+                                                                        <RoundRectangle CornerRadius="8"/>
+                                                                    </Border.StrokeShape>
+                                                                    <Entry Text="{Binding Reps}" Keyboard="Numeric" BackgroundColor="Transparent" TextColor="#1A1A1A" FontAttributes="Bold" FontSize="15" HorizontalTextAlignment="Center" VerticalOptions="Center"/>
+                                                                </Border>
+
+                                                                <Border Grid.Column="3" BackgroundColor="#F4F5F7" StrokeThickness="0" HeightRequest="40" VerticalOptions="Center">
+                                                                    <Border.StrokeShape>
+                                                                        <RoundRectangle CornerRadius="8"/>
+                                                                    </Border.StrokeShape>
+                                                                    <Entry Text="{Binding Weight}" Keyboard="Numeric" BackgroundColor="Transparent" TextColor="#1A1A1A" FontAttributes="Bold" FontSize="15" HorizontalTextAlignment="Center" Placeholder="{Binding SuggestedWeightPlaceholder}" PlaceholderColor="#B0B0B0" VerticalOptions="Center"/>
+                                                                </Border>
+
+                                                                <HorizontalStackLayout Grid.Column="4" Spacing="6" HorizontalOptions="End" VerticalOptions="Center">
+                                                                    <Button Text="⏱" Command="{Binding Source={RelativeSource AncestorType={x:Type vm:AddWorkoutViewModel}}, Path=StartRestTimerCommand}" CommandParameter="{Binding Exercise.MuscleGroup}" BackgroundColor="#F0F7FF" TextColor="#1F77F0" FontSize="15" Padding="0" WidthRequest="36" HeightRequest="36" CornerRadius="8" BorderWidth="0" VerticalOptions="Center"/>
+                                                                    <Button Text="✕" Command="{Binding DeleteCommand}" BackgroundColor="Transparent" TextColor="#FF6B6B" FontSize="16" Padding="0" WidthRequest="36" HeightRequest="36" BorderWidth="0" VerticalOptions="Center"/>
+                                                                </HorizontalStackLayout>
+                                                            </Grid>
                                                         </DataTemplate>
                                                     </BindableLayout.ItemTemplate>
-                                                </FlexLayout>
+                                                </VerticalStackLayout>
+
+                                                <Grid ColumnDefinitions="*,*" ColumnSpacing="12" Margin="16,8,16,0">
+                                                    <Button Grid.Column="0" Text="+ Add Set" Command="{Binding Source={RelativeSource AncestorType={x:Type vm:AddWorkoutViewModel}}, Path=AddSetCommand}" CommandParameter="{Binding .}" BackgroundColor="#F0F7FF" TextColor="#1F77F0" FontAttributes="Bold" FontSize="14" Padding="0,12" CornerRadius="10" BorderWidth="0">
+                                                        <Button.Shadow>
+                                                            <Shadow Brush="#1F77F0" Offset="0,2" Radius="6" Opacity="0.1" />
+                                                        </Button.Shadow>
+                                                    </Button>
+                                                    <Button Grid.Column="1" Text="Copy Last" Command="{Binding Source={RelativeSource AncestorType={x:Type vm:AddWorkoutViewModel}}, Path=CopyLastSetCommand}" CommandParameter="{Binding .}" FontAttributes="Bold" FontSize="14" Padding="0,12" CornerRadius="10" BorderWidth="0">
+                                                        <Button.Triggers>
+                                                            <DataTrigger TargetType="Button" Binding="{Binding HasSets}" Value="True">
+                                                                <Setter Property="BackgroundColor" Value="#F0F7FF"/>
+                                                                <Setter Property="TextColor" Value="#1F77F0"/>
+                                                            </DataTrigger>
+                                                            <DataTrigger TargetType="Button" Binding="{Binding HasSets}" Value="False">
+                                                                <Setter Property="BackgroundColor" Value="#F9FAFB"/>
+                                                                <Setter Property="TextColor" Value="#D1D5DB"/>
+                                                            </DataTrigger>
+                                                        </Button.Triggers>
+                                                    </Button>
+                                                </Grid>
+
                                             </VerticalStackLayout>
-
-                                            <Border IsVisible="{Binding HasProgressionSuggestion}" StrokeThickness="0" Padding="12,10" Margin="16,0,16,4">
-                                                <Border.StrokeShape>
-                                                    <RoundRectangle CornerRadius="10"/>
-                                                </Border.StrokeShape>
-                                                <Border.Triggers>
-                                                    <DataTrigger TargetType="Border" Binding="{Binding ProgressionIsIncrease}" Value="True">
-                                                        <Setter Property="BackgroundColor" Value="#EDFAEE"/>
-                                                    </DataTrigger>
-                                                    <DataTrigger TargetType="Border" Binding="{Binding ProgressionIsIncrease}" Value="False">
-                                                        <Setter Property="BackgroundColor" Value="#FFF8E1"/>
-                                                    </DataTrigger>
-                                                </Border.Triggers>
-                                                <Label Text="{Binding ProgressionSuggestion}" FontSize="12" FontAttributes="Bold" HorizontalOptions="Center">
-                                                    <Label.Triggers>
-                                                        <DataTrigger TargetType="Label" Binding="{Binding ProgressionIsIncrease}" Value="True">
-                                                            <Setter Property="TextColor" Value="#2E7D32"/>
-                                                        </DataTrigger>
-                                                        <DataTrigger TargetType="Label" Binding="{Binding ProgressionIsIncrease}" Value="False">
-                                                            <Setter Property="TextColor" Value="#F57F17"/>
-                                                        </DataTrigger>
-                                                    </Label.Triggers>
-                                                </Label>
-                                            </Border>
-
-                                            <Grid ColumnDefinitions="*,Auto" Margin="16,0,16,8" IsVisible="{Binding HasSets}">
-                                                <ProgressBar Grid.Column="0" Progress="{Binding CompletionProgress}" ProgressColor="#4CAF50" VerticalOptions="Center"/>
-                                                <Label Grid.Column="1" FontSize="12" FontAttributes="Bold" TextColor="#A3A3A3" Margin="8,0,0,0" VerticalOptions="Center">
-                                                    <Label.Text>
-                                                        <MultiBinding StringFormat="{}{0}/{1}">
-                                                            <Binding Path="CompletedSets"/>
-                                                            <Binding Path="TotalSetCount"/>
-                                                        </MultiBinding>
-                                                    </Label.Text>
-                                                </Label>
-                                            </Grid>
-
-                                            <Grid ColumnDefinitions="36,32,*,*,80" ColumnSpacing="8" Margin="16,0,16,4" IsVisible="{Binding HasSets}">
-                                                <Label Grid.Column="0" Text=""/>
-                                                <Label Grid.Column="1" Text="SET" FontSize="11" TextColor="#A3A3A3" FontAttributes="Bold" HorizontalOptions="Center"/>
-                                                <Label Grid.Column="2" Text="REPS" FontSize="11" TextColor="#A3A3A3" FontAttributes="Bold" HorizontalOptions="Center"/>
-                                                <Label Grid.Column="3" Text="WEIGHT" FontSize="11" TextColor="#A3A3A3" FontAttributes="Bold" HorizontalOptions="Center"/>
-                                                <Label Grid.Column="4" Text=""/>
-                                            </Grid>
-
-                                            <VerticalStackLayout BindableLayout.ItemsSource="{Binding Sets}" Spacing="6" Margin="16,0">
-                                                <BindableLayout.EmptyView>
-                                                    <Label Text="No sets yet — tap + Add Set to get started" FontSize="13" TextColor="#B0B0B0" HorizontalOptions="Center" Margin="0,8,0,8"/>
-                                                </BindableLayout.EmptyView>
-                                                <BindableLayout.ItemTemplate>
-                                                    <DataTemplate x:DataType="models:WorkoutSet">
-                                                        <Grid ColumnDefinitions="36,32,*,*,80" ColumnSpacing="8" BackgroundColor="{Binding RowBackground}" Padding="0,2">
-
-                                                            <Border Grid.Column="0" WidthRequest="32" HeightRequest="32" VerticalOptions="Center" StrokeThickness="2">
-                                                                <Border.StrokeShape>
-                                                                    <RoundRectangle CornerRadius="8"/>
-                                                                </Border.StrokeShape>
-                                                                <Border.GestureRecognizers>
-                                                                    <TapGestureRecognizer Command="{Binding ToggleCompletedCommand}" CommandParameter="{Binding ParentGroup.Exercise.MuscleGroup}"/>
-                                                                </Border.GestureRecognizers>
-                                                                <Border.Triggers>
-                                                                    <DataTrigger TargetType="Border" Binding="{Binding IsCompleted}" Value="True">
-                                                                        <Setter Property="BackgroundColor" Value="#4CAF50"/>
-                                                                        <Setter Property="Stroke" Value="#4CAF50"/>
-                                                                    </DataTrigger>
-                                                                    <DataTrigger TargetType="Border" Binding="{Binding IsCompleted}" Value="False">
-                                                                        <Setter Property="BackgroundColor" Value="#FFFFFF"/>
-                                                                        <Setter Property="Stroke" Value="#E5E7EB"/>
-                                                                    </DataTrigger>
-                                                                </Border.Triggers>
-                                                                <Label Text="{Binding CheckmarkText}" FontSize="16" FontAttributes="Bold" TextColor="#FFFFFF" HorizontalOptions="Center" VerticalOptions="Center"/>
-                                                            </Border>
-
-                                                            <Border Grid.Column="1" BackgroundColor="{Binding NumberBackground}" WidthRequest="28" HeightRequest="28" VerticalOptions="Center" StrokeThickness="0">
-                                                                <Border.StrokeShape>
-                                                                    <RoundRectangle CornerRadius="6"/>
-                                                                </Border.StrokeShape>
-                                                                <Label Text="{Binding SetNumber}" FontSize="12" FontAttributes="Bold" TextColor="{Binding NumberColor}" HorizontalOptions="Center" VerticalOptions="Center"/>
-                                                            </Border>
-
-                                                            <Border Grid.Column="2" BackgroundColor="#F4F5F7" StrokeThickness="0" HeightRequest="40" VerticalOptions="Center">
-                                                                <Border.StrokeShape>
-                                                                    <RoundRectangle CornerRadius="8"/>
-                                                                </Border.StrokeShape>
-                                                                <Entry Text="{Binding Reps}" Keyboard="Numeric" BackgroundColor="Transparent" TextColor="#1A1A1A" FontAttributes="Bold" FontSize="15" HorizontalTextAlignment="Center" VerticalOptions="Center"/>
-                                                            </Border>
-
-                                                            <Border Grid.Column="3" BackgroundColor="#F4F5F7" StrokeThickness="0" HeightRequest="40" VerticalOptions="Center">
-                                                                <Border.StrokeShape>
-                                                                    <RoundRectangle CornerRadius="8"/>
-                                                                </Border.StrokeShape>
-                                                                <Entry Text="{Binding Weight}" Keyboard="Numeric" BackgroundColor="Transparent" TextColor="#1A1A1A" FontAttributes="Bold" FontSize="15" HorizontalTextAlignment="Center" Placeholder="{Binding SuggestedWeightPlaceholder}" PlaceholderColor="#B0B0B0" VerticalOptions="Center"/>
-                                                            </Border>
-
-                                                            <HorizontalStackLayout Grid.Column="4" Spacing="6" HorizontalOptions="End" VerticalOptions="Center">
-                                                                <Button Text="⏱" Command="{Binding Source={RelativeSource AncestorType={x:Type vm:AddWorkoutViewModel}}, Path=StartRestTimerCommand}" CommandParameter="{Binding Exercise.MuscleGroup}" BackgroundColor="#F0F7FF" TextColor="#1F77F0" FontSize="15" Padding="0" WidthRequest="36" HeightRequest="36" CornerRadius="8" BorderWidth="0" VerticalOptions="Center"/>
-                                                                <Button Text="✕" Command="{Binding DeleteCommand}" BackgroundColor="Transparent" TextColor="#FF6B6B" FontSize="16" Padding="0" WidthRequest="36" HeightRequest="36" BorderWidth="0" VerticalOptions="Center"/>
-                                                            </HorizontalStackLayout>
-                                                        </Grid>
-                                                    </DataTemplate>
-                                                </BindableLayout.ItemTemplate>
-                                            </VerticalStackLayout>
-
-                                            <Grid ColumnDefinitions="*,*" ColumnSpacing="12" Margin="16,8,16,0">
-                                                <Button Grid.Column="0" Text="+ Add Set" Command="{Binding Source={RelativeSource AncestorType={x:Type vm:AddWorkoutViewModel}}, Path=AddSetCommand}" CommandParameter="{Binding .}" BackgroundColor="#F0F7FF" TextColor="#1F77F0" FontAttributes="Bold" FontSize="14" Padding="0,12" CornerRadius="10" BorderWidth="0">
-                                                    <Button.Shadow>
-                                                        <Shadow Brush="#1F77F0" Offset="0,2" Radius="6" Opacity="0.1" />
-                                                    </Button.Shadow>
-                                                </Button>
-                                                <Button Grid.Column="1" Text="Copy Last" Command="{Binding Source={RelativeSource AncestorType={x:Type vm:AddWorkoutViewModel}}, Path=CopyLastSetCommand}" CommandParameter="{Binding .}" FontAttributes="Bold" FontSize="14" Padding="0,12" CornerRadius="10" BorderWidth="0">
-                                                    <Button.Triggers>
-                                                        <DataTrigger TargetType="Button" Binding="{Binding HasSets}" Value="True">
-                                                            <Setter Property="BackgroundColor" Value="#F0F7FF"/>
-                                                            <Setter Property="TextColor" Value="#1F77F0"/>
-                                                        </DataTrigger>
-                                                        <DataTrigger TargetType="Button" Binding="{Binding HasSets}" Value="False">
-                                                            <Setter Property="BackgroundColor" Value="#F9FAFB"/>
-                                                            <Setter Property="TextColor" Value="#D1D5DB"/>
-                                                        </DataTrigger>
-                                                    </Button.Triggers>
-                                                </Button>
-                                            </Grid>
-
                                         </VerticalStackLayout>
-                                    </VerticalStackLayout>
-                                </Border>
-                            </DataTemplate>
-                        </CollectionView.ItemTemplate>
-                    </CollectionView>
+                                    </Border>
+                                </DataTemplate>
+                            </CollectionView.ItemTemplate>
+                        </CollectionView>
 
-                    <Button Text="+ Add Exercise"
-                            Command="{Binding ViewExercisePickerCommand}"
-                            BackgroundColor="#1F77F0"
-                            TextColor="#FFFFFF"
-                            FontAttributes="Bold" FontSize="15"
-                            Padding="0,16" CornerRadius="12" BorderWidth="0"
-                            Margin="0,0,0,16">
-                        <Button.Shadow>
-                            <Shadow Brush="#1F77F0" Offset="0,4" Radius="10" Opacity="0.25"/>
-                        </Button.Shadow>
-                    </Button>
-                </VerticalStackLayout>
-
-                <Border BackgroundColor="#FFFFFF" StrokeThickness="0">
-                    <Border.StrokeShape>
-                        <RoundRectangle CornerRadius="14"/>
-                    </Border.StrokeShape>
-                    <Border.Shadow>
-                        <Shadow Brush="#000000" Offset="0,2" Radius="8" Opacity="0.04" />
-                    </Border.Shadow>
-                    <VerticalStackLayout Spacing="8" Padding="16">
-                        <Label Text="WORKOUT NOTES" FontSize="11" TextColor="#A3A3A3" FontAttributes="Bold" CharacterSpacing="1"/>
-                        <Border BackgroundColor="#F4F5F7" StrokeThickness="0">
-                            <Border.StrokeShape>
-                                <RoundRectangle CornerRadius="10"/>
-                            </Border.StrokeShape>
-                            <Editor Text="{Binding Notes}"
-                                    BackgroundColor="Transparent"
-                                    TextColor="#1A1A1A"
-                                    HeightRequest="100"
-                                    MaxLength="500"
-                                    Placeholder="How did you feel? Any notes about this session..."
-                                    PlaceholderColor="#B0B0B0"
-                                    Margin="12,8"/>
-                        </Border>
+                        <Button Text="+ Add Exercise"
+                                Command="{Binding ViewExercisePickerCommand}"
+                                BackgroundColor="#1F77F0"
+                                TextColor="#FFFFFF"
+                                FontAttributes="Bold" FontSize="15"
+                                Padding="0,16" CornerRadius="12" BorderWidth="0"
+                                Margin="0,0,0,16">
+                            <Button.Shadow>
+                                <Shadow Brush="#1F77F0" Offset="0,4" Radius="10" Opacity="0.25"/>
+                            </Button.Shadow>
+                        </Button>
                     </VerticalStackLayout>
+
+                    <Border BackgroundColor="#FFFFFF" StrokeThickness="0">
+                        <Border.StrokeShape>
+                            <RoundRectangle CornerRadius="14"/>
+                        </Border.StrokeShape>
+                        <Border.Shadow>
+                            <Shadow Brush="#000000" Offset="0,2" Radius="8" Opacity="0.04" />
+                        </Border.Shadow>
+                        <VerticalStackLayout Spacing="8" Padding="16">
+                            <Label Text="WORKOUT NOTES" FontSize="11" TextColor="#A3A3A3" FontAttributes="Bold" CharacterSpacing="1"/>
+                            <Border BackgroundColor="#F4F5F7" StrokeThickness="0">
+                                <Border.StrokeShape>
+                                    <RoundRectangle CornerRadius="10"/>
+                                </Border.StrokeShape>
+                                <Editor Text="{Binding Notes}"
+                                        BackgroundColor="Transparent"
+                                        TextColor="#1A1A1A"
+                                        HeightRequest="100"
+                                        MaxLength="500"
+                                        Placeholder="How did you feel? Any notes about this session..."
+                                        PlaceholderColor="#B0B0B0"
+                                        Margin="12,8"/>
+                            </Border>
+                        </VerticalStackLayout>
+                    </Border>
+
+                </VerticalStackLayout>
+            </ScrollView>
+
+            <Grid Grid.Row="1">
+                <Border BackgroundColor="#FFFFFF" StrokeThickness="0" VerticalOptions="Fill" HorizontalOptions="Fill">
+                    <Border.Shadow>
+                        <Shadow Brush="#000000" Offset="0,-4" Radius="16" Opacity="0.06"/>
+                    </Border.Shadow>
                 </Border>
 
-            </VerticalStackLayout>
-        </ScrollView>
+                <VerticalStackLayout Spacing="0">
 
-        <Grid Grid.Row="1">
-            <Border BackgroundColor="#FFFFFF" StrokeThickness="0" VerticalOptions="Fill" HorizontalOptions="Fill">
-                <Border.Shadow>
-                    <Shadow Brush="#000000" Offset="0,-4" Radius="16" Opacity="0.06"/>
-                </Border.Shadow>
-            </Border>
+                    <VerticalStackLayout IsVisible="{Binding TimerViewModel.IsVisible}" BackgroundColor="#EEF4FF" Padding="20,8" Spacing="6">
+                        <Grid ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="12">
+                            <Label Grid.Column="0" Text="{Binding TimerViewModel.RemainingLabel}" FontSize="24" FontAttributes="Bold" VerticalOptions="Center">
+                                <Label.Triggers>
+                                    <DataTrigger TargetType="Label" Binding="{Binding TimerViewModel.IsFinished}" Value="True">
+                                        <Setter Property="TextColor" Value="#4CAF50"/>
+                                    </DataTrigger>
+                                    <DataTrigger TargetType="Label" Binding="{Binding TimerViewModel.IsFinished}" Value="False">
+                                        <Setter Property="TextColor" Value="#1F77F0"/>
+                                    </DataTrigger>
+                                </Label.Triggers>
+                            </Label>
+                            <ProgressBar Grid.Column="1" Progress="{Binding TimerViewModel.Progress}" ProgressColor="#1F77F0" VerticalOptions="Center"/>
+                            <Button Grid.Column="2" Text="+30" Command="{Binding TimerViewModel.AddThirtyCommand}" BackgroundColor="#FFFFFF" TextColor="#1F77F0" FontSize="12" FontAttributes="Bold" WidthRequest="48" HeightRequest="32" Padding="0" CornerRadius="8" BorderWidth="0" VerticalOptions="Center"/>
+                            <Button Grid.Column="3" Text="✕" Command="{Binding TimerViewModel.StopCommand}" BackgroundColor="#FFEAEA" TextColor="#FF6B6B" FontSize="14" WidthRequest="32" HeightRequest="32" Padding="0" CornerRadius="8" BorderWidth="0" VerticalOptions="Center"/>
+                        </Grid>
 
-            <VerticalStackLayout Spacing="0">
+                        <HorizontalStackLayout Spacing="6" HorizontalOptions="Center">
+                            <Button Text="1m" Command="{Binding TimerViewModel.StartPresetCommand}" CommandParameter="60" BackgroundColor="#FFFFFF" TextColor="#1F77F0" FontAttributes="Bold" FontSize="11" Padding="10,4" CornerRadius="8" BorderWidth="0"/>
+                            <Button Text="90s" Command="{Binding TimerViewModel.StartPresetCommand}" CommandParameter="90" BackgroundColor="#FFFFFF" TextColor="#1F77F0" FontAttributes="Bold" FontSize="11" Padding="10,4" CornerRadius="8" BorderWidth="0"/>
+                            <Button Text="2m" Command="{Binding TimerViewModel.StartPresetCommand}" CommandParameter="120" BackgroundColor="#FFFFFF" TextColor="#1F77F0" FontAttributes="Bold" FontSize="11" Padding="10,4" CornerRadius="8" BorderWidth="0"/>
+                            <Button Text="3m" Command="{Binding TimerViewModel.StartPresetCommand}" CommandParameter="180" BackgroundColor="#FFFFFF" TextColor="#1F77F0" FontAttributes="Bold" FontSize="11" Padding="10,4" CornerRadius="8" BorderWidth="0"/>
+                        </HorizontalStackLayout>
+                    </VerticalStackLayout>
 
-                <VerticalStackLayout IsVisible="{Binding TimerViewModel.IsVisible}" BackgroundColor="#EEF4FF" Padding="20,8" Spacing="6">
-                    <Grid ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="12">
-                        <Label Grid.Column="0" Text="{Binding TimerViewModel.RemainingLabel}" FontSize="24" FontAttributes="Bold" VerticalOptions="Center">
-                            <Label.Triggers>
-                                <DataTrigger TargetType="Label" Binding="{Binding TimerViewModel.IsFinished}" Value="True">
-                                    <Setter Property="TextColor" Value="#4CAF50"/>
-                                </DataTrigger>
-                                <DataTrigger TargetType="Label" Binding="{Binding TimerViewModel.IsFinished}" Value="False">
-                                    <Setter Property="TextColor" Value="#1F77F0"/>
-                                </DataTrigger>
-                            </Label.Triggers>
-                        </Label>
-                        <ProgressBar Grid.Column="1" Progress="{Binding TimerViewModel.Progress}" ProgressColor="#1F77F0" VerticalOptions="Center"/>
-                        <Button Grid.Column="2" Text="+30" Command="{Binding TimerViewModel.AddThirtyCommand}" BackgroundColor="#FFFFFF" TextColor="#1F77F0" FontSize="12" FontAttributes="Bold" WidthRequest="48" HeightRequest="32" Padding="0" CornerRadius="8" BorderWidth="0" VerticalOptions="Center"/>
-                        <Button Grid.Column="3" Text="✕" Command="{Binding TimerViewModel.StopCommand}" BackgroundColor="#FFEAEA" TextColor="#FF6B6B" FontSize="14" WidthRequest="32" HeightRequest="32" Padding="0" CornerRadius="8" BorderWidth="0" VerticalOptions="Center"/>
+                    <Grid ColumnDefinitions="*,*" Padding="24,8,24,4" ColumnSpacing="16">
+                        <HorizontalStackLayout Grid.Column="0" Spacing="6" HorizontalOptions="Center">
+                            <Label Text="{Binding TotalSets}" FontSize="16" FontAttributes="Bold" TextColor="#1F77F0" VerticalOptions="Center"/>
+                            <Label Text="sets" FontSize="12" TextColor="#A3A3A3" FontAttributes="Bold" VerticalOptions="Center"/>
+                        </HorizontalStackLayout>
+                        <HorizontalStackLayout Grid.Column="1" Spacing="6" HorizontalOptions="Center">
+                            <Label Text="{Binding TotalVolume, StringFormat='{0:F0}'}" FontSize="16" FontAttributes="Bold" TextColor="#4CAF50" VerticalOptions="Center"/>
+                            <Label Text="{Binding WeightUnitLabel}" FontSize="12" TextColor="#A3A3A3" FontAttributes="Bold" VerticalOptions="Center"/>
+                        </HorizontalStackLayout>
                     </Grid>
 
-                    <HorizontalStackLayout Spacing="6" HorizontalOptions="Center">
-                        <Button Text="1m" Command="{Binding TimerViewModel.StartPresetCommand}" CommandParameter="60" BackgroundColor="#FFFFFF" TextColor="#1F77F0" FontAttributes="Bold" FontSize="11" Padding="10,4" CornerRadius="8" BorderWidth="0"/>
-                        <Button Text="90s" Command="{Binding TimerViewModel.StartPresetCommand}" CommandParameter="90" BackgroundColor="#FFFFFF" TextColor="#1F77F0" FontAttributes="Bold" FontSize="11" Padding="10,4" CornerRadius="8" BorderWidth="0"/>
-                        <Button Text="2m" Command="{Binding TimerViewModel.StartPresetCommand}" CommandParameter="120" BackgroundColor="#FFFFFF" TextColor="#1F77F0" FontAttributes="Bold" FontSize="11" Padding="10,4" CornerRadius="8" BorderWidth="0"/>
-                        <Button Text="3m" Command="{Binding TimerViewModel.StartPresetCommand}" CommandParameter="180" BackgroundColor="#FFFFFF" TextColor="#1F77F0" FontAttributes="Bold" FontSize="11" Padding="10,4" CornerRadius="8" BorderWidth="0"/>
-                    </HorizontalStackLayout>
+                    <Grid ColumnDefinitions="*,2*" ColumnSpacing="12" Padding="20,12,20,16">
+                        <Button Grid.Column="0" Text="Clear" Command="{Binding ClearCommand}" BackgroundColor="Transparent" TextColor="#FF6B6B" FontAttributes="Bold" FontSize="14" HeightRequest="48" Padding="0" CornerRadius="12" BorderWidth="1" BorderColor="#FFEAEA"/>
+                        <Button Grid.Column="1" Text="Finish Workout" Command="{Binding SaveWorkoutCommand}" BackgroundColor="#1F77F0" TextColor="#FFFFFF" FontAttributes="Bold" FontSize="15" HeightRequest="48" Padding="0" CornerRadius="12" BorderWidth="0">
+                            <Button.Shadow>
+                                <Shadow Brush="#1F77F0" Offset="0,4" Radius="10" Opacity="0.25"/>
+                            </Button.Shadow>
+                        </Button>
+                    </Grid>
+
                 </VerticalStackLayout>
+            </Grid>
+        </Grid>
 
-                <Grid ColumnDefinitions="*,*" Padding="24,8,24,4" ColumnSpacing="16">
-                    <HorizontalStackLayout Grid.Column="0" Spacing="6" HorizontalOptions="Center">
-                        <Label Text="{Binding TotalSets}" FontSize="16" FontAttributes="Bold" TextColor="#1F77F0" VerticalOptions="Center"/>
-                        <Label Text="sets" FontSize="12" TextColor="#A3A3A3" FontAttributes="Bold" VerticalOptions="Center"/>
-                    </HorizontalStackLayout>
-                    <HorizontalStackLayout Grid.Column="1" Spacing="6" HorizontalOptions="Center">
-                        <Label Text="{Binding TotalVolume, StringFormat='{0:F0}'}" FontSize="16" FontAttributes="Bold" TextColor="#4CAF50" VerticalOptions="Center"/>
-                        <Label Text="{Binding WeightUnitLabel}" FontSize="12" TextColor="#A3A3A3" FontAttributes="Bold" VerticalOptions="Center"/>
-                    </HorizontalStackLayout>
+        <ContentView BackgroundColor="Transparent" 
+                     IsVisible="{Binding IsMenuVisible}"
+                     ZIndex="9">
+            <ContentView.GestureRecognizers>
+                <TapGestureRecognizer Command="{Binding ToggleMenuCommand}" />
+            </ContentView.GestureRecognizers>
+        </ContentView>
+
+        <Border IsVisible="{Binding IsMenuVisible}"
+                ZIndex="10"
+                BackgroundColor="#FFFFFF"
+                StrokeThickness="1"
+                Stroke="#F0F0F0"
+                HorizontalOptions="End"
+                VerticalOptions="Start"
+                WidthRequest="200"
+                Margin="0,70,20,0">
+            <Border.StrokeShape>
+                <RoundRectangle CornerRadius="12"/>
+            </Border.StrokeShape>
+            <Border.Shadow>
+                <Shadow Brush="#000000" Offset="0,8" Radius="16" Opacity="0.12" />
+            </Border.Shadow>
+
+            <VerticalStackLayout Padding="4" Spacing="0">
+
+                <Grid Padding="12" BackgroundColor="Transparent">
+                    <Grid.GestureRecognizers>
+                        <TapGestureRecognizer Command="{Binding HandleMenuActionCommand}" CommandParameter="Load"/>
+                    </Grid.GestureRecognizers>
+                    <Label Text="📋 Load Template"
+                           TextColor="#1A1A1A"
+                           FontAttributes="Bold"
+                           FontSize="14"
+                           VerticalOptions="Center"/>
                 </Grid>
 
-                <Grid ColumnDefinitions="*,*" ColumnSpacing="10" Padding="20,4,20,8">
-                    <Button Grid.Column="0" Text="📋 Load" Command="{Binding OpenTemplatePickerCommand}" BackgroundColor="#F4F5F7" TextColor="#5A606A" FontAttributes="Bold" FontSize="13" HeightRequest="38" Padding="0" CornerRadius="10" BorderWidth="0"/>
-                    <Button Grid.Column="1" Text="💾 Save" Command="{Binding SaveAsTemplateCommand}" BackgroundColor="#EDFAEE" TextColor="#2E7D32" FontAttributes="Bold" FontSize="13" HeightRequest="38" Padding="0" CornerRadius="10" BorderWidth="0"/>
-                </Grid>
+                <BoxView HeightRequest="1" Color="#F4F5F7" Margin="8,0" />
 
-                <Grid ColumnDefinitions="*,2*" ColumnSpacing="12" Padding="20,4,20,16">
-                    <Button Grid.Column="0" Text="Clear" Command="{Binding ClearCommand}" BackgroundColor="Transparent" TextColor="#FF6B6B" FontAttributes="Bold" FontSize="14" HeightRequest="48" Padding="0" CornerRadius="12" BorderWidth="1" BorderColor="#FFEAEA"/>
-                    <Button Grid.Column="1" Text="Finish Workout" Command="{Binding SaveWorkoutCommand}" BackgroundColor="#1F77F0" TextColor="#FFFFFF" FontAttributes="Bold" FontSize="15" HeightRequest="48" Padding="0" CornerRadius="12" BorderWidth="0">
-                        <Button.Shadow>
-                            <Shadow Brush="#1F77F0" Offset="0,4" Radius="10" Opacity="0.25"/>
-                        </Button.Shadow>
-                    </Button>
+                <Grid Padding="12" BackgroundColor="Transparent">
+                    <Grid.GestureRecognizers>
+                        <TapGestureRecognizer Command="{Binding HandleMenuActionCommand}" CommandParameter="Save"/>
+                    </Grid.GestureRecognizers>
+                    <Label Text="💾 Save as Template"
+                           TextColor="#1A1A1A"
+                           FontAttributes="Bold"
+                           FontSize="14"
+                           VerticalOptions="Center"/>
                 </Grid>
 
             </VerticalStackLayout>
-        </Grid>
+        </Border>
 
     </Grid>
 </ContentPage>
