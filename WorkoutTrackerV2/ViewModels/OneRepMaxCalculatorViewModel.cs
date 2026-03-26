@@ -37,7 +37,7 @@ namespace WorkoutTrackerV2.ViewModels
         ];
 
         // ── Rep percentage table ─────────────────────────────────────────────
-        public List<RepPercentageRow> RepTable { get; } = [];
+        public ObservableCollection<RepPercentageRow> RepTable { get; } = [];
 
         // ── Initialise ───────────────────────────────────────────────────────
         [RelayCommand]
