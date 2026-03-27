@@ -103,9 +103,9 @@ namespace WorkoutTrackerV2.ViewModels
                 IsLoading = true;
                 WeightUnitLabel = settingsService.WeightUnit;
 
-                var progress = await analyticsService.GetProgressForMuscleGroupAsync(
-                    MuscleGroup, SelectedDays);
+                var progress = await analyticsService.GetProgressForMuscleGroupAsync(MuscleGroup, SelectedDays);
 
+                // 1. Process Improvements and Colors
                 for (int i = 0; i < progress.Count; i++)
                 {
                     progress[i].ChartColor = ChartColors[i % ChartColors.Length];
@@ -120,13 +120,9 @@ namespace WorkoutTrackerV2.ViewModels
                     }
                 }
 
-                var top = progress.Count > 0
-                    ? progress.OrderByDescending(e => e.MaxWeight).First()
-                    : null;
-                TopExerciseName = top?.ExerciseName ?? string.Empty;
-
                 Exercises = new ObservableCollection<ExerciseProgress>(progress);
 
+                // 2. Calculate Aggregates
                 int sets = 0, reps = 0;
                 double maxWeight = 0;
                 foreach (var e in progress)
@@ -140,30 +136,31 @@ namespace WorkoutTrackerV2.ViewModels
                 TotalReps = reps;
                 MaxWeight = maxWeight;
 
-                // Calculate Volume Distribution by SubMuscleGroup
+                // 3. Calculate Volume Distribution (The Fix is here)
                 if (TotalSets > 0 && progress.Count > 0)
                 {
                     var groupedVolume = progress
-                        .GroupBy(e => string.IsNullOrEmpty(e.SubMuscleGroup) ? "General" : e.SubMuscleGroup)
+                        .GroupBy(e => {
+                            // Check the exercise model directly if the progress model is empty
+                            if (!string.IsNullOrWhiteSpace(e.SubMuscleGroup) && e.SubMuscleGroup != "General")
+                                return e.SubMuscleGroup;
+
+                            return "General";
+                        })
                         .Select((g, index) => new VolumeDistributionItem
                         {
                             Name = g.Key,
                             Sets = g.Sum(e => e.Sets?.Count ?? 0),
-                            ColorHex = ChartColors[index % ChartColors.Length]
+                            ColorHex = ChartColors[index % ChartColors.Length],
+                            Percentage = (double)g.Sum(e => e.Sets?.Count ?? 0) / TotalSets
                         })
                         .OrderByDescending(v => v.Sets)
                         .ToList();
 
-                    var chartEntries = new List<ChartEntry>();
-
-                    foreach (var item in groupedVolume)
+                    var chartEntries = groupedVolume.Select(item => new ChartEntry(item.Sets)
                     {
-                        item.Percentage = (double)item.Sets / TotalSets;
-                        chartEntries.Add(new ChartEntry(item.Sets)
-                        {
-                            Color = SkiaSharp.SKColor.Parse(item.ColorHex)
-                        });
-                    }
+                        Color = SkiaSharp.SKColor.Parse(item.ColorHex)
+                    }).ToList();
 
                     VolumeDistribution = new ObservableCollection<VolumeDistributionItem>(groupedVolume);
                     VolumeChart = new DonutChart
@@ -171,21 +168,18 @@ namespace WorkoutTrackerV2.ViewModels
                         Entries = chartEntries,
                         BackgroundColor = SkiaSharp.SKColors.Transparent,
                         HoleRadius = 0.65f,
-                        LabelTextSize = 0 // Keep the donut clean without labels sticking out
+                        LabelTextSize = 0
                     };
 
-                    // FIX: Flip the visibility toggle to true
                     HasVolumeData = true;
                 }
                 else
                 {
-                    VolumeDistribution.Clear();
-                    VolumeChart = null;
-
-                    // FIX: Flip the visibility toggle to false
                     HasVolumeData = false;
                 }
 
+                var top = progress.OrderByDescending(e => e.MaxWeight).FirstOrDefault();
+                TopExerciseName = top?.ExerciseName ?? string.Empty;
                 BuildCombinedChart(top);
             }
             catch (Exception ex)
