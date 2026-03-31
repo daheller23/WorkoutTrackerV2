@@ -50,6 +50,7 @@ namespace WorkoutTrackerV2
             s.AddSingleton<IAnalyticsService, AnalyticsService>();
             s.AddSingleton<ITemplateService, TemplateService>();
             s.AddSingleton<ISettingsService, SettingsService>();
+            s.AddSingleton<IDashboardService, DashboardService>();
 
             // ── Shell ─────────────────────────────────────────────────────────
             s.AddSingleton<AppShell>();

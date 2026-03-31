@@ -3,7 +3,7 @@ using CommunityToolkit.Mvvm.Input;
 
 namespace WorkoutTrackerV2.ViewModels;
 
-public partial class WeightConverterViewModel : ObservableObject
+public partial class WeightConverterViewModel : BaseViewModel
 {
     [ObservableProperty]
     private string _inputValue = string.Empty;
