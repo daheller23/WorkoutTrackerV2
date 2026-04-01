@@ -6,21 +6,24 @@ namespace WorkoutTrackerV2.Services
 {
     public class WorkoutService : IWorkoutService
     {
-        #region "PRIVATE VARIABLES"
         private readonly string _dbPath;
         private readonly SemaphoreSlim _initLock = new(1, 1);
         private SQLiteAsyncConnection _database = null!;
         private const string DbFileName = "workout_tracker.db3";
-        private bool _initialized = false;
+        private bool _initialized;
         private List<Exercise>? _exerciseCache;
-        #endregion
 
         public WorkoutService()
         {
             _dbPath = Path.Combine(FileSystem.AppDataDirectory, DbFileName);
         }
 
-        #region "INITIALIZE"
+        // ==============================================================================================================
+        //
+        //      PUBLIC METHODS
+        //
+        // ==============================================================================================================
+
         public async Task InitializeAsync()
         {
             if (_initialized) return;
@@ -50,14 +53,240 @@ namespace WorkoutTrackerV2.Services
             }
         }
 
-        // FIX 1: Zero-cost guard used by every public method instead of always
-        // awaiting InitializeAsync(). When _initialized is true this returns a
-        // cached completed Task — no async state machine, no allocation.
-        private Task EnsureInitializedAsync() =>
-            _initialized ? Task.CompletedTask : InitializeAsync();
-        #endregion
+        public async Task<List<WorkoutSession>> GetAllSessionsAsync()
+        {
+            await EnsureInitializedAsync();
+            return await _database.Table<WorkoutSession>()
+                .OrderByDescending(x => x.Date)
+                .ToListAsync();
+        }
 
-        #region "SEED DEFAULT EXERCISES"
+        public async Task<WorkoutSession?> GetSessionAsync(int id)
+        {
+            await EnsureInitializedAsync();
+            return await _database.FindAsync<WorkoutSession>(id);
+        }
+
+        public async Task<DateTime?> GetLastWorkoutDateAsync()
+        {
+            await EnsureInitializedAsync();
+            var lastSession = await _database.Table<WorkoutSession>()
+                .OrderByDescending(x => x.Date)
+                .FirstOrDefaultAsync();
+            return lastSession?.Date;
+        }
+
+        public async Task<int> GetTotalWorkoutCountAsync()
+        {
+            await EnsureInitializedAsync();
+            return await _database.Table<WorkoutSession>().CountAsync();
+        }
+
+        public async Task<List<WorkoutSession>> GetSessionsAsync(DateTime startDate, DateTime endDate)
+        {
+            await EnsureInitializedAsync();
+            return await _database.Table<WorkoutSession>()
+                .Where(x => x.Date >= startDate && x.Date <= endDate)
+                .OrderByDescending(x => x.Date)
+                .ToListAsync();
+        }
+
+        public async Task<int> SaveSessionAsync(WorkoutSession session)
+        {
+            await EnsureInitializedAsync();
+            if (session.Id == 0)
+            {
+                await _database.InsertAsync(session);
+                return session.Id;
+            }
+            await _database.UpdateAsync(session);
+            return session.Id;
+        }
+
+        public async Task<int> DeleteSessionAsync(WorkoutSession session)
+        {
+            await EnsureInitializedAsync();
+            return await _database.DeleteAsync(session);
+        }
+
+        public async Task<List<WorkoutSet>> GetSetsForSessionAsync(int sessionId)
+        {
+            await EnsureInitializedAsync();
+            return await _database.Table<WorkoutSet>()
+                .Where(x => x.WorkoutSessionId == sessionId)
+                .OrderBy(x => x.SetNumber)
+                .ToListAsync();
+        }
+
+        public async Task<List<WorkoutSet>> GetAllSetsAsync(int days = 0)
+        {
+            await EnsureInitializedAsync();
+            var startDate = days == 0 ? DateTime.MinValue : DateTime.Now.AddDays(-days);
+            return await _database.Table<WorkoutSet>()
+                .Where(x => x.CreatedDate >= startDate)
+                .OrderBy(x => x.CreatedDate)
+                .ToListAsync();
+        }
+
+        public async Task<List<WorkoutSet>> GetExerciseHistoryAsync(int exerciseId, int days = 30)
+        {
+            await EnsureInitializedAsync();
+            var startDate = days == 0 ? DateTime.MinValue : DateTime.Now.AddDays(-days);
+            return await _database.Table<WorkoutSet>()
+                .Where(x => x.ExerciseId == exerciseId && x.CreatedDate >= startDate)
+                .OrderBy(x => x.CreatedDate)
+                .ToListAsync();
+        }
+
+        public async Task<int> SaveSetAsync(WorkoutSet set)
+        {
+            await EnsureInitializedAsync();
+            if (set.Id == 0)
+                return await _database.InsertAsync(set);
+            return await _database.UpdateAsync(set);
+        }
+
+        public async Task DeleteSetsForSessionAsync(int sessionId)
+        {
+            await EnsureInitializedAsync();
+            await _database.ExecuteAsync(
+                "DELETE FROM WorkoutSet WHERE WorkoutSessionId = ?", sessionId);
+        }
+
+        public async Task SaveAllSetsAsync(List<WorkoutSet> sets)
+        {
+            await EnsureInitializedAsync();
+            await _database.InsertAllAsync(sets);
+        }
+
+        public async Task<int> DeleteSetAsync(WorkoutSet set)
+        {
+            await EnsureInitializedAsync();
+            return await _database.DeleteAsync(set);
+        }
+
+        public async Task DeleteSetAsync(int id)
+        {
+            await EnsureInitializedAsync();
+            await _database.DeleteAsync<WorkoutSet>(id);
+        }
+
+        public async Task<IReadOnlyList<Exercise>> GetAllExercisesAsync()
+        {
+            await EnsureInitializedAsync();
+            _exerciseCache ??= await _database.Table<Exercise>().ToListAsync();
+            return _exerciseCache.AsReadOnly();
+        }
+
+        public async Task<Exercise?> GetExerciseAsync(int id)
+        {
+            await EnsureInitializedAsync();
+            return await _database.FindAsync<Exercise>(id);
+        }
+
+        public async Task<List<int>> GetRecentExerciseIdsAsync(int days)
+        {
+            await EnsureInitializedAsync();
+            var startDate = DateTime.Now.AddDays(-days);
+            return await _database.QueryScalarsAsync<int>(
+                "SELECT DISTINCT ExerciseId FROM WorkoutSet WHERE CreatedDate >= ?", startDate);
+        }
+
+        public async Task<int> SaveExerciseAsync(Exercise exercise)
+        {
+            await EnsureInitializedAsync();
+            int result;
+            if (exercise.Id == 0)
+                result = await _database.InsertAsync(exercise);
+            else
+                result = await _database.UpdateAsync(exercise);
+            _exerciseCache = null;
+            return result;
+        }
+
+        public async Task DeleteExerciseAsync(int id)
+        {
+            await EnsureInitializedAsync();
+            await _database.DeleteAsync<Exercise>(id);
+            _exerciseCache = null;
+        }
+
+        public async Task<List<WorkoutTemplate>> GetAllTemplatesAsync()
+        {
+            await EnsureInitializedAsync();
+            return await _database.Table<WorkoutTemplate>()
+                .OrderBy(t => t.Name)
+                .ToListAsync();
+        }
+
+        public async Task<int> SaveTemplateAsync(WorkoutTemplate template)
+        {
+            await EnsureInitializedAsync();
+            if (template.Id == 0)
+            {
+                await _database.InsertAsync(template);
+                return template.Id;
+            }
+            await _database.UpdateAsync(template);
+            return template.Id;
+        }
+
+        public async Task<List<WorkoutTemplateSet>> GetTemplateSetsAsync(int templateId)
+        {
+            await EnsureInitializedAsync();
+            return await _database.Table<WorkoutTemplateSet>()
+                .Where(x => x.TemplateId == templateId)
+                .OrderBy(x => x.SetNumber)
+                .ToListAsync();
+        }
+
+        public async Task<int> SaveTemplateSetAsync(WorkoutTemplateSet set)
+        {
+            await EnsureInitializedAsync();
+            if (set.Id == 0)
+                return await _database.InsertAsync(set);
+            return await _database.UpdateAsync(set);
+        }
+
+        public async Task SaveAllTemplateSetsAsync(List<WorkoutTemplateSet> sets)
+        {
+            await EnsureInitializedAsync();
+            await _database.InsertAllAsync(sets);
+        }
+
+        public async Task DeleteTemplateAsync(int templateId)
+        {
+            await EnsureInitializedAsync();
+            await _database.RunInTransactionAsync(db =>
+            {
+                db.Execute(
+                    "DELETE FROM WorkoutTemplateSet WHERE TemplateId = ?", templateId);
+                db.Delete<WorkoutTemplate>(templateId);
+            });
+        }
+
+        public async Task ClearAllDataAsync()
+        {
+            await EnsureInitializedAsync();
+            await _database.RunInTransactionAsync(db =>
+            {
+                db.DeleteAll<Exercise>();
+                db.DeleteAll<WorkoutSet>();
+                db.DeleteAll<WorkoutSession>();
+                db.DeleteAll<WorkoutTemplate>();
+                db.DeleteAll<WorkoutTemplateSet>();
+            });
+            _exerciseCache = null;
+            await SeedDefaultExercises();
+        }
+
+        // ==============================================================================================================
+        //
+        //      PRIVATE METHODS
+        //
+        // ==============================================================================================================
+        private Task EnsureInitializedAsync() => _initialized ? Task.CompletedTask : InitializeAsync();
+
         private async Task SeedDefaultExercises()
         {
             var defaultExercises = new List<Exercise>
@@ -141,271 +370,5 @@ namespace WorkoutTrackerV2.Services
 
             await _database.InsertAllAsync(defaultExercises);
         }
-        #endregion
-
-        #region "SESSIONS"
-        public async Task<List<WorkoutSession>> GetAllSessionsAsync()
-        {
-            await EnsureInitializedAsync();
-            return await _database.Table<WorkoutSession>()
-                .OrderByDescending(x => x.Date)
-                .ToListAsync();
-        }
-
-        public async Task<WorkoutSession?> GetSessionAsync(int id)
-        {
-            await EnsureInitializedAsync();
-            // FIX Minor: FindAsync hits the primary key index directly — no table scan.
-            // Returns null instead of throwing when the record doesn't exist.
-            return await _database.FindAsync<WorkoutSession>(id);
-        }
-
-        public async Task<DateTime?> GetLastWorkoutDateAsync()
-        {
-            await EnsureInitializedAsync();
-            // Reverted: raw scalar query caused DateTime parse failures because
-            // SQLite-net's internal date string format varies by configuration.
-            // Fetching one row and letting SQLite-net deserialize the DateTime
-            // is safer and still only reads one row via the DESC+LIMIT index scan.
-            var lastSession = await _database.Table<WorkoutSession>()
-                .OrderByDescending(x => x.Date)
-                .FirstOrDefaultAsync();
-            return lastSession?.Date;
-        }
-
-        public async Task<int> GetTotalWorkoutCountAsync()
-        {
-            await EnsureInitializedAsync();
-            return await _database.Table<WorkoutSession>().CountAsync();
-        }
-
-        public async Task<List<WorkoutSession>> GetSessionsAsync(DateTime startDate, DateTime endDate)
-        {
-            await EnsureInitializedAsync();
-            return await _database.Table<WorkoutSession>()
-                .Where(x => x.Date >= startDate && x.Date <= endDate)
-                .OrderByDescending(x => x.Date)
-                .ToListAsync();
-        }
-
-        public async Task<int> SaveSessionAsync(WorkoutSession session)
-        {
-            await EnsureInitializedAsync();
-            if (session.Id == 0)
-            {
-                await _database.InsertAsync(session);
-                return session.Id;
-            }
-            await _database.UpdateAsync(session);
-            return session.Id;
-        }
-
-        public async Task<int> DeleteSessionAsync(WorkoutSession session)
-        {
-            await EnsureInitializedAsync();
-            return await _database.DeleteAsync(session);
-        }
-        #endregion
-
-        #region "SETS"
-        public async Task<List<WorkoutSet>> GetSetsForSessionAsync(int sessionId)
-        {
-            await EnsureInitializedAsync();
-            return await _database.Table<WorkoutSet>()
-                .Where(x => x.WorkoutSessionId == sessionId)
-                .OrderBy(x => x.SetNumber)
-                .ToListAsync();
-        }
-
-        // FIX: Bulk fetch — returns all WorkoutSet rows in the date window across
-        // all exercises in a single query. Used by AnalyticsService to replace
-        // N per-exercise GetExerciseHistoryAsync calls with one round-trip.
-        public async Task<List<WorkoutSet>> GetAllSetsAsync(int days = 0)
-        {
-            await EnsureInitializedAsync();
-            var startDate = days == 0 ? DateTime.MinValue : DateTime.Now.AddDays(-days);
-            return await _database.Table<WorkoutSet>()
-                .Where(x => x.CreatedDate >= startDate)
-                .OrderBy(x => x.CreatedDate)
-                .ToListAsync();
-        }
-
-        public async Task<List<WorkoutSet>> GetExerciseHistoryAsync(int exerciseId, int days = 30)
-        {
-            await EnsureInitializedAsync();
-            var startDate = days == 0 ? DateTime.MinValue : DateTime.Now.AddDays(-days);
-            return await _database.Table<WorkoutSet>()
-                .Where(x => x.ExerciseId == exerciseId && x.CreatedDate >= startDate)
-                .OrderBy(x => x.CreatedDate)
-                .ToListAsync();
-        }
-
-        public async Task<int> SaveSetAsync(WorkoutSet set)
-        {
-            await EnsureInitializedAsync();
-            if (set.Id == 0)
-                return await _database.InsertAsync(set);
-            return await _database.UpdateAsync(set);
-        }
-
-        // FIX 1: Batch insert — saves all sets in one InsertAllAsync call
-        // instead of N sequential SaveSetAsync round-trips.
-        // Deletes all sets for a session in one query — replaces N sequential
-        // DeleteSetAsync calls in WorkoutDetailViewModel.DeleteWorkout.
-        public async Task DeleteSetsForSessionAsync(int sessionId)
-        {
-            await EnsureInitializedAsync();
-            await _database.ExecuteAsync(
-                "DELETE FROM WorkoutSet WHERE WorkoutSessionId = ?", sessionId);
-        }
-
-        public async Task SaveAllSetsAsync(List<WorkoutSet> sets)
-        {
-            await EnsureInitializedAsync();
-            await _database.InsertAllAsync(sets);
-        }
-
-        public async Task<int> DeleteSetAsync(WorkoutSet set)
-        {
-            await EnsureInitializedAsync();
-            return await _database.DeleteAsync(set);
-        }
-
-        public async Task DeleteSetAsync(int id)
-        {
-            await EnsureInitializedAsync();
-            await _database.DeleteAsync<WorkoutSet>(id);
-        }
-        #endregion
-
-        #region "EXERCISES"
-        public async Task<IReadOnlyList<Exercise>> GetAllExercisesAsync()
-        {
-            await EnsureInitializedAsync();
-            // FIX 5: Return a read-only wrapper around the cache so callers cannot
-            // mutate (sort, remove, add to) the shared instance. The underlying list
-            // is still reused across calls — no extra allocation on cache hits.
-            _exerciseCache ??= await _database.Table<Exercise>().ToListAsync();
-            return _exerciseCache.AsReadOnly();
-        }
-
-        public async Task<Exercise?> GetExerciseAsync(int id)
-        {
-            await EnsureInitializedAsync();
-            // FIX Minor: FindAsync uses PK index and returns null rather than throwing.
-            return await _database.FindAsync<Exercise>(id);
-        }
-
-        public async Task<List<int>> GetRecentExerciseIdsAsync(int days)
-        {
-            await EnsureInitializedAsync();
-            var startDate = DateTime.Now.AddDays(-days);
-            // FIX 2: Raw scalar query fetches only ExerciseId — no full WorkoutSet
-            // deserialization. SQLite does the DISTINCT in the query, not in-process.
-            return await _database.QueryScalarsAsync<int>(
-                "SELECT DISTINCT ExerciseId FROM WorkoutSet WHERE CreatedDate >= ?", startDate);
-        }
-
-        public async Task<int> SaveExerciseAsync(Exercise exercise)
-        {
-            await EnsureInitializedAsync();
-            int result;
-            // FIX 7: Perform the DB operation first; only clear the cache after
-            // it succeeds. If InsertAsync/UpdateAsync throws, the cache stays valid.
-            if (exercise.Id == 0)
-                result = await _database.InsertAsync(exercise);
-            else
-                result = await _database.UpdateAsync(exercise);
-            _exerciseCache = null;
-            return result;
-        }
-
-        public async Task DeleteExerciseAsync(int id)
-        {
-            await EnsureInitializedAsync();
-            await _database.DeleteAsync<Exercise>(id);
-            // Cache cleared after confirmed delete.
-            _exerciseCache = null;
-        }
-        #endregion
-
-        #region "TEMPLATES"
-        public async Task<List<WorkoutTemplate>> GetAllTemplatesAsync()
-        {
-            await EnsureInitializedAsync();
-            return await _database.Table<WorkoutTemplate>()
-                .OrderBy(t => t.Name)
-                .ToListAsync();
-        }
-
-        public async Task<int> SaveTemplateAsync(WorkoutTemplate template)
-        {
-            await EnsureInitializedAsync();
-            if (template.Id == 0)
-            {
-                await _database.InsertAsync(template);
-                return template.Id;
-            }
-            await _database.UpdateAsync(template);
-            return template.Id;
-        }
-
-        public async Task<List<WorkoutTemplateSet>> GetTemplateSetsAsync(int templateId)
-        {
-            await EnsureInitializedAsync();
-            return await _database.Table<WorkoutTemplateSet>()
-                .Where(x => x.TemplateId == templateId)
-                .OrderBy(x => x.SetNumber)
-                .ToListAsync();
-        }
-
-        public async Task<int> SaveTemplateSetAsync(WorkoutTemplateSet set)
-        {
-            await EnsureInitializedAsync();
-            if (set.Id == 0)
-                return await _database.InsertAsync(set);
-            return await _database.UpdateAsync(set);
-        }
-
-        // FIX 2: Batch insert — saves all template sets in one InsertAllAsync
-        // call instead of N sequential SaveTemplateSetAsync round-trips.
-        public async Task SaveAllTemplateSetsAsync(List<WorkoutTemplateSet> sets)
-        {
-            await EnsureInitializedAsync();
-            await _database.InsertAllAsync(sets);
-        }
-
-        public async Task DeleteTemplateAsync(int templateId)
-        {
-            await EnsureInitializedAsync();
-            // FIX 3: Single DELETE WHERE replaces N sequential DeleteAsync calls.
-            // FIX 8: Both deletes wrapped in a transaction — if the app is killed
-            // mid-operation the sets and template are deleted atomically, leaving
-            // no orphaned rows.
-            await _database.RunInTransactionAsync(db =>
-            {
-                db.Execute(
-                    "DELETE FROM WorkoutTemplateSet WHERE TemplateId = ?", templateId);
-                db.Delete<WorkoutTemplate>(templateId);
-            });
-        }
-        #endregion
-
-        #region "ADMIN"
-        public async Task ClearAllDataAsync()
-        {
-            await EnsureInitializedAsync();
-            // FIX 8: Wrapped in a transaction — all tables are cleared atomically.
-            // Previously each DeleteAllAsync was an independent commit; a crash
-            // between them would leave the database in a partially cleared state.
-            await _database.RunInTransactionAsync(db =>
-            {
-                db.DeleteAll<WorkoutSet>();
-                db.DeleteAll<WorkoutSession>();
-                db.DeleteAll<WorkoutTemplate>();
-                db.DeleteAll<WorkoutTemplateSet>();
-            });
-        }
-        #endregion
     }
 }

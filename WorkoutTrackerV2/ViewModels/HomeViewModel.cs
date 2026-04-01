@@ -28,6 +28,12 @@ namespace WorkoutTrackerV2.ViewModels
         [ObservableProperty] private ObservableCollection<WorkoutSession>   _recentSessions = [];
         [ObservableProperty] private WorkoutSession?                        _lastWorkoutSession;
 
+        // ==============================================================================================================
+        //
+        //      PRIVATE RELAY COMMANDS
+        //
+        // ==============================================================================================================
+
         [RelayCommand]
         private async Task LoadData()
         {
@@ -60,6 +66,46 @@ namespace WorkoutTrackerV2.ViewModels
                 IsLoading = false;
             }
         }
+
+        [RelayCommand]
+        private static Task StartWorkout() => Shell.Current.GoToAsync(Routes.Workout);
+
+        [RelayCommand]
+        private static Task ViewHistory() => Shell.Current.GoToAsync(Routes.History);
+
+        [RelayCommand]
+        private static Task ViewAnalytics() => Shell.Current.GoToAsync(Routes.Analytics);
+
+        [RelayCommand]
+        private static Task ViewPersonalRecords() => Shell.Current.GoToAsync(Routes.PersonalRecords);
+
+        [RelayCommand]
+        private static Task ViewBodyWeight() => Shell.Current.GoToAsync(Routes.BodyWeight);
+
+        [RelayCommand]
+        private static Task ViewPlateCalculator() => Shell.Current.GoToAsync(Routes.PlateCalculator);
+
+        [RelayCommand]
+        private static Task ViewOneRepMaxCalculator() => Shell.Current.GoToAsync(Routes.OneRmCalculator);
+
+        [RelayCommand]
+        private static Task ViewWeightConverter() => Shell.Current.GoToAsync(Routes.WeightConverterCalculator);
+
+        [RelayCommand]
+        private static Task ViewWorkout(WorkoutSession session) =>
+            Shell.Current.GoToAsync(Routes.WorkoutDetail, new Dictionary<string, object>
+            {
+                { "Session", session }
+            });
+
+        [RelayCommand]
+        private static Task ViewSettings() => Shell.Current.GoToAsync(Routes.Settings);
+
+        // ==============================================================================================================
+        //
+        //      PRIVATE METHODS
+        //
+        // ==============================================================================================================
 
         private void SetMostTrainedMuscleGroupColor()
         {
@@ -110,39 +156,5 @@ namespace WorkoutTrackerV2.ViewModels
                 _ => $"{CurrentStreak} days in a row"
             };
         }
-
-        [RelayCommand]
-        private static Task StartWorkout() => Shell.Current.GoToAsync(Routes.Workout);
-
-        [RelayCommand]
-        private static Task ViewHistory() => Shell.Current.GoToAsync(Routes.History);
-
-        [RelayCommand]
-        private static Task ViewAnalytics() => Shell.Current.GoToAsync(Routes.Analytics);
-
-        [RelayCommand]
-        private static Task ViewPersonalRecords() => Shell.Current.GoToAsync(Routes.PersonalRecords);
-
-        [RelayCommand]
-        private static Task ViewBodyWeight() => Shell.Current.GoToAsync(Routes.BodyWeight);
-
-        [RelayCommand]
-        private static Task ViewPlateCalculator() => Shell.Current.GoToAsync(Routes.PlateCalculator);
-
-        [RelayCommand]
-        private static Task ViewOneRepMaxCalculator() => Shell.Current.GoToAsync(Routes.OneRmCalculator);
-
-        [RelayCommand]
-        private static Task ViewWeightConverter() => Shell.Current.GoToAsync(Routes.WeightConverterCalculator);
-
-        [RelayCommand]
-        private static Task ViewWorkout(WorkoutSession session) =>
-            Shell.Current.GoToAsync(Routes.WorkoutDetail, new Dictionary<string, object>
-            {
-                { "Session", session }
-            });
-
-        [RelayCommand]
-        private static Task ViewSettings() => Shell.Current.GoToAsync(Routes.Settings);
     }
 }
