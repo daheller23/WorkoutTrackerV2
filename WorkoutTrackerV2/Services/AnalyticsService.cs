@@ -4,22 +4,27 @@ namespace WorkoutTrackerV2.Services
 {
     public class AnalyticsService(IWorkoutService workoutService) : IAnalyticsService
     {
-        #region "GET AVERAGE WORKOUT DURATION ASYNC"
+        // ==============================================================================================================
+        //
+        //      PUBLIC METHODS
+        //
+        // ==============================================================================================================
+
         public async Task<double> GetAverageWorkoutDurationAsync(int days = 30)
         {
             var startDate = days == 0 ? DateTime.MinValue : DateTime.Now.AddDays(-days).Date;
             var sessions = await workoutService.GetSessionsAsync(startDate, DateTime.Now.Date);
             return sessions.Count == 0 ? 0 : sessions.Average(s => s.Duration.TotalMinutes);
         }
-        #endregion
 
-        #region "GET CURRENT STREAK"
         public async Task<int> GetCurrentStreak()
         {
             var allSessions = await workoutService.GetAllSessionsAsync();
-            if (allSessions.Count == 0) return 0;
+            if (allSessions.Count == 0) 
+            {
+                return 0;
+            }
 
-            // HashSet gives O(1) date lookup instead of O(n) Any() scan.
             var sessionDates = allSessions.Select(s => s.Date.Date).ToHashSet();
 
             int streak = 0;
@@ -27,23 +32,31 @@ namespace WorkoutTrackerV2.Services
 
             for (int i = 0; i < 365; i++)
             {
-                if (sessionDates.Contains(today.AddDays(-i)))
+                if (sessionDates.Contains(today.AddDays(-i))) 
+                {
                     streak++;
-                else if (i > 0)
+                }
+                else if (i == 0)
+                {
+                    continue;
+                }
+                else
+                {
                     break;
+                }                   
             }
             return streak;
         }
-        #endregion
 
-        #region "GET DAILY STATS ASYNC"
         public async Task<List<DailyStats>> GetDailyStatsAsync(int days = 30)
         {
             var startDate = days == 0 ? DateTime.MinValue : DateTime.Now.AddDays(-days).Date;
             var sessions = await workoutService.GetSessionsAsync(startDate, DateTime.Now.Date);
-            if (sessions.Count == 0) return [];
+            if (sessions.Count == 0)
+            {
+                return [];
+            }
 
-            // Fetch all sets for the date range concurrently.
             var setTasks = sessions.Select(s => workoutService.GetSetsForSessionAsync(s.Id)).ToList();
             var allSets = await Task.WhenAll(setTasks);
 
@@ -63,8 +76,6 @@ namespace WorkoutTrackerV2.Services
                 stats.ExercisesCompleted = session.TotalExercises;
                 stats.SetsCompleted += sets.Count;
 
-                // FIX 5: Single loop instead of two separate .Sum() passes
-                // over the same list.
                 foreach (var s in sets)
                 {
                     stats.TotalRepsCompleted += s.Reps;
@@ -74,12 +85,9 @@ namespace WorkoutTrackerV2.Services
 
             return dailyStatsDict.Values.OrderBy(x => x.Date).ToList();
         }
-        #endregion
 
-        #region "GET EXERCISE PROGRESS ASYNC"
         public async Task<ExerciseProgress> GetExerciseProgressAsync(int exerciseId, int days = 30)
         {
-            // Fetch sets and exercise concurrently.
             var setsTask = workoutService.GetExerciseHistoryAsync(exerciseId, days);
             var exerciseTask = workoutService.GetExerciseAsync(exerciseId);
             await Task.WhenAll(setsTask, exerciseTask);
@@ -97,8 +105,6 @@ namespace WorkoutTrackerV2.Services
                 .OrderBy(p => p.Date)
                 .ToList();
 
-            // FIX 6: Single pass computes max, total weight, and total reps
-            // instead of three separate LINQ iterations over the same list.
             double maxWeight = 0, totalWeight = 0;
             int totalReps = 0;
             foreach (var s in sets)
@@ -113,10 +119,7 @@ namespace WorkoutTrackerV2.Services
                 ExerciseId = exerciseId,
                 ExerciseName = exercise?.Name ?? string.Empty,
                 MuscleGroup = exercise?.MuscleGroup ?? string.Empty,
-
-                // NEW: Pass the SubMuscleGroup up to the UI
                 SubMuscleGroup = exercise?.SubMuscleGroup ?? "General",
-
                 Sets = sets,
                 MaxWeight = maxWeight,
                 AverageWeight = sets.Count > 0 ? totalWeight / sets.Count : 0,
@@ -126,14 +129,9 @@ namespace WorkoutTrackerV2.Services
                 LatestMaxWeight = points.LastOrDefault()?.MaxWeight ?? 0
             };
         }
-        #endregion
 
-        #region "GET MUSCLE GROUP PROGRESS ASYNC"
         public async Task<List<MuscleGroupProgress>> GetMuscleGroupProgressAsync(int days = 30)
         {
-            // FIX 1+2: Fetch ALL sets for the date range in one query, then build
-            // the exercise lookup from the cached exercise list. No per-exercise or
-            // per-muscle-group DB calls — all grouping is done in-memory.
             var allSetsTask = workoutService.GetAllSetsAsync(days);
             var allExercisesTask = workoutService.GetAllExercisesAsync();
             await Task.WhenAll(allSetsTask, allExercisesTask);
@@ -141,7 +139,6 @@ namespace WorkoutTrackerV2.Services
             var allSets = allSetsTask.Result;
             var exerciseDict = allExercisesTask.Result.ToDictionary(e => e.Id);
 
-            // Group sets by muscle group, then by exercise — entirely in-memory.
             var byMuscleGroup = allSets
                 .Where(s => exerciseDict.ContainsKey(s.ExerciseId))
                 .GroupBy(s => exerciseDict[s.ExerciseId].MuscleGroup);
@@ -174,14 +171,10 @@ namespace WorkoutTrackerV2.Services
 
             return result;
         }
-        #endregion
 
-        #region "GET PROGRESS FOR MUSCLE GROUP ASYNC"
         public async Task<List<ExerciseProgress>> GetProgressForMuscleGroupAsync(
             string muscleGroup, int days = 30)
         {
-            // FIX 1+2: One bulk set fetch + cached exercise list instead of
-            // N per-exercise GetExerciseProgressAsync calls.
             var allSetsTask = workoutService.GetAllSetsAsync(days);
             var allExercisesTask = workoutService.GetAllExercisesAsync();
             await Task.WhenAll(allSetsTask, allExercisesTask);
@@ -198,13 +191,9 @@ namespace WorkoutTrackerV2.Services
                 .OrderByDescending(p => p.MaxWeight)
                 .ToList();
         }
-        #endregion
 
-        #region "GET STRENGTH PROGRESS ASYNC"
         public async Task<Dictionary<string, double>> GetStrengthProgressAsync(int days = 30)
         {
-            // FIX 1: One bulk set fetch + cached exercise list replaces
-            // 65 concurrent GetExerciseProgressAsync calls (each doing 2 DB queries).
             var allSetsTask = workoutService.GetAllSetsAsync(days);
             var allExercisesTask = workoutService.GetAllExercisesAsync();
             await Task.WhenAll(allSetsTask, allExercisesTask);
@@ -221,13 +210,9 @@ namespace WorkoutTrackerV2.Services
                 .OrderByDescending(x => x.MaxWeight)
                 .ToDictionary(x => x.Name, x => x.MaxWeight);
         }
-        #endregion
 
-        #region "GET PERSONAL RECORDS ASYNC"
         public async Task<List<PersonalRecord>> GetPersonalRecordsAsync(int days = 0)
         {
-            // FIX 1: One bulk set fetch + cached exercise list replaces
-            // 65 concurrent GetExerciseHistoryAsync calls.
             var allSetsTask = workoutService.GetAllSetsAsync(days);
             var allExercisesTask = workoutService.GetAllExercisesAsync();
             await Task.WhenAll(allSetsTask, allExercisesTask);
@@ -242,13 +227,13 @@ namespace WorkoutTrackerV2.Services
                 .OrderByDescending(r => r!.BestWeight)
                 .ToList()!;
         }
-        #endregion
 
-        #region "PRIVATE HELPERS"
+        // ==============================================================================================================
+        //
+        //      PRIVATE METHODS
+        //
+        // ==============================================================================================================
 
-        // FIX 3: Shared helper builds ExerciseProgress from an already-fetched set
-        // list and Exercise object — no DB calls, no repeated LINQ iterations.
-        // FIX 6: Single pass over sets for max, total weight, and total reps.
         private static ExerciseProgress BuildExerciseProgress(
             Exercise exercise, List<WorkoutSet> sets)
         {
@@ -276,10 +261,7 @@ namespace WorkoutTrackerV2.Services
                 ExerciseId = exercise.Id,
                 ExerciseName = exercise.Name,
                 MuscleGroup = exercise.MuscleGroup,
-
-                // NEW: Pass the SubMuscleGroup up to the UI
                 SubMuscleGroup = exercise.SubMuscleGroup ?? "General",
-
                 Sets = sets,
                 MaxWeight = maxWeight,
                 AverageWeight = sets.Count > 0 ? totalWeight / sets.Count : 0,
@@ -290,11 +272,13 @@ namespace WorkoutTrackerV2.Services
             };
         }
 
-        // Builds a PersonalRecord by scanning sets in date order for progressive PRs.
         private static PersonalRecord? BuildPersonalRecord(
             Exercise exercise, List<WorkoutSet> sets)
         {
-            if (sets.Count == 0) return null;
+            if (sets.Count == 0) 
+            {
+                return null;
+            }
 
             double runningMax = 0;
             var history = new List<PersonalRecordEntry>();
@@ -313,7 +297,10 @@ namespace WorkoutTrackerV2.Services
                 }
             }
 
-            if (history.Count == 0) return null;
+            if (history.Count == 0) 
+            {
+                return null;
+            }
 
             var best = history.Last();
             return new PersonalRecord
@@ -328,6 +315,5 @@ namespace WorkoutTrackerV2.Services
             };
         }
 
-        #endregion
     }
 }
