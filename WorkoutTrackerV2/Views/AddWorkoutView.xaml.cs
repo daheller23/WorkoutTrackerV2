@@ -17,9 +17,9 @@ public partial class AddWorkoutView : ContentPage
     protected override void OnAppearing()
     {
         base.OnAppearing();
-
         if (BindingContext is not AddWorkoutViewModel vm) return;
 
+        vm.TimerViewModel.Subscribe();
         vm.RefreshWeightUnitCommand.Execute(null);
 
         if (_templateService.PendingTemplate is not null)
@@ -38,5 +38,12 @@ public partial class AddWorkoutView : ContentPage
         {
             vm.ClearSelectedExerciseCommand.Execute(null);
         }
+    }
+
+    protected override void OnDisappearing()
+    {
+        base.OnDisappearing();
+        if (BindingContext is AddWorkoutViewModel vm)
+            vm.TimerViewModel.Unsubscribe();
     }
 }

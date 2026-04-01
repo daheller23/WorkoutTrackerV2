@@ -8,116 +8,110 @@ namespace WorkoutTrackerV2.ViewModels
 {
     [QueryProperty(nameof(SelectedExercise), "SelectedExercise")]
     public partial class AddWorkoutViewModel(
-        IWorkoutService workoutService,
-        ITemplateService templateService,
-        ISettingsService settingsService,
-        IRestTimerService restTimerService,
-        IAnalyticsService analyticsService) : BaseViewModel
+        IWorkoutService workoutService, 
+        ITemplateService templateService, 
+        ISettingsService settingsService, 
+        IRestTimerService restTimerService, 
+        IAnalyticsService analyticsService) : BaseViewModel, IDisposable
     {
         private bool _ignoreNextExerciseSelection = false;
+        private Dictionary<int, double>? _prBaselines;
 
-        // The timer VM is exposed here so the AddWorkoutView XAML can bind to
-        // it directly — the service is a singleton so the timer survives
-        // navigation to ExercisePicker and back.
-        public RestTimerViewModel TimerViewModel { get; } =
-            new RestTimerViewModel(restTimerService);
-
-        #region "OBSERVABLE PROPERTIES"
-        [ObservableProperty] private ObservableCollection<ExerciseGroup> _exerciseGroups = [];
-        [ObservableProperty] private string _dayName = $"{DateTime.Today:dddd} · Today";
-        [ObservableProperty] private TimeSpan _endTime;
-        [ObservableProperty] private string _notes = string.Empty;
-        [ObservableProperty] private DateTime _selectedDate = DateTime.Today;
-        [ObservableProperty] private Exercise? _selectedExercise;
-        [ObservableProperty] private TimeSpan _startTime;
-        [ObservableProperty] private string _workoutName = string.Empty;
+        [ObservableProperty] private int    _totalSets;
         [ObservableProperty] private double _totalVolume;
-        [ObservableProperty] private int _totalSets;
+        [ObservableProperty] private bool   _isMenuVisible;
+
+        [ObservableProperty] private string _dayName = $"{DateTime.Today:dddd} · Today";
+        [ObservableProperty] private string _notes = string.Empty;
         [ObservableProperty] private string _weightUnitLabel = string.Empty;
-        [ObservableProperty] private bool _isMenuVisible;
-        #endregion
+        [ObservableProperty] private string _workoutName = string.Empty;
+
+        [ObservableProperty] private TimeSpan _endTime;
+        [ObservableProperty] private TimeSpan _startTime;
+
+        [ObservableProperty] private ObservableCollection<ExerciseGroup>    _exerciseGroups = [];    
+        [ObservableProperty] private DateTime                               _selectedDate = DateTime.Today;
+        [ObservableProperty] private Exercise?                              _selectedExercise;
+
+        public RestTimerViewModel TimerViewModel { get; } = new RestTimerViewModel(restTimerService);
+        public void Dispose()
+        {
+            TimerViewModel.Unsubscribe();
+            TimerViewModel.Dispose();
+        }
 
         [RelayCommand]
         private void ToggleMenu()
         {
             IsMenuVisible = !IsMenuVisible;
         }
-
-        // Keyed by ExerciseId — loaded once on first save to avoid a DB call
-        // on every set change. null means not yet loaded.
-        private Dictionary<int, double>? _prBaselines;
-
-        #region "SHOW TEMPLATE MENU"
+        
         [RelayCommand]
         private void HandleMenuAction(string action)
         {
-            // Close the menu first
             IsMenuVisible = false;
-
-            // Execute the appropriate command
-            if (action == "Load")
+            switch(action.ToLower())
             {
-                OpenTemplatePickerCommand.Execute(null);
-            }
-            else if (action == "Save")
-            {
-                SaveAsTemplateCommand.Execute(null);
+                case "load":
+                    OpenTemplatePickerCommand.Execute(null);
+                    break;
+                case "save":
+                    SaveAsTemplateCommand.Execute(null);
+                    break;
             }
         }
-        #endregion
 
-        #region "PREPARE FOR TEMPLATE PICKER"
         [RelayCommand]
         private void PrepareForTemplatePicker()
         {
             _ignoreNextExerciseSelection = true;
         }
-        #endregion
 
-        #region "ON SELECTED EXERCISE CHANGED"
         partial void OnSelectedExerciseChanged(Exercise? value)
         {
-            if (value is null) return;
-
-            if (_ignoreNextExerciseSelection)
-            {
-                _ignoreNextExerciseSelection = false;
-                SelectedExercise = null;
-                return;
-            }
-
-            if (templateService.PendingTemplate is not null)
-            {
-                var template = templateService.PendingTemplate;
-                templateService.PendingTemplate = null;
-                // FIX 10: Call the method directly instead of going through
-                // LoadFromTemplateCommand.Execute() inside a property-changed handler.
-                // Executing commands from partial methods bypasses CanExecute guards
-                // and obscures the call flow.
-                _ = LoadFromTemplateAsync(template);
-                return;
-            }
+            if (value is null) { return; }                   
+            if (ShouldIgnoreSelection()) { return; }
+            if (TryHandlePendingTemplate()) { return; }
 
             var existing = ExerciseGroups.FirstOrDefault(g => g.Exercise.Id == value.Id);
             if (existing is not null)
             {
-                existing.AddSet(settingsService.WeightUnit, _ => UpdateTotals());
+                existing.AddSet(settingsService.WeightUnit);
             }
             else
             {
                 var group = new ExerciseGroup(value, settingsService.WeightUnit);
-                group.AddSet(settingsService.WeightUnit, _ => UpdateTotals());
+                group.AddSet(settingsService.WeightUnit);
                 ExerciseGroups.Add(group);
-                // Fetch last session in the background — fires concurrently so
-                // it never blocks the UI. ExerciseGroup updates itself when done.
                 _ = LoadLastSessionAsync(group, value.Id);
             }
             SelectedExercise = null;
             UpdateTotals();
         }
-        #endregion
 
-        #region "ON SELECTED DATE CHANGED"
+        private bool ShouldIgnoreSelection()
+        {
+            if (!_ignoreNextExerciseSelection)
+            {
+                return false;
+            }
+            _ignoreNextExerciseSelection = false;
+            SelectedExercise = null;
+            return true;
+        }
+
+        private bool TryHandlePendingTemplate()
+        {
+            if (templateService.PendingTemplate is null)
+            {
+                return false;
+            }
+            var template = templateService.PendingTemplate;
+            templateService.PendingTemplate = null;
+            _ = LoadFromTemplateAsync(template);
+            return true;
+        }
+
         partial void OnSelectedDateChanged(DateTime value)
         {
             var days = (DateTime.Today - value.Date).Days;
@@ -133,35 +127,25 @@ namespace WorkoutTrackerV2.ViewModels
             if (string.IsNullOrWhiteSpace(WorkoutName))
                 WorkoutName = value.ToString("dddd");
         }
-        #endregion
 
-        #region "COPY LAST SET"
         [RelayCommand]
         private void CopyLastSet(ExerciseGroup group)
         {
             var lastSet = group.Sets.LastOrDefault();
-            if (lastSet is null)
+            group.AddSet(lastSet?.WeightUnit ?? settingsService.WeightUnit);
+
+            if (lastSet is not null)
             {
-                // No sets yet — just add a blank one.
-                group.AddSet(settingsService.WeightUnit, _ => UpdateTotals());
-                UpdateTotals();
-                return;
+                var newSet = group.Sets[^1];
+                newSet.Reps = lastSet.Reps;
+                newSet.Weight = lastSet.Weight;
+                newSet.WeightUnit = lastSet.WeightUnit;
+                newSet.SuggestedWeightPlaceholder = lastSet.SuggestedWeightPlaceholder;
             }
 
-            // Use group.AddSet() so NotifySetStats fires and SetCountLabel updates,
-            // then overwrite the fields from the last set.
-            // IsCompleted is intentionally NOT copied — new set starts unchecked.
-            group.AddSet(lastSet.WeightUnit, _ => UpdateTotals());
-            var newSet = group.Sets[^1];
-            newSet.Reps = lastSet.Reps;
-            newSet.Weight = lastSet.Weight;
-            newSet.WeightUnit = lastSet.WeightUnit;
-            newSet.SuggestedWeightPlaceholder = lastSet.SuggestedWeightPlaceholder;
             UpdateTotals();
         }
-        #endregion
 
-        #region "SAVE AS TEMPLATE"
         [RelayCommand]
         private async Task SaveAsTemplate()
         {
@@ -183,9 +167,6 @@ namespace WorkoutTrackerV2.ViewModels
                 var template = new WorkoutTemplate { Name = name, Notes = Notes };
                 int templateId = await workoutService.SaveTemplateAsync(template);
 
-                // FIX 2: Build the full list of template sets first, then insert
-                // them all in one SaveAllTemplateSetsAsync call instead of awaiting
-                // SaveTemplateSetAsync N times in a nested loop.
                 int setNumber = 1;
                 var templateSets = ExerciseGroups
                     .SelectMany(group => group.Sets.Select(set => new WorkoutTemplateSet
@@ -207,16 +188,11 @@ namespace WorkoutTrackerV2.ViewModels
                 await Shell.Current.DisplayAlertAsync("Error", ex.Message, "OK");
             }
         }
-        #endregion
 
-        #region "LOAD FROM TEMPLATE"
         [RelayCommand]
         private async Task LoadFromTemplate(WorkoutTemplate template)
             => await LoadFromTemplateAsync(template);
 
-        // FIX 3: Shared private implementation used by both the public RelayCommand
-        // and the direct call from OnSelectedExerciseChanged. Eliminates duplication
-        // and means the template-fetch logic only exists in one place.
         private async Task LoadFromTemplateAsync(WorkoutTemplate template)
         {
             try
@@ -229,9 +205,7 @@ namespace WorkoutTrackerV2.ViewModels
                 await Shell.Current.DisplayAlertAsync("Error", ex.Message, "OK");
             }
         }
-        #endregion
 
-        #region "OPEN TEMPLATE PICKER"
         [RelayCommand]
         private async Task OpenTemplatePicker()
         {
@@ -239,44 +213,36 @@ namespace WorkoutTrackerV2.ViewModels
             _ignoreNextExerciseSelection = true;
             await Shell.Current.GoToAsync(Routes.TemplatePicker);
         }
-        #endregion
 
-        #region "VIEW EXERCISE PICKER"
         [RelayCommand]
         private static async Task ViewExercisePicker()
             => await Shell.Current.GoToAsync(Routes.ExercisePicker);
-        #endregion
 
-        #region "ADD SET"
         [RelayCommand]
         private void AddSet(ExerciseGroup group)
         {
-            group.AddSet(settingsService.WeightUnit, _ => UpdateTotals());
+            group.AddSet(settingsService.WeightUnit);
             UpdateTotals();
         }
-        #endregion
 
-        #region "REMOVE SET"
         [RelayCommand]
         private void RemoveSet((ExerciseGroup Group, WorkoutSet Set) args)
         {
             args.Group.RemoveSet(args.Set);
             if (args.Group.Sets.Count == 0)
+            {
                 ExerciseGroups.Remove(args.Group);
+            }             
             UpdateTotals();
         }
-        #endregion
 
-        #region "REMOVE EXERCISE"
         [RelayCommand]
         private void RemoveExercise(ExerciseGroup group)
         {
             ExerciseGroups.Remove(group);
             UpdateTotals();
         }
-        #endregion
 
-        #region "SAVE WORKOUT"
         [RelayCommand]
         private async Task SaveWorkout()
         {
@@ -328,8 +294,6 @@ namespace WorkoutTrackerV2.ViewModels
 
                 int sessionId = await workoutService.SaveSessionAsync(session);
 
-                // FIX 1: Build the full set list first, then insert in one batch call
-                // instead of awaiting SaveSetAsync N times in a nested loop.
                 int setNumber = 1;
                 var workoutSets = ExerciseGroups
                     .SelectMany(group => group.Sets.Select(set => new WorkoutSet
@@ -348,8 +312,6 @@ namespace WorkoutTrackerV2.ViewModels
                 var newPr = DetectWeightPr(workoutSets);
                 await saveTask;
 
-                // Set the static field BEFORE navigation so HomeView.OnAppearing
-                // reads it synchronously — no QueryProperty timing race possible.
                 HomeViewModel.PendingPrMessage = newPr ?? string.Empty;
 
                 ResetForm();
@@ -365,9 +327,7 @@ namespace WorkoutTrackerV2.ViewModels
                 IsLoading = false;
             }
         }
-        #endregion
 
-        #region "CLEAR"
         [RelayCommand]
         private async Task Clear()
         {
@@ -378,37 +338,25 @@ namespace WorkoutTrackerV2.ViewModels
             }               
             ResetForm();
         }
-        #endregion
 
-        #region "CLEAR SELECTED EXERCISE"
         [RelayCommand]
         private void ClearSelectedExercise()
         {
             SelectedExercise = null;
         }
-        #endregion
 
-        #region "REFRESH WEIGHT UNIT"
-        // Called from OnAppearing so WeightUnitLabel always reflects the
-        // current setting — even if the user changed it in Settings and returned.
-        // Also refreshes PR baselines so detection is current when the user saves.
         [RelayCommand]
         private void RefreshWeightUnit()
         {
             WeightUnitLabel = $"{settingsService.WeightUnit} total";
             _ = LoadPrBaselinesAsync();
         }
-        #endregion
 
-        #region "LOAD FROM TEMPLATE SETS"
         [RelayCommand]
         private async Task LoadFromTemplateSets((WorkoutTemplate template, List<WorkoutTemplateSet> sets) args)
         {
             try
             {
-                // FIX 3: Shared ApplyTemplateSetsAsync replaces the duplicated
-                // group-building logic that was copied across LoadFromTemplate
-                // and LoadFromTemplateSets.
                 await ApplyTemplateSetsAsync(args.template, args.sets);
             }
             catch (Exception ex)
@@ -416,20 +364,12 @@ namespace WorkoutTrackerV2.ViewModels
                 await Shell.Current.DisplayAlertAsync("Error", ex.Message, "OK");
             }
         }
-        #endregion
 
-        #region "PRIVATE HELPERS"
-
-        // FIX 3: Single method that both LoadFromTemplate and LoadFromTemplateSets
-        // delegate to. Exercise lookup, group building, and set construction all
-        // live in one place.
         private async Task ApplyTemplateSetsAsync(
             WorkoutTemplate template,
             List<WorkoutTemplateSet> sets)
         {
             var exercises = await workoutService.GetAllExercisesAsync();
-            // FIX: Build a dictionary for O(1) lookup instead of calling
-            // FirstOrDefault (O(n)) per set inside the loop.
             var exerciseDict = exercises.ToDictionary(e => e.Id);
 
             ExerciseGroups.Clear();
@@ -443,8 +383,6 @@ namespace WorkoutTrackerV2.ViewModels
                 var existing = ExerciseGroups.FirstOrDefault(g => g.Exercise.Id == exercise.Id);
                 if (existing is not null)
                 {
-                    // FIX 5: CreateWorkoutSet factory method replaces the duplicated
-                    // inline WorkoutSet construction + DeleteCommand wiring.
                     var workoutSet = CreateWorkoutSet(
                         exercise, existing, existing.Sets.Count + 1,
                         set.Reps, set.Weight, set.WeightUnit);
@@ -465,9 +403,6 @@ namespace WorkoutTrackerV2.ViewModels
             UpdateTotals();
         }
 
-        // Factory method for sets created during template loading.
-        // Non-static so it can close over UpdateTotals() directly — avoids
-        // the RemoveSetCommand reference that failed because the method was static.
         private WorkoutSet CreateWorkoutSet(
             Exercise exercise,
             ExerciseGroup group,
@@ -486,8 +421,6 @@ namespace WorkoutTrackerV2.ViewModels
                 WeightUnit = weightUnit,
                 ParentGroup = group
             };
-            // Wire DeleteCommand as a direct closure: remove from the group
-            // (updates SetCountLabel) then call UpdateTotals (updates TotalSets).
             set.DeleteCommand = new CommunityToolkit.Mvvm.Input.RelayCommand(() =>
             {
                 group.RemoveSet(set);
@@ -497,19 +430,11 @@ namespace WorkoutTrackerV2.ViewModels
             });
             return set;
         }
-
-        #region "PR DETECTION"
-        // Lazily loads all-time PR baselines the first time DetectWeightPr is called.
-        // Returns the celebration message if any exercise hit a new weight PR,
-        // null otherwise.
         private string? DetectWeightPr(List<WorkoutSet> savedSets)
         {
             if (_prBaselines is null) return null;
 
             string? message = null;
-
-            // Group saved sets by exercise, find the max weight per exercise,
-            // compare against the baseline captured before the save.
             var maxByExercise = savedSets
                 .GroupBy(s => s.ExerciseId)
                 .Select(g => (ExerciseId: g.Key, Max: g.Max(s => s.Weight)))
@@ -520,13 +445,11 @@ namespace WorkoutTrackerV2.ViewModels
                 var baseline = _prBaselines.TryGetValue(exerciseId, out double b) ? b : 0;
                 if (max > baseline)
                 {
-                    // Find the exercise name for the message.
                     var group = ExerciseGroups.FirstOrDefault(g => g.Exercise.Id == exerciseId);
                     var name = group?.Exercise.Name ?? "exercise";
                     var unit = group?.Sets.FirstOrDefault()?.WeightUnit
                                 ?? settingsService.WeightUnit;
                     message = $"New PR on {name}! 🏆 {max} {unit}";
-                    // Report the first PR found — don't stack messages.
                     break;
                 }
             }
@@ -534,8 +457,6 @@ namespace WorkoutTrackerV2.ViewModels
             return message;
         }
 
-        // Called from OnAppearing via RefreshWeightUnitCommand path —
-        // loads PR baselines so they're ready before the user saves.
         private async Task LoadPrBaselinesAsync()
         {
             try
@@ -545,21 +466,15 @@ namespace WorkoutTrackerV2.ViewModels
             }
             catch
             {
-                // Non-critical — if baselines fail to load, PR detection is
-                // skipped silently. Better than blocking the save flow.
                 _prBaselines = [];
             }
         }
-        #endregion
 
-        #region "LOAD LAST SESSION"
         private async Task LoadLastSessionAsync(ExerciseGroup group, int exerciseId)
         {
             try
             {
-                // Fetch up to 90 days of history — enough to always find a
-                // previous session without pulling unbounded history.
-                var history = await workoutService.GetExerciseHistoryAsync(exerciseId, 90);
+                var history = await workoutService.GetExerciseHistoryAsync(exerciseId, 0);
                 group.SetLastSession(history, settingsService.WeightUnit);
             }
             catch
@@ -569,10 +484,10 @@ namespace WorkoutTrackerV2.ViewModels
                 // an error to the user.
             }
         }
-        #endregion
 
         private void ResetForm()
         {
+            _ignoreNextExerciseSelection = false;
             templateService.PendingTemplate = null;
             WorkoutName = string.Empty;
             Notes = string.Empty;
@@ -584,8 +499,6 @@ namespace WorkoutTrackerV2.ViewModels
             UpdateTotals();
         }
 
-        // FIX 4: Single loop over all sets instead of two separate LINQ passes
-        // (Sum over groups + SelectMany+Sum). Both totals computed in one iteration.
         private void UpdateTotals()
         {
             int sets = 0;
@@ -594,22 +507,18 @@ namespace WorkoutTrackerV2.ViewModels
             {
                 sets += group.Sets.Count;
                 foreach (var set in group.Sets)
+                {
                     volume += set.Weight * set.Reps;
+                }               
             }
             TotalSets = sets;
             TotalVolume = volume;
         }
 
-        #endregion
-
-        #region "REST TIMER"
-        // Called from the set row "Rest" button — passes the exercise's muscle
-        // group so the service picks compound vs isolation default duration.
         [RelayCommand]
         private void StartRestTimer(string muscleGroup)
         {
             restTimerService.StartDefault(muscleGroup);
         }
-        #endregion
     }
 }
