@@ -280,6 +280,17 @@ namespace WorkoutTrackerV2.Services
             await SeedDefaultExercises();
         }
 
+        public async Task<List<WorkoutSet>> GetSetsForSessionsAsync(List<int> sessionIds)
+        {
+            await EnsureInitializedAsync();
+
+            return await _database.Table<WorkoutSet>()
+                .Where(x => sessionIds.Contains(x.WorkoutSessionId))
+                .OrderBy(x => x.WorkoutSessionId)
+                .ThenBy(x => x.SetNumber)
+                .ToListAsync();
+        }
+
         // ==============================================================================================================
         //
         //      PRIVATE METHODS

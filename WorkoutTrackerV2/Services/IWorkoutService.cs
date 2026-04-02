@@ -24,15 +24,12 @@ namespace WorkoutTrackerV2.Services
         Task SaveAllSetsAsync(List<WorkoutSet> sets);
         Task<int> DeleteSetAsync(WorkoutSet set);
         Task DeleteSetAsync(int id);
-
-        // Exercises
-        // FIX 5: Return type changed to IReadOnlyList<Exercise> to prevent callers
-        // from mutating the shared cache instance (sort, remove, etc.).
         Task<IReadOnlyList<Exercise>> GetAllExercisesAsync();
         Task<Exercise?> GetExerciseAsync(int id);
         Task<List<int>> GetRecentExerciseIdsAsync(int days);
         Task<int> SaveExerciseAsync(Exercise exercise);
         Task DeleteExerciseAsync(int id);
+        Task<List<WorkoutSet>> GetSetsForSessionsAsync(List<int> sessionIds);
 
         // Templates
         Task<List<WorkoutTemplate>> GetAllTemplatesAsync();
