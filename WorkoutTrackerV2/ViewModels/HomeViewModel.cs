@@ -9,6 +9,7 @@ namespace WorkoutTrackerV2.ViewModels
     public partial class HomeViewModel(IDashboardService dashboardService) : BaseViewModel
     {
         public static string PendingPrMessage { get; set; } = string.Empty;
+
         [ObservableProperty] private string _mostTrainedMuscleGroupColor = "#1F77F0";
 
         [ObservableProperty] private int _currentStreak;

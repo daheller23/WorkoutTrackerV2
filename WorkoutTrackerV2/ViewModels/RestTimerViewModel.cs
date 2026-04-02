@@ -8,16 +8,19 @@ namespace WorkoutTrackerV2.ViewModels
     {
         private readonly IRestTimerService _timer;
 
+        public IReadOnlyList<int> Presets { get; } = [60, 90, 120, 180];
+
         [ObservableProperty] private int    _defaultCompound =      120;
         [ObservableProperty] private int    _defaultIsolation =     75;
         [ObservableProperty] private int    _customSeconds =        90;
+
         [ObservableProperty] private float  _progress =             0f;
+
         [ObservableProperty] private string _remainingLabel =       "0:00";
+
         [ObservableProperty] private bool   _isRunning =            false;
         [ObservableProperty] private bool   _isFinished =           false;
         [ObservableProperty] private bool   _isVisible =            false;
-
-        public IReadOnlyList<int> Presets { get; } = [60, 90, 120, 180];
 
         public RestTimerViewModel(IRestTimerService timer)
         {
@@ -26,30 +29,15 @@ namespace WorkoutTrackerV2.ViewModels
             SyncFromService();
         }
 
+        // ==============================================================================================================
+        //
+        //      PUBLIC METHODS
+        //
+        // ==============================================================================================================
+
         public void Dispose()
         {
             _timer.StateChanged -= OnStateChanged;
-        }
-
-        private void OnStateChanged()
-        {
-            SyncFromService();
-        }
-
-        private void SyncFromService()
-        {
-            IsRunning = _timer.IsRunning;
-            IsFinished = _timer.IsFinished;
-            IsVisible = _timer.IsRunning || _timer.IsFinished;
-            Progress = _timer.Progress;
-
-            var r = _timer.Remaining;
-            RemainingLabel = _timer.IsFinished
-                ? "Done! 💪"
-                : $"{(int)r.TotalMinutes}:{r.Seconds:D2}";
-
-            DefaultCompound = _timer.DefaultCompoundSeconds;
-            DefaultIsolation = _timer.DefaultIsolationSeconds;
         }
 
         public void Subscribe()
@@ -64,13 +52,19 @@ namespace WorkoutTrackerV2.ViewModels
             _timer.StateChanged -= OnStateChanged;
         }
 
+        // ==============================================================================================================
+        //
+        //      PRIVATE RELAY COMMANDS
+        //
+        // ==============================================================================================================
+
         [RelayCommand]
-        private void StartPreset(string seconds)
+        private void StartPreset(int seconds)
         {
-            if (int.TryParse(seconds, out int s))
+            if (seconds > 0)
             {
-                _timer.Start(s);
-            }              
+                _timer.Start(seconds);
+            }
         }
 
         [RelayCommand]
@@ -79,7 +73,7 @@ namespace WorkoutTrackerV2.ViewModels
             if (CustomSeconds > 0)
             {
                 _timer.Start(CustomSeconds);
-            }          
+            }
         }
 
         [RelayCommand]
@@ -93,6 +87,35 @@ namespace WorkoutTrackerV2.ViewModels
         {
             _timer.DefaultCompoundSeconds = DefaultCompound;
             _timer.DefaultIsolationSeconds = DefaultIsolation;
+        }
+
+        // ==============================================================================================================
+        //
+        //      PRIVATE METHODS
+        //
+        // ==============================================================================================================
+
+        private void OnStateChanged()
+        {
+            SyncFromService();
+        }
+
+        private void SyncFromService()
+        {
+            IsRunning = _timer.IsRunning;
+            IsFinished = _timer.IsFinished;
+            IsVisible = IsRunning || IsFinished;
+            Progress = _timer.Progress;
+
+            RemainingLabel = IsFinished
+                ? "Done! 💪"
+                : _timer.Remaining.ToString(@"m\:ss");
+
+            if (!IsRunning)
+            {
+                DefaultCompound = _timer.DefaultCompoundSeconds;
+                DefaultIsolation = _timer.DefaultIsolationSeconds;
+            }
         }
     }
 }
