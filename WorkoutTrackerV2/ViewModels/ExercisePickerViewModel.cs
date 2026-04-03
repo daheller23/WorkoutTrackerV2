@@ -6,11 +6,6 @@ using WorkoutTrackerV2.Services;
 
 namespace WorkoutTrackerV2.ViewModels
 {
-    // ─────────────────────────────────────────────────────────────────────────
-    // MuscleGroupPillViewModel
-    // Replaces the two-converter-per-pill pattern. The XAML uses a single
-    // DataTrigger on IsSelected — zero value converters per pill per tap.
-    // ─────────────────────────────────────────────────────────────────────────
     public partial class MuscleGroupPillViewModel : ObservableObject
     {
         public string Key { get; init; } = string.Empty;
@@ -22,25 +17,13 @@ namespace WorkoutTrackerV2.ViewModels
         private bool _isSelected;
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // ExercisePickerViewModel
-    // ─────────────────────────────────────────────────────────────────────────
-    public partial class ExercisePickerViewModel(
-        IWorkoutService workoutService) : BaseViewModel
+    public partial class ExercisePickerViewModel(IWorkoutService workoutService) : BaseViewModel
     {
-        #region "OBSERVABLE PROPERTIES"
+        private Dictionary<int, Exercise> _exerciseMap = [];
+        private HashSet<int> _recentExerciseIds = [];
+        private CancellationTokenSource? _filterCts;
+        private bool _suppressFilter;
 
-        // Single source + IsGrouped drives one CollectionView in both flat and
-        // grouped modes, eliminating the double-construction cost of the original.
-        [ObservableProperty] private IEnumerable _exerciseSource = Enumerable.Empty<Exercise>();
-        [ObservableProperty] private bool _isGrouped;
-
-        [ObservableProperty] private string _searchText = string.Empty;
-        [ObservableProperty] private string _selectedMuscleGroup = "All";
-        [ObservableProperty] private string _exerciseCountLabel = string.Empty;
-        [ObservableProperty] private bool _hasSearchText;
-
-        // Pill ViewModels — constructed once at startup; only IsSelected toggles thereafter.
         public List<MuscleGroupPillViewModel> FilterPills { get; } =
         [
             new() { Key = "All",       Label = "All" },
@@ -54,25 +37,20 @@ namespace WorkoutTrackerV2.ViewModels
             new() { Key = "Core",      Label = "🩵 Core" },
         ];
 
-        #endregion
+        [ObservableProperty] private bool _hasSearchText;
+        [ObservableProperty] private bool _isGrouped;
 
-        #region "PRIVATE STATE"
+        [ObservableProperty] private string _searchText = string.Empty;
+        [ObservableProperty] private string _selectedMuscleGroup = "All";
+        [ObservableProperty] private string _exerciseCountLabel = string.Empty;
 
-        // FIX 3: Dictionary keyed by Id gives O(1) delete instead of O(n) List.Remove.
-        private Dictionary<int, Exercise> _exerciseMap = [];
-        private HashSet<int> _recentExerciseIds = [];
+        [ObservableProperty] private IEnumerable _exerciseSource = Enumerable.Empty<Exercise>();
 
-        // Single CTS covers both the debounce delay and the background filter work.
-        // One Cancel() call aborts both simultaneously.
-        private CancellationTokenSource? _filterCts;
-
-        // FIX 4: While true, partial property callbacks skip ScheduleFilter so that
-        // ResetFilter() setting two properties only triggers one filter pass.
-        private bool _suppressFilter;
-
-        #endregion
-
-        #region "PARTIAL METHODS"
+        // ==============================================================================================================
+        //
+        //      PARTIAL METHODS
+        //
+        // ==============================================================================================================
 
         partial void OnSearchTextChanged(string value)
         {
@@ -82,16 +60,17 @@ namespace WorkoutTrackerV2.ViewModels
 
         partial void OnSelectedMuscleGroupChanged(string value)
         {
-            // Toggle pill selection — cheap bool flip on 9 items, zero converters.
             foreach (var pill in FilterPills)
                 pill.IsSelected = pill.Key == value;
 
             if (!_suppressFilter) ScheduleFilter(debounceMs: 0);
         }
 
-        #endregion
-
-        #region "LOAD EXERCISES"
+        // ==============================================================================================================
+        //
+        //      PRIVATE RELAY COMMANDS
+        //
+        // ==============================================================================================================
 
         [RelayCommand]
         private async Task LoadExercises()
@@ -102,16 +81,10 @@ namespace WorkoutTrackerV2.ViewModels
                 IsLoading = true;
                 FilterPills[0].IsSelected = true;
 
-                // FIX 1: Fire both DB queries concurrently — Task.WhenAll instead of
-                // two sequential awaits. Halves load time when queries take similar time.
                 var exercisesTask = workoutService.GetAllExercisesAsync();
                 var recentIdsTask = workoutService.GetRecentExerciseIdsAsync(30);
                 await Task.WhenAll(exercisesTask, recentIdsTask);
 
-                // FIX 2: No upfront OrderBy here — ScheduleFilter always re-sorts the
-                // result set anyway (sort order varies by filter), so sorting at load
-                // time was redundant work.
-                // FIX 3: Store in Dictionary for O(1) lookup and delete.
                 _exerciseMap = exercisesTask.Result.ToDictionary(e => e.Id);
                 _recentExerciseIds = recentIdsTask.Result.ToHashSet();
 
@@ -127,116 +100,11 @@ namespace WorkoutTrackerV2.ViewModels
             }
         }
 
-        #endregion
-
-        #region "FILTER — debounce + background execution"
-
-        private void ScheduleFilter(int debounceMs)
-        {
-            _filterCts?.Cancel();
-            _filterCts = new CancellationTokenSource();
-            var token = _filterCts.Token;
-
-            Task.Run(async () =>
-            {
-                try
-                {
-                    // Debounce: wait before doing any work so rapid keystrokes collapse
-                    // into a single filter pass after the user pauses typing.
-                    if (debounceMs > 0)
-                        await Task.Delay(debounceMs, token);
-
-                    if (token.IsCancellationRequested) return;
-
-                    // Snapshot all observable state before leaving the UI thread.
-                    // Never touch [ObservableProperty] fields from a background thread.
-                    var searchText = SearchText;
-                    var muscleGroup = SelectedMuscleGroup;
-                    var exercises = _exerciseMap.Values;  // Dictionary.Values is read-safe
-                    var recentIds = _recentExerciseIds;
-
-                    // ── All LINQ, sorting, and grouping on the thread pool ────────
-                    var filtered = exercises.AsEnumerable();
-
-                    if (muscleGroup == "Recent")
-                        filtered = filtered.Where(e => recentIds.Contains(e.Id));
-                    else if (muscleGroup == "Custom")
-                        filtered = filtered.Where(e => e.IsCustom);
-                    else if (muscleGroup != "All")
-                        filtered = filtered.Where(e => e.MuscleGroup == muscleGroup);
-
-                    if (!string.IsNullOrWhiteSpace(searchText))
-                        filtered = filtered.Where(e =>
-                            e.Name.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
-                            e.MuscleGroup.Contains(searchText, StringComparison.OrdinalIgnoreCase));
-
-                    bool showGrouped = muscleGroup == "All" && string.IsNullOrWhiteSpace(searchText);
-
-                    List<Exercise> result;
-                    List<AlphaExerciseGroup>? groups = null;
-
-                    if (showGrouped)
-                    {
-                        result = filtered
-                            .OrderByDescending(e => recentIds.Contains(e.Id))
-                            .ThenBy(e => e.Name)
-                            .ToList();
-
-                        groups = result
-                            .GroupBy(e => recentIds.Contains(e.Id)
-                                ? "🕐 Recent"
-                                : e.Name[0].ToString().ToUpper())
-                            .OrderBy(g => g.Key == "🕐 Recent" ? "!" : g.Key)
-                            .Select(g => new AlphaExerciseGroup(g.Key, g.ToList()))
-                            .ToList();
-                    }
-                    else
-                    {
-                        result = filtered.OrderBy(e => e.Name).ToList();
-                    }
-
-                    if (token.IsCancellationRequested) return;
-
-                    // ── Marshal only UI assignments back to the main thread ───────
-                    MainThread.BeginInvokeOnMainThread(() =>
-                    {
-                        if (token.IsCancellationRequested) return;
-
-                        IsGrouped = showGrouped;
-
-                        // FIX 5: Assign plain List<T>/List<AlphaExerciseGroup> directly
-                        // instead of wrapping in a new ObservableCollection<T> on every
-                        // filter. CollectionView only needs IEnumerable — change
-                        // notifications on the collection itself are unnecessary since
-                        // we replace the entire source reference each time.
-                        ExerciseSource = showGrouped
-                            ? (IEnumerable)groups!
-                            : result;
-
-                        var count = result.Count;
-                        ExerciseCountLabel = count == 1 ? "· 1 exercise" : $"· {count} exercises";
-                    });
-                }
-                catch (TaskCanceledException)
-                {
-                    // Expected — a newer filter request cancelled this one. Do nothing.
-                }
-            }, token);
-        }
-
-        #endregion
-
-        #region "FILTER BY MUSCLE GROUP"
-
         [RelayCommand]
         private void FilterByMuscleGroup(string muscleGroup)
         {
             SelectedMuscleGroup = muscleGroup;
         }
-
-        #endregion
-
-        #region "CLEAR SEARCH"
 
         [RelayCommand]
         private void ClearSearch()
@@ -244,26 +112,15 @@ namespace WorkoutTrackerV2.ViewModels
             SearchText = string.Empty;
         }
 
-        #endregion
-
-        #region "RESET FILTER"
-
         [RelayCommand]
         private void ResetFilter()
         {
-            // FIX 4: Suppress the two intermediate ScheduleFilter calls that would
-            // otherwise fire independently from OnSelectedMuscleGroupChanged and
-            // OnSearchTextChanged. Only one filter pass fires — after both are set.
             _suppressFilter = true;
             SelectedMuscleGroup = "All";
             SearchText = string.Empty;
             _suppressFilter = false;
             ScheduleFilter(debounceMs: 0);
         }
-
-        #endregion
-
-        #region "SELECT EXERCISE"
 
         [RelayCommand]
         private static async Task SelectExercise(Exercise exercise)
@@ -274,10 +131,6 @@ namespace WorkoutTrackerV2.ViewModels
                 { "EditSelectedExercise", exercise }
             });
         }
-
-        #endregion
-
-        #region "DELETE EXERCISE"
 
         [RelayCommand]
         private async Task DeleteExercise(Exercise exercise)
@@ -315,16 +168,8 @@ namespace WorkoutTrackerV2.ViewModels
             }
         }
 
-        #endregion
-
-        #region "CREATE EXERCISE"
-
         [RelayCommand]
         private static Task CreateExercise() => Shell.Current.GoToAsync(Routes.CreateExercise);
-
-        #endregion
-
-        #region "CANCEL"
 
         [RelayCommand]
         private static async Task Cancel()
@@ -336,6 +181,109 @@ namespace WorkoutTrackerV2.ViewModels
             });
         }
 
-        #endregion
+        // ==============================================================================================================
+        //
+        //      PRIVATE METHODS
+        //
+        // ==============================================================================================================
+
+        private void ScheduleFilter(int debounceMs)
+        {
+            _filterCts?.Cancel();
+            _filterCts?.Dispose();
+            _filterCts = new CancellationTokenSource();
+
+            var token = _filterCts.Token;
+
+            var searchText = SearchText;
+            var muscleGroup = SelectedMuscleGroup;
+
+            Task.Run(async () =>
+            {
+                try
+                {
+                    if (debounceMs > 0)
+                    {
+                        await Task.Delay(debounceMs, token);
+                    }
+                        
+                    token.ThrowIfCancellationRequested();
+
+                    var exercises = _exerciseMap.Values.ToList();
+                    var recentIds = _recentExerciseIds.ToHashSet();
+
+                    var filtered = exercises.AsEnumerable();
+
+                    if (muscleGroup == "Recent")
+                    {
+                        filtered = filtered.Where(e => recentIds.Contains(e.Id));
+                    }
+                    else if (muscleGroup == "Custom")
+                    {
+                        filtered = filtered.Where(e => e.IsCustom);
+                    }
+                    else if (muscleGroup != "All")
+                    {
+                        filtered = filtered.Where(e => e.MuscleGroup == muscleGroup);
+                    }
+                        
+
+                    if (!string.IsNullOrWhiteSpace(searchText))
+                    {
+                        filtered = filtered.Where(e =>
+                            e.Name.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
+                            e.MuscleGroup.Contains(searchText, StringComparison.OrdinalIgnoreCase));
+                    }
+
+                    bool showGrouped = muscleGroup == "All" && string.IsNullOrWhiteSpace(searchText);
+
+                    List<Exercise> resultList;
+                    List<AlphaExerciseGroup>? groupedResults = null;
+
+                    if (showGrouped)
+                    {
+                        resultList = filtered
+                            .OrderByDescending(e => recentIds.Contains(e.Id))
+                            .ThenBy(e => e.Name)
+                            .ToList();
+
+                        groupedResults = resultList
+                            .GroupBy(e => recentIds.Contains(e.Id)
+                                ? "🕐 Recent"
+                                : (char.IsDigit(e.Name[0]) ? "#" : e.Name[0].ToString().ToUpper()))
+                            .OrderBy(g => g.Key == "🕐 Recent" ? "!" : (g.Key == "#" ? "Ω" : g.Key))
+                            .Select(g => new AlphaExerciseGroup(g.Key, g.ToList()))
+                            .ToList();
+                    }
+                    else
+                    {
+                        resultList = filtered.OrderBy(e => e.Name).ToList();
+                    }
+
+                    token.ThrowIfCancellationRequested();
+
+                    MainThread.BeginInvokeOnMainThread(() =>
+                    {
+                        if (token.IsCancellationRequested) return;
+
+                        IsGrouped = showGrouped;
+
+                        ExerciseSource = showGrouped ? groupedResults : resultList;
+
+                        var count = resultList.Count;
+                        ExerciseCountLabel = count == 1 ? "· 1 exercise" : $"· {count} exercises";
+                    });
+                }
+                catch (OperationCanceledException)
+                {
+                    // Expected when a newer search cancels this one.
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Filtering Error: {ex.Message}");
+                }
+            }, token);
+        }
+
     }
 }
