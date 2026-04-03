@@ -6,166 +6,123 @@ using WorkoutTrackerV2.Services;
 
 namespace WorkoutTrackerV2.ViewModels
 {
-    // FIX 8: Thin wrapper for a muscle group string that carries pre-computed
-    // color and emoji — eliminates MuscleGroupColorConverter and
-    // MuscleGroupEmojiConverter on the muscle group pill BindableLayout.
     public sealed class MuscleGroupChipViewModel
     {
         public string Name { get; init; } = string.Empty;
         public string Emoji { get; init; } = string.Empty;
         public string Color { get; init; } = "#1F77F0";
+        public static MuscleGroupChipViewModel FromName(string name)
+        {
+            return name switch
+            {
+                "Chest" => new() { Name = name, Color = "#4A90D9", Emoji = "🔵" },
+                "Back" => new() { Name = name, Color = "#27AE60", Emoji = "🟢" },
+                "Legs" => new() { Name = name, Color = "#E67E22", Emoji = "🟠" },
+                "Shoulders" => new() { Name = name, Color = "#8E44AD", Emoji = "🟣" },
+                "Arms" => new() { Name = name, Color = "#E74C3C", Emoji = "🔴" },
+                "Core" => new() { Name = name, Color = "#5DADE2", Emoji = "🩵" },
+                _ => new() { Name = name, Color = "#1F77F0", Emoji = "⭐" }
+            };
+        }
     }
 
     [QueryProperty(nameof(Session), "Session")]
-    public partial class WorkoutDetailViewModel(
-        IWorkoutService workoutService,
-        ISettingsService settingsService,
-        ITemplateService templateService) : BaseViewModel
+    public partial class WorkoutDetailViewModel(IWorkoutService workoutService, ISettingsService settingsService, ITemplateService templateService) : BaseViewModel
     {
-        #region "OBSERVABLE PROPERTIES"
+        [ObservableProperty] private List<MuscleGroupChipViewModel> _muscleGroupChips = [];
         [ObservableProperty] private WorkoutSession _session = new();
         [ObservableProperty] private ObservableCollection<ExerciseGroup> _exerciseGroups = [];
-        [ObservableProperty] private int _totalSets;
-        [ObservableProperty] private double _totalVolume;
+
         [ObservableProperty] private int _totalReps;
+        [ObservableProperty] private int _totalSets;
+
+        [ObservableProperty] private double _totalVolume;
+        
         [ObservableProperty] private string _weightUnitLabel = "lbs";
-        // FIX 8: Chip VMs replace List<string> so XAML needs no converters.
-        [ObservableProperty] private List<MuscleGroupChipViewModel> _muscleGroupChips = [];
         [ObservableProperty] private string _volumeComparison = string.Empty;
+        [ObservableProperty] private string _volumeComparisonColor = "#4CAF50";
+
         [ObservableProperty] private bool _volumeIsUp;
         [ObservableProperty] private bool _hasVolumeComparison;
-        // FIX 10: Pre-computed color string for VolumeComparison label —
-        // replaces VolumeComparisonColorConverter.
-        [ObservableProperty] private string _volumeComparisonColor = "#4CAF50";
-        #endregion
 
-        #region "LOAD DATA"
+        // ==============================================================================================================
+        //
+        //      PRIVATE RELAY COMMANDS
+        //
+        // ==============================================================================================================
+
         [RelayCommand]
         private async Task LoadData()
         {
             if (IsLoading || Session?.Id == 0) return;
+
             try
             {
                 IsLoading = true;
                 WeightUnitLabel = settingsService.WeightUnit;
 
-                // Reload session from DB to get latest fields.
-                var freshSession = await workoutService.GetSessionAsync(Session.Id);
-                if (freshSession is not null)
-                    Session = freshSession;
-
-                // Fetch sets, exercises, and all set history concurrently.
-                // FIX 4: GetAllSetsAsync(0) replaces N per-exercise
-                // GetExerciseHistoryAsync calls for PR marking.
+                var freshSessionTask = workoutService.GetSessionAsync(Session.Id);
                 var setsTask = workoutService.GetSetsForSessionAsync(Session.Id);
                 var exercisesTask = workoutService.GetAllExercisesAsync();
-                var allSetsTask = workoutService.GetAllSetsAsync(0);
 
-                await Task.WhenAll(setsTask, exercisesTask, allSetsTask);
+                await Task.WhenAll(freshSessionTask, setsTask, exercisesTask);
 
-                var sets = setsTask.Result;
+                if (freshSessionTask.Result is not null)
+                    Session = freshSessionTask.Result;
+
+                var currentSets = setsTask.Result;
                 var exerciseDict = exercisesTask.Result.ToDictionary(e => e.Id);
+                var exerciseIds = currentSets.Select(s => s.ExerciseId).Distinct().ToList();
 
-                // FIX 4: Build per-exercise all-time max weight map from the
-                // bulk fetch — no per-exercise DB queries.
-                var allTimeMaxByExercise = allSetsTask.Result
-                    .GroupBy(s => s.ExerciseId)
-                    .ToDictionary(g => g.Key, g => g.Max(s => s.Weight));
+                var prMapTask = workoutService.GetPersonalRecordsAsync(exerciseIds);
+                var prevSessionTask = workoutService.GetPreviousSessionByDayAsync(Session.Id, Session.DayName, Session.Date);
 
-                // Build exercise groups and mark PRs in a single pass.
-                var groups = new List<ExerciseGroup>();
-                foreach (var set in sets)
+                await Task.WhenAll(prMapTask, prevSessionTask);
+                var prMap = prMapTask.Result;
+
+                var groupsDict = new Dictionary<int, ExerciseGroup>();
+                var muscleGroupNames = new HashSet<string>();
+                int tSets = 0, tReps = 0;
+                double tVol = 0;
+
+                foreach (var set in currentSets)
                 {
                     if (!exerciseDict.TryGetValue(set.ExerciseId, out var exercise)) continue;
+
+                    tSets++;
+                    tReps += set.Reps;
+                    tVol += set.Weight * set.Reps;
+                    muscleGroupNames.Add(exercise.MuscleGroup);
+
                     set.Exercise = exercise;
 
-                    // Mark PR inline while building groups — no second loop needed.
-                    if (allTimeMaxByExercise.TryGetValue(set.ExerciseId, out var maxW) && maxW > 0)
-                        set.IsPR = set.Weight >= maxW;
+                    if (prMap.TryGetValue(set.ExerciseId, out var maxWeight))
+                        set.IsPR = set.Weight >= maxWeight;
 
-                    var existing = groups.FirstOrDefault(g => g.Exercise.Id == set.ExerciseId);
-                    if (existing is not null)
-                        existing.Sets.Add(set);
-                    else
+                    if (!groupsDict.TryGetValue(set.ExerciseId, out var group))
                     {
-                        var group = new ExerciseGroup(exercise);
-                        if (allTimeMaxByExercise.TryGetValue(set.ExerciseId, out var maxWght))
-                        {
-                            group.MaxWeight = maxWght;
-                        }
-                        group.Sets.Add(set);
-                        groups.Add(group);
-                    }
-                }
-
-                // FIX 1: Assign the whole collection at once — one CollectionChanged
-                // notification instead of Clear() + N individual Add() calls.
-                ExerciseGroups = new ObservableCollection<ExerciseGroup>(groups);
-
-                // FIX 2+3: Single loop computes TotalSets, TotalVolume, TotalReps,
-                // and collects distinct muscle groups.
-                int totalSets = 0;
-                double totalVolume = 0;
-                int totalReps = 0;
-                var muscleGroupSet = new HashSet<string>();
-
-                foreach (var g in groups)
-                {
-                    totalSets += g.Sets.Count;
-                    muscleGroupSet.Add(g.Exercise.MuscleGroup);
-
-                    // NEW FIX: Calculate the total reps ONLY for this specific exercise card.
-                    // (Assuming your ExerciseGroup model has a property called TotalReps or similar)
-                    int groupTotalReps = 0;
-
-                    foreach (var s in g.Sets)
-                    {
-                        totalVolume += s.Weight * s.Reps;
-                        totalReps += s.Reps;        // This keeps the grand total accurate
-                        groupTotalReps += s.Reps;   // This isolates the count for this card
+                        group = new ExerciseGroup(exercise) { MaxWeight = maxWeight };
+                        groupsDict.Add(set.ExerciseId, group);
                     }
 
-                    // Assign the localized count to the card itself
-                    g.TotalReps = groupTotalReps;
+                    group.Sets.Add(set);
+                    group.TotalReps += set.Reps;
                 }
 
-                TotalSets = totalSets;
-                TotalVolume = totalVolume;
-                TotalReps = totalReps; // Grand total assigned to the page
+                ExerciseGroups = new ObservableCollection<ExerciseGroup>(groupsDict.Values);
+                TotalSets = tSets;
+                TotalReps = tReps;
+                TotalVolume = tVol;
 
-                // FIX 8: Build chip VMs with pre-computed color and emoji.
-                MuscleGroupChips = muscleGroupSet
+                MuscleGroupChips = muscleGroupNames
                     .OrderBy(m => m)
-                    .Select(m => new MuscleGroupChipViewModel
-                    {
-                        Name = m,
-                        Color = m switch
-                        {
-                            "Chest" => "#4A90D9",
-                            "Back" => "#27AE60",
-                            "Legs" => "#E67E22",
-                            "Shoulders" => "#8E44AD",
-                            "Arms" => "#E74C3C",
-                            "Core" => "#5DADE2",
-                            _ => "#1F77F0"
-                        },
-                        Emoji = m switch
-                        {
-                            "Chest" => "🔵",
-                            "Back" => "🟢",
-                            "Legs" => "🟠",
-                            "Shoulders" => "🟣",
-                            "Arms" => "🔴",
-                            "Core" => "🩵",
-                            _ => "⭐"
-                        }
-                    })
+                    .Select(MuscleGroupChipViewModel.FromName)
                     .ToList();
 
-                // FIX 5: Pass already-loaded sessions to avoid a second full table
-                // load inside LoadVolumeComparison.
-                var allSessions = await workoutService.GetAllSessionsAsync();
-                await LoadVolumeComparison(allSessions);
+                if (prevSessionTask.Result != null)
+                    await LoadVolumeComparison(new List<WorkoutSession> { prevSessionTask.Result });
+                else
+                    HasVolumeComparison = false;
             }
             catch (Exception ex)
             {
@@ -176,53 +133,7 @@ namespace WorkoutTrackerV2.ViewModels
                 IsLoading = false;
             }
         }
-        #endregion
 
-        #region "LOAD VOLUME COMPARISON"
-        // FIX 5: Accepts pre-loaded sessions — no GetAllSessionsAsync call inside.
-        private async Task LoadVolumeComparison(List<WorkoutSession> allSessions)
-        {
-            try
-            {
-                var previousSession = allSessions
-                    .Where(s => s.Id != Session.Id
-                             && s.Date < Session.Date
-                             && s.DayName == Session.DayName)
-                    .OrderByDescending(s => s.Date)
-                    .FirstOrDefault();
-
-                if (previousSession is null)
-                {
-                    HasVolumeComparison = false;
-                    return;
-                }
-
-                var previousSets = await workoutService.GetSetsForSessionAsync(previousSession.Id);
-                var previousVolume = previousSets.Sum(s => s.Weight * s.Reps);
-
-                if (previousVolume == 0)
-                {
-                    HasVolumeComparison = false;
-                    return;
-                }
-
-                var diff = TotalVolume - previousVolume;
-                var percent = (diff / previousVolume) * 100;
-                VolumeIsUp = diff >= 0;
-                var sign = diff >= 0 ? "+" : "";
-                VolumeComparison = $"{sign}{diff:F0} {settingsService.WeightUnit} ({sign}{percent:F0}%) vs last {Session.DayName}";
-                // FIX 10: Set color directly — no VolumeComparisonColorConverter needed.
-                VolumeComparisonColor = diff >= 0 ? "#4CAF50" : "#FF6B6B";
-                HasVolumeComparison = true;
-            }
-            catch
-            {
-                HasVolumeComparison = false;
-            }
-        }
-        #endregion
-
-        #region "DO WORKOUT AGAIN"
         [RelayCommand]
         private async Task DoWorkoutAgain()
         {
@@ -254,14 +165,10 @@ namespace WorkoutTrackerV2.ViewModels
                 await Shell.Current.DisplayAlertAsync("Error", ex.Message, "OK");
             }
         }
-        #endregion
 
-        #region "GO BACK"
         [RelayCommand]
         private static Task GoBack() => Shell.Current.GoToAsync(Routes.Back);
-        #endregion
 
-        #region "EDIT WORKOUT"
         [RelayCommand]
         private async Task EditWorkout()
         {
@@ -270,9 +177,7 @@ namespace WorkoutTrackerV2.ViewModels
                 { "Session", Session }
             });
         }
-        #endregion
 
-        #region "DELETE WORKOUT"
         [RelayCommand]
         private async Task DeleteWorkout()
         {
@@ -306,6 +211,51 @@ namespace WorkoutTrackerV2.ViewModels
                 IsLoading = false;
             }
         }
-        #endregion
+
+        // ==============================================================================================================
+        //
+        //      PRIVATE METHODS
+        //
+        // ==============================================================================================================
+
+        private async Task LoadVolumeComparison(List<WorkoutSession> allSessions)
+        {
+            try
+            {
+                var previousSession = allSessions
+                    .Where(s => s.Id != Session.Id
+                             && s.Date < Session.Date
+                             && s.DayName == Session.DayName)
+                    .OrderByDescending(s => s.Date)
+                    .FirstOrDefault();
+
+                if (previousSession is null)
+                {
+                    HasVolumeComparison = false;
+                    return;
+                }
+
+                var previousSets = await workoutService.GetSetsForSessionAsync(previousSession.Id);
+                var previousVolume = previousSets.Sum(s => s.Weight * s.Reps);
+
+                if (previousVolume == 0)
+                {
+                    HasVolumeComparison = false;
+                    return;
+                }
+
+                var diff = TotalVolume - previousVolume;
+                var percent = (diff / previousVolume) * 100;
+                VolumeIsUp = diff >= 0;
+                var sign = diff >= 0 ? "+" : "";
+                VolumeComparison = $"{sign}{diff:F0} {settingsService.WeightUnit} ({sign}{percent:F0}%) vs last {Session.DayName}";
+                VolumeComparisonColor = diff >= 0 ? "#4CAF50" : "#FF6B6B";
+                HasVolumeComparison = true;
+            }
+            catch
+            {
+                HasVolumeComparison = false;
+            }
+        }
     }
 }

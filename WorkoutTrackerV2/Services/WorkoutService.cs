@@ -53,6 +53,32 @@ namespace WorkoutTrackerV2.Services
             }
         }
 
+        public async Task<WorkoutSession?> GetPreviousSessionByDayAsync(int currentId, string dayName, DateTime currentDate)
+        {
+            await EnsureInitializedAsync();
+
+            return await _database.Table<WorkoutSession>()
+                .Where(s => s.Id != currentId
+                         && s.DayName == dayName
+                         && s.Date < currentDate)
+                .OrderByDescending(s => s.Date)
+                .FirstOrDefaultAsync();
+        }
+
+        public async Task<Dictionary<int, double>> GetPersonalRecordsAsync(List<int> exerciseIds) 
+        {
+            await EnsureInitializedAsync();
+
+            // Fetch only sets for the specific exercises in the current session
+            var sets = await _database.Table<WorkoutSet>()
+                .Where(s => exerciseIds.Contains(s.ExerciseId))
+                .ToListAsync();
+
+            // Group in-memory to find the max weight for each exercise ID
+            return sets.GroupBy(s => s.ExerciseId)
+                       .ToDictionary(g => g.Key, g => g.Max(s => s.Weight));
+        }
+
         public async Task<List<WorkoutSession>> GetAllSessionsAsync()
         {
             await EnsureInitializedAsync();

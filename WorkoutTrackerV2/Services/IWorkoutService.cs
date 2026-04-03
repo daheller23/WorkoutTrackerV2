@@ -30,6 +30,8 @@ namespace WorkoutTrackerV2.Services
         Task<int> SaveExerciseAsync(Exercise exercise);
         Task DeleteExerciseAsync(int id);
         Task<List<WorkoutSet>> GetSetsForSessionsAsync(List<int> sessionIds);
+        Task<Dictionary<int, double>> GetPersonalRecordsAsync(List<int> exerciseIds);
+        Task<WorkoutSession?> GetPreviousSessionByDayAsync(int currentId, string dayName, DateTime currentDate);
 
         // Templates
         Task<List<WorkoutTemplate>> GetAllTemplatesAsync();
