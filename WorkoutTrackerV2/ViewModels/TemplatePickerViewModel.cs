@@ -6,16 +6,24 @@ using WorkoutTrackerV2.Services;
 
 namespace WorkoutTrackerV2.ViewModels
 {
-    public partial class TemplatePickerViewModel(
-        IWorkoutService workoutService,
-        ITemplateService templateService) : BaseViewModel
+    public partial class TemplatePickerViewModel(IWorkoutService workoutService, ITemplateService templateService) : BaseViewModel
     {
         [ObservableProperty] private ObservableCollection<WorkoutTemplate> _templates = [];
+
+        // ==============================================================================================================
+        //
+        //      PRIVATE RELAY COMMANDS
+        //
+        // ==============================================================================================================
 
         [RelayCommand]
         private async Task LoadTemplates()
         {
-            if (IsLoading) return;
+            if (IsLoading)
+            {
+                return;
+            }
+
             try
             {
                 IsLoading = true;
@@ -33,24 +41,21 @@ namespace WorkoutTrackerV2.ViewModels
         }
 
         [RelayCommand]
-        private async Task SelectTemplate(WorkoutTemplate template)
+        private Task SelectTemplate(WorkoutTemplate template)
         {
-            // PendingTemplateSets is intentionally left empty here — AddWorkoutView
-            // detects an empty set list and calls LoadFromTemplateCommand, which
-            // fetches the sets from the DB. This avoids a DB call on this page
-            // for templates the user may not end up selecting.
             templateService.PendingTemplate = template;
-            await Shell.Current.GoToAsync("..");
+            return Shell.Current.GoToAsync(Routes.Back);
         }
 
         [RelayCommand]
         private async Task DeleteTemplate(WorkoutTemplate template)
         {
-            bool confirmed = await Shell.Current.DisplayAlertAsync(
-                "Delete Template",
-                $"Are you sure you want to delete '{template.Name}'?",
-                "Yes", "No");
-            if (!confirmed) return;
+            bool confirmed = await Shell.Current.DisplayAlertAsync("Delete Template", $"Are you sure you want to delete '{template.Name}'?", "Yes", "No");
+
+            if (!confirmed)
+            {
+                return;
+            }
 
             try
             {
@@ -64,10 +69,10 @@ namespace WorkoutTrackerV2.ViewModels
         }
 
         [RelayCommand]
-        private async Task Cancel()
+        private Task Cancel()
         {
             templateService.PendingTemplate = null;
-            await Shell.Current.GoToAsync("..");
+            return Shell.Current.GoToAsync(Routes.Back);
         }
     }
 }
