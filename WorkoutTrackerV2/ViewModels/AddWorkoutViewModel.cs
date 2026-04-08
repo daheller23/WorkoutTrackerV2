@@ -7,18 +7,15 @@ using WorkoutTrackerV2.Services;
 namespace WorkoutTrackerV2.ViewModels
 {
     [QueryProperty(nameof(SelectedExercise), "SelectedExercise")]
-    public partial class AddWorkoutViewModel(
-        IWorkoutService workoutService, 
-        ITemplateService templateService, 
-        ISettingsService settingsService, 
-        IRestTimerService restTimerService, 
-        IAnalyticsService analyticsService) : BaseViewModel, IDisposable
+    public partial class AddWorkoutViewModel(IWorkoutService workoutService, ITemplateService templateService, ISettingsService settingsService, IRestTimerService restTimerService, IAnalyticsService analyticsService) : BaseViewModel, IDisposable
     {
         private bool _ignoreNextExerciseSelection = false;
         private Dictionary<int, double>? _prBaselines;
 
         [ObservableProperty] private int    _totalSets;
+
         [ObservableProperty] private double _totalVolume;
+
         [ObservableProperty] private bool   _isMenuVisible;
 
         [ObservableProperty] private string _dayName = $"{DateTime.Today:dddd} · Today";
@@ -34,44 +31,39 @@ namespace WorkoutTrackerV2.ViewModels
         [ObservableProperty] private Exercise?                              _selectedExercise;
 
         public RestTimerViewModel TimerViewModel { get; } = new RestTimerViewModel(restTimerService);
+
+        // ==============================================================================================================
+        //
+        //      PUBLIC METHODS
+        //
+        // ==============================================================================================================
+        
         public void Dispose()
         {
             TimerViewModel.Unsubscribe();
             TimerViewModel.Dispose();
         }
 
-        [RelayCommand]
-        private void ToggleMenu()
-        {
-            IsMenuVisible = !IsMenuVisible;
-        }
-        
-        [RelayCommand]
-        private void HandleMenuAction(string action)
-        {
-            IsMenuVisible = false;
-            switch(action.ToLower())
-            {
-                case "load":
-                    OpenTemplatePickerCommand.Execute(null);
-                    break;
-                case "save":
-                    SaveAsTemplateCommand.Execute(null);
-                    break;
-            }
-        }
-
-        [RelayCommand]
-        private void PrepareForTemplatePicker()
-        {
-            _ignoreNextExerciseSelection = true;
-        }
+        // ==============================================================================================================
+        //
+        //      PARTIAL METHODS
+        //
+        // ==============================================================================================================
 
         partial void OnSelectedExerciseChanged(Exercise? value)
         {
-            if (value is null) { return; }                   
-            if (ShouldIgnoreSelection()) { return; }
-            if (TryHandlePendingTemplate()) { return; }
+            if (value is null) 
+            { 
+                return; 
+            }                   
+            if (ShouldIgnoreSelection()) 
+            {
+                return; 
+            }
+            if (TryHandlePendingTemplate()) 
+            { 
+                return; 
+            }
 
             var existing = ExerciseGroups.FirstOrDefault(g => g.Exercise.Id == value.Id);
             if (existing is not null)
@@ -89,29 +81,6 @@ namespace WorkoutTrackerV2.ViewModels
             UpdateTotals();
         }
 
-        private bool ShouldIgnoreSelection()
-        {
-            if (!_ignoreNextExerciseSelection)
-            {
-                return false;
-            }
-            _ignoreNextExerciseSelection = false;
-            SelectedExercise = null;
-            return true;
-        }
-
-        private bool TryHandlePendingTemplate()
-        {
-            if (templateService.PendingTemplate is null)
-            {
-                return false;
-            }
-            var template = templateService.PendingTemplate;
-            templateService.PendingTemplate = null;
-            _ = LoadFromTemplateAsync(template);
-            return true;
-        }
-
         partial void OnSelectedDateChanged(DateTime value)
         {
             var days = (DateTime.Today - value.Date).Days;
@@ -125,85 +94,21 @@ namespace WorkoutTrackerV2.ViewModels
             DayName = $"{value:dddd} · {relative}";
 
             if (string.IsNullOrWhiteSpace(WorkoutName))
+            {
                 WorkoutName = value.ToString("dddd");
+            }           
         }
 
-        [RelayCommand]
-        private void CopyLastSet(ExerciseGroup group)
-        {
-            var lastSet = group.Sets.LastOrDefault();
-            group.AddSet(lastSet?.WeightUnit ?? settingsService.WeightUnit);
-
-            if (lastSet is not null)
-            {
-                var newSet = group.Sets[^1];
-                newSet.Reps = lastSet.Reps;
-                newSet.Weight = lastSet.Weight;
-                newSet.WeightUnit = lastSet.WeightUnit;
-                newSet.SuggestedWeightPlaceholder = lastSet.SuggestedWeightPlaceholder;
-            }
-
-            UpdateTotals();
-        }
+        // ==============================================================================================================
+        //
+        //      PRIVATE RELAY COMMANDS
+        //
+        // ==============================================================================================================
 
         [RelayCommand]
-        private async Task SaveAsTemplate()
+        private void StartRestTimer(string muscleGroup)
         {
-            if (ExerciseGroups.Count == 0)
-            {
-                await Shell.Current.DisplayAlertAsync("Error", "Please add at least one exercise first", "OK");
-                return;
-            }
-
-            string name = await Shell.Current.DisplayPromptAsync(
-                "Save Template",
-                "Enter a name for this template",
-                placeholder: string.IsNullOrWhiteSpace(WorkoutName) ? "My Template" : WorkoutName);
-
-            if (string.IsNullOrWhiteSpace(name)) return;
-
-            try
-            {
-                var template = new WorkoutTemplate { Name = name, Notes = Notes };
-                int templateId = await workoutService.SaveTemplateAsync(template);
-
-                int setNumber = 1;
-                var templateSets = ExerciseGroups
-                    .SelectMany(group => group.Sets.Select(set => new WorkoutTemplateSet
-                    {
-                        TemplateId = templateId,
-                        ExerciseId = group.Exercise.Id,
-                        SetNumber = setNumber++,
-                        Reps = set.Reps,
-                        Weight = set.Weight,
-                        WeightUnit = set.WeightUnit
-                    }))
-                    .ToList();
-
-                await workoutService.SaveAllTemplateSetsAsync(templateSets);
-                await Shell.Current.DisplayAlertAsync("Saved", $"'{name}' saved as a template!", "OK");
-            }
-            catch (Exception ex)
-            {
-                await Shell.Current.DisplayAlertAsync("Error", ex.Message, "OK");
-            }
-        }
-
-        [RelayCommand]
-        private async Task LoadFromTemplate(WorkoutTemplate template)
-            => await LoadFromTemplateAsync(template);
-
-        private async Task LoadFromTemplateAsync(WorkoutTemplate template)
-        {
-            try
-            {
-                var sets = await workoutService.GetTemplateSetsAsync(template.Id);
-                await ApplyTemplateSetsAsync(template, sets);
-            }
-            catch (Exception ex)
-            {
-                await Shell.Current.DisplayAlertAsync("Error", ex.Message, "OK");
-            }
+            restTimerService.StartDefault(muscleGroup);
         }
 
         [RelayCommand]
@@ -232,7 +137,7 @@ namespace WorkoutTrackerV2.ViewModels
             if (args.Group.Sets.Count == 0)
             {
                 ExerciseGroups.Remove(args.Group);
-            }             
+            }
             UpdateTotals();
         }
 
@@ -335,7 +240,7 @@ namespace WorkoutTrackerV2.ViewModels
             if (!confirmed)
             {
                 return;
-            }               
+            }
             ResetForm();
         }
 
@@ -365,9 +270,142 @@ namespace WorkoutTrackerV2.ViewModels
             }
         }
 
-        private async Task ApplyTemplateSetsAsync(
-            WorkoutTemplate template,
-            List<WorkoutTemplateSet> sets)
+        [RelayCommand]
+        private async Task LoadFromTemplate(WorkoutTemplate template)
+            => await LoadFromTemplateAsync(template);
+
+        [RelayCommand]
+        private void CopyLastSet(ExerciseGroup group)
+        {
+            var lastSet = group.Sets.LastOrDefault();
+            group.AddSet(lastSet?.WeightUnit ?? settingsService.WeightUnit);
+
+            if (lastSet is not null)
+            {
+                var newSet = group.Sets[^1];
+                newSet.Reps = lastSet.Reps;
+                newSet.Weight = lastSet.Weight;
+                newSet.WeightUnit = lastSet.WeightUnit;
+                newSet.SuggestedWeightPlaceholder = lastSet.SuggestedWeightPlaceholder;
+            }
+
+            UpdateTotals();
+        }
+
+        [RelayCommand]
+        private async Task SaveAsTemplate()
+        {
+            if (ExerciseGroups.Count == 0)
+            {
+                await Shell.Current.DisplayAlertAsync("Error", "Please add at least one exercise first", "OK");
+                return;
+            }
+
+            string name = await Shell.Current.DisplayPromptAsync("Save Template", "Enter a name for this template", placeholder: string.IsNullOrWhiteSpace(WorkoutName) ? "My Template" : WorkoutName);
+
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                return;
+            }
+
+            try
+            {
+                var template = new WorkoutTemplate { Name = name, Notes = Notes };
+                int templateId = await workoutService.SaveTemplateAsync(template);
+
+                int setNumber = 1;
+                var templateSets = ExerciseGroups
+                    .SelectMany(group => group.Sets.Select(set => new WorkoutTemplateSet
+                    {
+                        TemplateId = templateId,
+                        ExerciseId = group.Exercise.Id,
+                        SetNumber = setNumber++,
+                        Reps = set.Reps,
+                        Weight = set.Weight,
+                        WeightUnit = set.WeightUnit
+                    }))
+                    .ToList();
+
+                await workoutService.SaveAllTemplateSetsAsync(templateSets);
+                await Shell.Current.DisplayAlertAsync("Saved", $"'{name}' saved as a template!", "OK");
+            }
+            catch (Exception ex)
+            {
+                await Shell.Current.DisplayAlertAsync("Error", ex.Message, "OK");
+            }
+        }
+
+        [RelayCommand]
+        private void ToggleMenu()
+        {
+            IsMenuVisible = !IsMenuVisible;
+        }
+
+        [RelayCommand]
+        private void HandleMenuAction(string action)
+        {
+            IsMenuVisible = false;
+            switch (action.ToLower())
+            {
+                case "load":
+                    OpenTemplatePickerCommand.Execute(null);
+                    break;
+                case "save":
+                    SaveAsTemplateCommand.Execute(null);
+                    break;
+            }
+        }
+
+        [RelayCommand]
+        private void PrepareForTemplatePicker()
+        {
+            _ignoreNextExerciseSelection = true;
+        }
+
+
+        // ==============================================================================================================
+        //
+        //      PRIVATE METHODS
+        //
+        // ==============================================================================================================
+
+        private bool ShouldIgnoreSelection()
+        {
+            if (!_ignoreNextExerciseSelection)
+            {
+                return false;
+            }
+            _ignoreNextExerciseSelection = false;
+            SelectedExercise = null;
+            return true;
+        }
+
+        private bool TryHandlePendingTemplate()
+        {
+            if (templateService.PendingTemplate is null)
+            {
+                return false;
+            }
+            var template = templateService.PendingTemplate;
+            templateService.PendingTemplate = null;
+            _ = LoadFromTemplateAsync(template);
+            return true;
+        }
+
+        private async Task LoadFromTemplateAsync(WorkoutTemplate template)
+        {
+            try
+            {
+                var sets = await workoutService.GetTemplateSetsAsync(template.Id);
+                await ApplyTemplateSetsAsync(template, sets);
+            }
+            catch (Exception ex)
+            {
+                await Shell.Current.DisplayAlertAsync("Error", ex.Message, "OK");
+            }
+        }
+
+        private async Task ApplyTemplateSetsAsync(WorkoutTemplate template, List<WorkoutTemplateSet> sets)
         {
             var exercises = await workoutService.GetAllExercisesAsync();
             var exerciseDict = exercises.ToDictionary(e => e.Id);
@@ -378,38 +416,32 @@ namespace WorkoutTrackerV2.ViewModels
 
             foreach (var set in sets)
             {
-                if (!exerciseDict.TryGetValue(set.ExerciseId, out var exercise)) continue;
+                if (!exerciseDict.TryGetValue(set.ExerciseId, out var exercise))
+                {
+                    continue;
+                }
 
                 var existing = ExerciseGroups.FirstOrDefault(g => g.Exercise.Id == exercise.Id);
                 if (existing is not null)
                 {
-                    var workoutSet = CreateWorkoutSet(
-                        exercise, existing, existing.Sets.Count + 1,
-                        set.Reps, set.Weight, set.WeightUnit);
+                    var workoutSet = CreateWorkoutSet(exercise, existing, existing.Sets.Count + 1, set.Reps, set.Weight, set.WeightUnit);
                     existing.Sets.Add(workoutSet);
                     existing.NotifySetStatsPublic();
                 }
                 else
                 {
                     var group = new ExerciseGroup(exercise, settingsService.WeightUnit);
-                    var workoutSet = CreateWorkoutSet(
-                        exercise, group, 1,
-                        set.Reps, set.Weight, set.WeightUnit);
+                    var workoutSet = CreateWorkoutSet(exercise, group, 1, set.Reps, set.Weight, set.WeightUnit);
                     group.Sets.Add(workoutSet);
                     group.NotifySetStatsPublic();
                     ExerciseGroups.Add(group);
                 }
             }
+
             UpdateTotals();
         }
 
-        private WorkoutSet CreateWorkoutSet(
-            Exercise exercise,
-            ExerciseGroup group,
-            int setNumber,
-            int reps,
-            double weight,
-            string weightUnit)
+        private WorkoutSet CreateWorkoutSet(Exercise exercise, ExerciseGroup group, int setNumber, int reps, double weight, string weightUnit)
         {
             var set = new WorkoutSet
             {
@@ -425,20 +457,22 @@ namespace WorkoutTrackerV2.ViewModels
             {
                 group.RemoveSet(set);
                 if (group.Sets.Count == 0)
+                {
                     ExerciseGroups.Remove(group);
+                }               
                 UpdateTotals();
             });
             return set;
         }
         private string? DetectWeightPr(List<WorkoutSet> savedSets)
         {
-            if (_prBaselines is null) return null;
+            if (_prBaselines is null)
+            {
+                return null;
+            }
 
             string? message = null;
-            var maxByExercise = savedSets
-                .GroupBy(s => s.ExerciseId)
-                .Select(g => (ExerciseId: g.Key, Max: g.Max(s => s.Weight)))
-                .ToList();
+            var maxByExercise = savedSets.GroupBy(s => s.ExerciseId).Select(g => (ExerciseId: g.Key, Max: g.Max(s => s.Weight))).ToList();
 
             foreach (var (exerciseId, max) in maxByExercise)
             {
@@ -447,8 +481,7 @@ namespace WorkoutTrackerV2.ViewModels
                 {
                     var group = ExerciseGroups.FirstOrDefault(g => g.Exercise.Id == exerciseId);
                     var name = group?.Exercise.Name ?? "exercise";
-                    var unit = group?.Sets.FirstOrDefault()?.WeightUnit
-                                ?? settingsService.WeightUnit;
+                    var unit = group?.Sets.FirstOrDefault()?.WeightUnit ?? settingsService.WeightUnit;
                     message = $"New PR on {name}! 🏆 {max} {unit}";
                     break;
                 }
@@ -509,16 +542,10 @@ namespace WorkoutTrackerV2.ViewModels
                 foreach (var set in group.Sets)
                 {
                     volume += set.Weight * set.Reps;
-                }               
+                }
             }
             TotalSets = sets;
             TotalVolume = volume;
-        }
-
-        [RelayCommand]
-        private void StartRestTimer(string muscleGroup)
-        {
-            restTimerService.StartDefault(muscleGroup);
         }
     }
 }
