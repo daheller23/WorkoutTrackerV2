@@ -9,8 +9,8 @@ namespace WorkoutTrackerV2.ViewModels
     [QueryProperty(nameof(SelectedExercise), "SelectedExercise")]
     public partial class AddWorkoutViewModel(IWorkoutService workoutService, ITemplateService templateService, ISettingsService settingsService, IRestTimerService restTimerService, IAnalyticsService analyticsService) : BaseViewModel, IDisposable
     {
-        private bool _ignoreNextExerciseSelection = false;
-        private Dictionary<int, double>? _prBaselines;
+        private bool                        _ignoreNextExerciseSelection;
+        private Dictionary<int, double>?    _prBaselines;
 
         [ObservableProperty] private int    _totalSets;
 
@@ -106,22 +106,20 @@ namespace WorkoutTrackerV2.ViewModels
         // ==============================================================================================================
 
         [RelayCommand]
-        private void StartRestTimer(string muscleGroup)
-        {
+        private void StartRestTimer(string muscleGroup) =>
             restTimerService.StartDefault(muscleGroup);
-        }
 
         [RelayCommand]
-        private async Task OpenTemplatePicker()
+        private Task OpenTemplatePicker()
         {
             templateService.PendingTemplate = null;
             _ignoreNextExerciseSelection = true;
-            await Shell.Current.GoToAsync(Routes.TemplatePicker);
+            return Shell.Current.GoToAsync(Routes.TemplatePicker);
         }
 
         [RelayCommand]
-        private static async Task ViewExercisePicker()
-            => await Shell.Current.GoToAsync(Routes.ExercisePicker);
+        private static Task ViewExercisePicker()
+            => Shell.Current.GoToAsync(Routes.ExercisePicker);
 
         [RelayCommand]
         private void AddSet(ExerciseGroup group)
@@ -245,10 +243,7 @@ namespace WorkoutTrackerV2.ViewModels
         }
 
         [RelayCommand]
-        private void ClearSelectedExercise()
-        {
-            SelectedExercise = null;
-        }
+        private void ClearSelectedExercise() => SelectedExercise = null;
 
         [RelayCommand]
         private void RefreshWeightUnit()
@@ -336,10 +331,7 @@ namespace WorkoutTrackerV2.ViewModels
         }
 
         [RelayCommand]
-        private void ToggleMenu()
-        {
-            IsMenuVisible = !IsMenuVisible;
-        }
+        private void ToggleMenu() => IsMenuVisible = !IsMenuVisible;
 
         [RelayCommand]
         private void HandleMenuAction(string action)
@@ -357,10 +349,7 @@ namespace WorkoutTrackerV2.ViewModels
         }
 
         [RelayCommand]
-        private void PrepareForTemplatePicker()
-        {
-            _ignoreNextExerciseSelection = true;
-        }
+        private void PrepareForTemplatePicker() => _ignoreNextExerciseSelection = true;
 
 
         // ==============================================================================================================
