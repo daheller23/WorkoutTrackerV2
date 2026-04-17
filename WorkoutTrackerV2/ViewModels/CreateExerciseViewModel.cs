@@ -8,12 +8,14 @@ namespace WorkoutTrackerV2.ViewModels
 {
     public partial class CreateExerciseViewModel(IWorkoutService workoutService) : BaseViewModel
     {
-        #region "OBSERVABLE PROPERTIES"
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(HasValidInput))]
         [NotifyPropertyChangedFor(nameof(PreviewMuscleGroupColor))]
         [NotifyPropertyChangedFor(nameof(PreviewMuscleGroupEmoji))]
         private string _exerciseName = string.Empty;
+
+        [ObservableProperty] private string _muscleGroupError = string.Empty;
+        [ObservableProperty] private string _nameError = string.Empty;
 
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(HasValidInput))]
@@ -22,20 +24,21 @@ namespace WorkoutTrackerV2.ViewModels
         [NotifyPropertyChangedFor(nameof(MuscleGroupPills))]
         private string _selectedMuscleGroup = string.Empty;
 
-        // NEW: Observable properties for the dynamic sub-muscle region
-        [ObservableProperty] private ObservableCollection<string> _subMuscleGroups = [];
-
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(HasValidInput))]
         private string _selectedSubMuscleGroup = string.Empty;
 
-        [ObservableProperty] private string _nameError = string.Empty;
-        [ObservableProperty] private string _muscleGroupError = string.Empty;
-        [ObservableProperty] private bool _hasNameError;
         [ObservableProperty] private bool _hasMuscleGroupError;
-        #endregion
+        [ObservableProperty] private bool _hasNameError;
 
-        #region "COMPUTED PROPERTIES"
+        [ObservableProperty] private ObservableCollection<string> _subMuscleGroups = [];
+
+        // ==============================================================================================================
+        //
+        //      PUBLIC METHODS
+        //
+        // ==============================================================================================================
+
         public bool HasValidInput =>
             !string.IsNullOrWhiteSpace(ExerciseName) &&
             !string.IsNullOrWhiteSpace(SelectedMuscleGroup);
@@ -71,9 +74,13 @@ namespace WorkoutTrackerV2.ViewModels
             new() { Key = "Arms",      Label = "🔴 Arms",      IsSelected = SelectedMuscleGroup == "Arms" },
             new() { Key = "Core",      Label = "🩵 Core",      IsSelected = SelectedMuscleGroup == "Core" },
         ];
-        #endregion
 
-        #region "PARTIAL METHODS"
+        // ==============================================================================================================
+        //
+        //      PARTIAL METHODS
+        //
+        // ==============================================================================================================
+
         partial void OnExerciseNameChanged(string value)
         {
             if (HasNameError)
@@ -91,7 +98,6 @@ namespace WorkoutTrackerV2.ViewModels
                 MuscleGroupError = string.Empty;
             }
 
-            // NEW: Instantly populate the Sub-Muscle dropdown/pills based on the main selection
             SubMuscleGroups.Clear();
             if (string.IsNullOrEmpty(value)) return;
 
@@ -111,20 +117,21 @@ namespace WorkoutTrackerV2.ViewModels
                 SubMuscleGroups.Add(sub);
             }
 
-            // Auto-select the first option so the user doesn't submit a blank string
             SelectedSubMuscleGroup = SubMuscleGroups.FirstOrDefault() ?? "General";
         }
-        #endregion
 
-        #region "SELECT MUSCLE GROUP"
+        // ==============================================================================================================
+        //
+        //      PRIVATE RELAY COMMANDS
+        //
+        // ==============================================================================================================
+
         [RelayCommand]
         private void SelectMuscleGroup(string muscleGroup)
         {
             SelectedMuscleGroup = muscleGroup;
         }
-        #endregion
 
-        #region "SAVE EXERCISE"
         [RelayCommand]
         private async Task SaveExercise()
         {
@@ -152,7 +159,6 @@ namespace WorkoutTrackerV2.ViewModels
                 {
                     Name = ExerciseName.Trim(),
                     MuscleGroup = SelectedMuscleGroup,
-                    // NEW: Pass the Sub-Region to the database
                     SubMuscleGroup = SelectedSubMuscleGroup,
                     CreatedDate = DateTime.Now,
                     IsCustom = true
@@ -175,11 +181,8 @@ namespace WorkoutTrackerV2.ViewModels
                 IsLoading = false;
             }
         }
-        #endregion
 
-        #region "CANCEL"
         [RelayCommand]
         private static Task Cancel() => Shell.Current.GoToAsync(Routes.Back);
-        #endregion
     }
 }

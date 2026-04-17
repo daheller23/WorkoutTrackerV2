@@ -11,32 +11,44 @@ namespace WorkoutTrackerV2.ViewModels
     [QueryProperty(nameof(Exercise), "Exercise")]
     public partial class ExerciseProgressViewModel(ISettingsService settingsService) : BaseViewModel
     {
+        [ObservableProperty] private double _estimatedOneRepMax;
+        [ObservableProperty] private double _strengthPercentage;
+        [ObservableProperty] private double _totalVolume;
+
+        [ObservableProperty] private string _coachAdvice = "";
+        [ObservableProperty] private string _currentRatioText = "0.00x BW";
+        [ObservableProperty] private string _muscleGroupColor = "#1F77F0";
+        [ObservableProperty] private string _strengthLevel = "Beginner";
+        [ObservableProperty] private string _weightToNextLevel = "";
+
+        [ObservableProperty] private bool _hasOneRepMax;
+        [ObservableProperty] private bool _isPlateaued;
+
         [ObservableProperty] private ExerciseProgress? _exercise;
         [ObservableProperty] private LineChart? _chart;
         [ObservableProperty] private ObservableCollection<WeightPercentage> _percentages = [];
         [ObservableProperty] private ObservableCollection<WorkoutHistoryGroup> _groupedSets = [];
 
-        // Color
-        [ObservableProperty] private string _muscleGroupColor = "#1F77F0";
-
-        // Coaching & Insights
-        [ObservableProperty] private double _estimatedOneRepMax;
-        [ObservableProperty] private bool _hasOneRepMax;
-        [ObservableProperty] private double _totalVolume;
-        [ObservableProperty] private bool _isPlateaued;
-        [ObservableProperty] private string _coachAdvice = "";
-
-        // Strength Rank
-        [ObservableProperty] private string _strengthLevel = "Beginner";
-        [ObservableProperty] private double _strengthPercentage;
-        [ObservableProperty] private string _currentRatioText = "0.00x BW";
-        [ObservableProperty] private string _weightToNextLevel = "";
+        // ==============================================================================================================
+        //
+        //      PUBLIC METHODS
+        //
+        // ==============================================================================================================
 
         public string WeightUnitLabel => settingsService.WeightUnit;
 
+        // ==============================================================================================================
+        //
+        //      PARTIAL METHODS
+        //
+        // ==============================================================================================================
+
         partial void OnExerciseChanged(ExerciseProgress? value)
         {
-            if (value is null || value.Sets == null || value.Sets.Count == 0) return;
+            if (value is null || value.Sets == null || value.Sets.Count == 0)
+            {
+                return;
+            }
 
             MuscleGroupColor = value.MuscleGroup switch
             {
@@ -49,14 +61,13 @@ namespace WorkoutTrackerV2.ViewModels
                 _ => "#1F77F0"
             };
 
-            // 1. PERFORMANCE GRAPH & VOLUME
             if (value.Points?.Count > 0)
+            {
                 Chart = ChartHelper.BuildProgressChart(value.Points);
-
+            }
+                
             TotalVolume = value.Sets.Sum(s => s.Weight * s.Reps);
 
-            // 2. THE "BEST SET" 1RM CALCULATION (Brzycki Formula)
-            // We find the highest 1RM potential across ALL sets, not just the heaviest one.
             double highestPotential = 0;
 
             foreach (var set in value.Sets)
@@ -68,7 +79,6 @@ namespace WorkoutTrackerV2.ViewModels
                 }
                 else
                 {
-                    // Brzycki Formula: Weight / (1.0278 - (0.0278 * Reps))
                     current1RM = set.Weight / (1.0278 - (0.0278 * set.Reps));
                 }
 
@@ -79,11 +89,9 @@ namespace WorkoutTrackerV2.ViewModels
             EstimatedOneRepMax = Math.Round(highestPotential, 1);
             HasOneRepMax = EstimatedOneRepMax > 0;
 
-            // 3. RE-CALCULATE RANK & COACHING
             CalculateStrengthRank(EstimatedOneRepMax);
             CheckForPlateau(value);
 
-            // 4. PERCENTAGES & HISTORY
             CalculatePercentageTable(EstimatedOneRepMax);
 
             var groups = value.Sets
@@ -94,12 +102,26 @@ namespace WorkoutTrackerV2.ViewModels
             GroupedSets = new ObservableCollection<WorkoutHistoryGroup>(groups);
         }
 
+        // ==============================================================================================================
+        //
+        //      PRIVATE RELAY METHODS
+        //
+        // ==============================================================================================================
+
+        [RelayCommand]
+        private static Task GoBack() => Shell.Current.GoToAsync(Routes.Back);
+
+        // ==============================================================================================================
+        //
+        //      PRIVATE METHODS
+        //
+        // ==============================================================================================================
+
         private void CheckForPlateau(ExerciseProgress exercise)
         {
             if (exercise.Points == null || exercise.Points.Count < 4) return;
 
             var lastFour = exercise.Points.TakeLast(4).ToList();
-            // Check if current max is less than or equal to the max from 4 sessions ago
             bool noProgress = lastFour.All(p => p.MaxWeight <= lastFour[0].MaxWeight);
 
             if (noProgress)
@@ -112,11 +134,10 @@ namespace WorkoutTrackerV2.ViewModels
 
         private void CalculateStrengthRank(double oneRepMax)
         {
-            double bodyWeight = 80; // Placeholder: Connect to settings later!
+            double bodyWeight = 80;
             double ratio = oneRepMax / bodyWeight;
             CurrentRatioText = $"{ratio:F2}x BW";
 
-            // Updated Tiers: Beginner(0.75), Novice(1.25), Intermediate(1.75), Advanced(2.5), Elite(>2.5)
             if (ratio < 0.75)
             {
                 StrengthLevel = "Beginner";
@@ -143,7 +164,6 @@ namespace WorkoutTrackerV2.ViewModels
                 StrengthPercentage = 1.0;
             }
 
-            // Calculate next goal nudge
             double[] goals = { 0.75, 1.25, 1.75, 2.5 };
             double nextGoal = goals.FirstOrDefault(g => g > ratio);
             WeightToNextLevel = nextGoal > 0
@@ -154,17 +174,23 @@ namespace WorkoutTrackerV2.ViewModels
         private void CalculatePercentageTable(double baseWeight)
         {
             Percentages.Clear();
-            if (baseWeight <= 0) return;
+            if (baseWeight <= 0)
+            {
+                return;
+            }
             int[] targets = [100, 95, 90, 85, 80, 75, 70, 60, 50];
             foreach (var p in targets)
             {
                 Percentages.Add(new WeightPercentage { Percent = p, Weight = Math.Round(baseWeight * (p / 100.0), 1) });
             }
         }
-
-        [RelayCommand]
-        private static Task GoBack() => Shell.Current.GoToAsync("..");
     }
+
+    // ==============================================================================================================
+    //
+    //      CLASSES
+    //
+    // ==============================================================================================================
 
     public class WorkoutHistoryGroup(DateTime date, List<WorkoutSet> sets) : List<WorkoutSet>(sets)
     {
