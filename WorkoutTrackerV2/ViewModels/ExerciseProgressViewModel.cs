@@ -50,16 +50,7 @@ namespace WorkoutTrackerV2.ViewModels
                 return;
             }
 
-            MuscleGroupColor = value.MuscleGroup switch
-            {
-                "Chest" => "#4A90D9",
-                "Back" => "#27AE60",
-                "Legs" => "#E67E22",
-                "Shoulders" => "#8E44AD",
-                "Arms" => "#E74C3C",
-                "Core" => "#5DADE2",
-                _ => "#1F77F0"
-            };
+            MuscleGroupColor = ColorHelper.GetMuscleGroupColor(value.MuscleGroup);
 
             if (value.Points?.Count > 0)
             {

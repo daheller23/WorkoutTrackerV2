@@ -1,6 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using System.Collections.ObjectModel;
+using WorkoutTrackerV2.Helpers;
 using WorkoutTrackerV2.Models;
 using WorkoutTrackerV2.Services;
 
@@ -10,7 +11,7 @@ namespace WorkoutTrackerV2.ViewModels
     {
         public static string PendingPrMessage { get; set; } = string.Empty;
 
-        [ObservableProperty] private string _mostTrainedMuscleGroupColor = "#1F77F0";
+        [ObservableProperty] private string _mostTrainedMuscleGroupColor = ColorHelper.GetDefaultColor();
 
         [ObservableProperty] private int _currentStreak;
         [ObservableProperty] private int _setsThisWeek;
@@ -110,16 +111,7 @@ namespace WorkoutTrackerV2.ViewModels
 
         private void SetMostTrainedMuscleGroupColor()
         {
-            MostTrainedMuscleGroupColor = MostTrainedMuscleGroup switch
-            {
-                "Chest" => "#4A90D9",
-                "Back" => "#4CAF50",
-                "Legs" => "#FF9800",
-                "Shoulders" => "#9C27B0",
-                "Arms" => "#FF6B6B",
-                "Core" => "#00BCD4",
-                _ => "#1F77F0"
-            };
+            MostTrainedMuscleGroupColor = ColorHelper.GetMuscleGroupColor(MostTrainedMuscleGroup);
         }
 
         private void SetMotivationalMessage()

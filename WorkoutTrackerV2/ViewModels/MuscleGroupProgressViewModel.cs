@@ -39,7 +39,7 @@ namespace WorkoutTrackerV2.ViewModels
         // FIX: Added explicit boolean for UI visibility toggling
         [ObservableProperty] private bool _hasVolumeData;
 
-        [ObservableProperty] private string _muscleGroupColor = "#1F77F0";
+        [ObservableProperty] private string _muscleGroupColor = ColorHelper.GetDefaultColor();
 
         public List<TimePeriodPillViewModel> TimePeriodPills { get; } =
         [
@@ -55,19 +55,12 @@ namespace WorkoutTrackerV2.ViewModels
         #region "PARTIAL METHODS"
         partial void OnMuscleGroupChanged(string value)
         {
-            if (string.IsNullOrEmpty(value)) return;
-
-            MuscleGroupColor = value switch
+            if (string.IsNullOrEmpty(value))
             {
-                "Chest" => "#4A90D9",
-                "Back" => "#27AE60",
-                "Legs" => "#E67E22",
-                "Shoulders" => "#8E44AD",
-                "Arms" => "#E74C3C",
-                "Core" => "#5DADE2",
-                _ => "#1F77F0"
-            };
+                return;
+            }
 
+            MuscleGroupColor = ColorHelper.GetMuscleGroupColor(value);
             _ = LoadDataAsync();
         }
 

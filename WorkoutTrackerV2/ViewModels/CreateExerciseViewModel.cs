@@ -1,6 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using System.Collections.ObjectModel;
+using WorkoutTrackerV2.Helpers;
 using WorkoutTrackerV2.Models;
 using WorkoutTrackerV2.Services;
 
@@ -43,16 +44,7 @@ namespace WorkoutTrackerV2.ViewModels
             !string.IsNullOrWhiteSpace(ExerciseName) &&
             !string.IsNullOrWhiteSpace(SelectedMuscleGroup);
 
-        public string PreviewMuscleGroupColor => SelectedMuscleGroup switch
-        {
-            "Chest" => "#4A90D9",
-            "Back" => "#27AE60",
-            "Legs" => "#E67E22",
-            "Shoulders" => "#8E44AD",
-            "Arms" => "#E74C3C",
-            "Core" => "#5DADE2",
-            _ => "#999999"
-        };
+        public string PreviewMuscleGroupColor => ColorHelper.GetMuscleGroupColor(SelectedMuscleGroup);
 
         public string PreviewMuscleGroupEmoji => SelectedMuscleGroup switch
         {
