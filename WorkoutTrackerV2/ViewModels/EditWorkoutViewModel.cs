@@ -8,9 +8,7 @@ namespace WorkoutTrackerV2.ViewModels
 {
     [QueryProperty(nameof(SelectedExercise), "EditSelectedExercise")]
     [QueryProperty(nameof(Session), "Session")]
-    public partial class EditWorkoutViewModel(
-        IWorkoutService workoutService,
-        ISettingsService settingsService) : BaseViewModel
+    public partial class EditWorkoutViewModel(IWorkoutService workoutService, ISettingsService settingsService) : BaseViewModel
     {
         [ObservableProperty] private int _totalSets;
 
@@ -47,7 +45,10 @@ namespace WorkoutTrackerV2.ViewModels
 
         partial void OnSelectedExerciseChanged(Exercise? value)
         {
-            if (value is null) return;
+            if (value is null)
+            {
+                return;
+            }
 
             var existing = ExerciseGroups.FirstOrDefault(g => g.Exercise.Id == value.Id);
             if (existing is not null)
@@ -118,7 +119,9 @@ namespace WorkoutTrackerV2.ViewModels
         {
             args.Group.RemoveSet(args.Set);
             if (args.Group.Sets.Count == 0)
+            {
                 ExerciseGroups.Remove(args.Group);
+            }           
             UpdateTotals();
         }
 
@@ -157,7 +160,10 @@ namespace WorkoutTrackerV2.ViewModels
                     "Time Warning",
                     "Start time is after or equal to end time. Duration will default to 60 minutes. Continue?",
                     "Yes", "No");
-                if (!proceed) return;
+                if (!proceed)
+                {
+                    return;
+                }
             }
 
             try
@@ -166,7 +172,9 @@ namespace WorkoutTrackerV2.ViewModels
 
                 var duration = EndTime - StartTime;
                 if (duration.TotalSeconds <= 0)
+                {
                     duration = TimeSpan.FromMinutes(60);
+                }         
 
                 Session.DayName = string.IsNullOrWhiteSpace(WorkoutName) ? DayName : WorkoutName;
                 Session.Notes = Notes;
@@ -179,18 +187,17 @@ namespace WorkoutTrackerV2.ViewModels
                 await workoutService.DeleteSetsForSessionAsync(Session.Id);
 
                 int setNumber = 1;
-                var newSets = ExerciseGroups
-                    .SelectMany(group => group.Sets.Select(set => new WorkoutSet
-                    {
-                        ExerciseId = group.Exercise.Id,
-                        WorkoutSessionId = Session.Id,
-                        SetNumber = setNumber++,
-                        Reps = set.Reps,
-                        Weight = set.Weight,
-                        WeightUnit = set.WeightUnit,
-                        CreatedDate = SelectedDate
-                    }))
-                    .ToList();
+                var newSets = ExerciseGroups.SelectMany(group => group.Sets.Select(set => new WorkoutSet
+                {
+                    ExerciseId = group.Exercise.Id,
+                    WorkoutSessionId = Session.Id,
+                    SetNumber = setNumber++,
+                    Reps = set.Reps,
+                    Weight = set.Weight,
+                    WeightUnit = set.WeightUnit,
+                    CreatedDate = SelectedDate
+                }))
+                .ToList();
 
                 await workoutService.SaveAllSetsAsync(newSets);
                 await Shell.Current.GoToAsync(Routes.Back);
@@ -238,7 +245,9 @@ namespace WorkoutTrackerV2.ViewModels
             {
                 sets += group.Sets.Count;
                 foreach (var set in group.Sets)
+                {
                     volume += set.Weight * set.Reps;
+                }                 
             }
             TotalSets = sets;
             TotalVolume = volume;
@@ -246,7 +255,10 @@ namespace WorkoutTrackerV2.ViewModels
 
         private async Task LoadDataAsync()
         {
-            if (IsLoading) return;
+            if (IsLoading)
+            {
+                return;
+            }
             try
             {
                 IsLoading = true;
@@ -268,7 +280,10 @@ namespace WorkoutTrackerV2.ViewModels
                 var groups = new List<ExerciseGroup>();
                 foreach (var set in sets)
                 {
-                    if (!exerciseDict.TryGetValue(set.ExerciseId, out var exercise)) continue;
+                    if (!exerciseDict.TryGetValue(set.ExerciseId, out var exercise))
+                    {
+                        continue;
+                    }
                     set.Exercise = exercise;
 
                     var existing = groups.FirstOrDefault(g => g.Exercise.Id == set.ExerciseId);
@@ -281,8 +296,7 @@ namespace WorkoutTrackerV2.ViewModels
                     else
                     {
                         var group = new ExerciseGroup(exercise);
-                        var ws = CreateWorkoutSet(exercise, group, 1,
-                            set.Reps, set.Weight, set.WeightUnit);
+                        var ws = CreateWorkoutSet(exercise, group, 1, set.Reps, set.Weight, set.WeightUnit);
                         ws.Id = set.Id;
                         group.Sets.Add(ws);
                         groups.Add(group);

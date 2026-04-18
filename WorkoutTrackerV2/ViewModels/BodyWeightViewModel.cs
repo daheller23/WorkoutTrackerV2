@@ -8,11 +8,8 @@ using WorkoutTrackerV2.Services;
 
 namespace WorkoutTrackerV2.ViewModels
 {
-    public partial class BodyWeightViewModel(
-        IBodyWeightService bodyWeightService,
-        ISettingsService settingsService) : BaseViewModel
+    public partial class BodyWeightViewModel(IBodyWeightService bodyWeightService, ISettingsService settingsService) : BaseViewModel
     {
-        // Cached chart colours — parsed once, reused on every BuildChart call.
         private static readonly SKColor ColorBlue = SKColor.Parse("#1F77F0");
         private static readonly SKColor ColorGreen = SKColor.Parse("#4CAF50");
         private static readonly SKColor ColorGrey = SKColor.Parse("#999999");
