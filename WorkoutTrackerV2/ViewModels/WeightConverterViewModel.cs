@@ -11,11 +11,6 @@ public partial class WeightConverterViewModel : BaseViewModel
     [ObservableProperty]
     private bool _isLbsToKg = true;
 
-    public string InputLabel => IsLbsToKg ? "POUNDS" : "KILOGRAMS";
-    public string ResultLabel => IsLbsToKg ? "KILOGRAMS" : "POUNDS";
-    public string InputUnit => IsLbsToKg ? "lbs" : "kg";
-    public string ResultUnit => IsLbsToKg ? "kg" : "lbs";
-
     public double CalculatedValue
     {
         get
@@ -26,12 +21,28 @@ public partial class WeightConverterViewModel : BaseViewModel
             return IsLbsToKg ? val * 0.453592 : val * 2.20462;
         }
     }
+    public string InputLabel => IsLbsToKg ? "POUNDS" : "KILOGRAMS";
+    public string InputUnit => IsLbsToKg ? "lbs" : "kg";
+    public string ResultLabel => IsLbsToKg ? "KILOGRAMS" : "POUNDS";
+    public string ResultUnit => IsLbsToKg ? "kg" : "lbs";
+
+    // ==============================================================================================================
+    //
+    //      PARTIAL METHODS
+    //
+    // ==============================================================================================================
+
+    partial void OnInputValueChanged(string value) => OnPropertyChanged(nameof(CalculatedValue));
+
+    // ==============================================================================================================
+    //
+    //      PRIVATE RELAY COMMANDS
+    //
+    // ==============================================================================================================
 
     [RelayCommand]
     private void SwitchUnits()
     {
-        // If switching units, we try to convert the current input 
-        // to the new unit so the user doesn't lose their place
         if (double.TryParse(InputValue, out double currentVal))
         {
             double converted = IsLbsToKg ? currentVal * 0.453592 : currentVal * 2.20462;
@@ -42,7 +53,14 @@ public partial class WeightConverterViewModel : BaseViewModel
         RefreshProperties();
     }
 
-    partial void OnInputValueChanged(string value) => OnPropertyChanged(nameof(CalculatedValue));
+    [RelayCommand]
+    private static Task GoBack() => Shell.Current.GoToAsync(Routes.Back);
+
+    // ==============================================================================================================
+    //
+    //      PRIVATE METHODS
+    //
+    // ==============================================================================================================
 
     private void RefreshProperties()
     {
@@ -52,7 +70,4 @@ public partial class WeightConverterViewModel : BaseViewModel
         OnPropertyChanged(nameof(ResultUnit));
         OnPropertyChanged(nameof(CalculatedValue));
     }
-
-    [RelayCommand]
-    private static Task GoBack() => Shell.Current.GoToAsync(Routes.Back);
 }
