@@ -175,7 +175,10 @@ namespace WorkoutTrackerV2.ViewModels
                     "Time Warning",
                     "Start time is after or equal to end time. Duration will default to 60 minutes. Continue?",
                     "Yes", "No");
-                if (!proceed) return;
+                if (!proceed)
+                {
+                    return;
+                }
             }
 
             try
