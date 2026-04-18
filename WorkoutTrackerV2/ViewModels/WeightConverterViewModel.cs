@@ -16,8 +16,9 @@ public partial class WeightConverterViewModel : BaseViewModel
         get
         {
             if (string.IsNullOrWhiteSpace(InputValue) || !double.TryParse(InputValue, out double val))
+            {
                 return 0;
-
+            }
             return IsLbsToKg ? val * 0.453592 : val * 2.20462;
         }
     }
