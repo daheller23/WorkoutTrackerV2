@@ -116,7 +116,7 @@ namespace WorkoutTrackerV2.ViewModels
                 var insertAt = Entries.TakeWhile(e => e.Date > entry.Date).Count();
                 Entries.Insert(insertAt, entry);
 
-                RefreshUI(Entries.ToList());
+                RefreshUI([.. Entries]);
             }
             catch (Exception ex)
             {
