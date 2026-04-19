@@ -9,37 +9,32 @@ using WorkoutTrackerV2.Services;
 namespace WorkoutTrackerV2.ViewModels
 {
     [QueryProperty(nameof(MuscleGroup), "MuscleGroup")]
-    public partial class MuscleGroupProgressViewModel(
-        IAnalyticsService analyticsService,
-        ISettingsService settingsService) : BaseViewModel
+    public partial class MuscleGroupProgressViewModel(IAnalyticsService analyticsService, ISettingsService settingsService) : BaseViewModel
     {
-        #region "PRIVATE VARIABLES"
-        private static readonly string[] ChartColors =
-        [
-            "#1F77F0", "#4CAF50", "#FF9800", "#FF6B6B",
-            "#9C27B0", "#00BCD4", "#FF5722", "#607D8B"
-        ];
-        #endregion
-
-        #region "OBSERVABLE PROPERTIES"
-        [ObservableProperty] private string _muscleGroup = string.Empty;
-        [ObservableProperty] private ObservableCollection<ExerciseProgress> _exercises = [];
-        [ObservableProperty] private LineChart? _combinedChart;
-        [ObservableProperty] private int _selectedDays = 30;
-        [ObservableProperty] private string _weightUnitLabel = "lbs";
-        [ObservableProperty] private string _topExerciseName = string.Empty;
-        [ObservableProperty] private int _totalSets;
+        [ObservableProperty] private int _selectedDays = 30;     
         [ObservableProperty] private int _totalReps;
+        [ObservableProperty] private int _totalSets;
+
         [ObservableProperty] private double _maxWeight;
 
-        // Volume Distribution Properties
+        [ObservableProperty] private bool _hasVolumeData;
+
+        [ObservableProperty] private string _muscleGroup = string.Empty;
+        [ObservableProperty] private string _muscleGroupColor = ColorHelper.GetDefaultColor();
+        [ObservableProperty] private string _topExerciseName = string.Empty;
+        [ObservableProperty] private string _weightUnitLabel = "lbs";
+
+
+        [ObservableProperty] private LineChart? _combinedChart;
+        [ObservableProperty] private ObservableCollection<ExerciseProgress> _exercises = [];    
         [ObservableProperty] private DonutChart? _volumeChart;
         [ObservableProperty] private ObservableCollection<VolumeDistributionItem> _volumeDistribution = [];
 
-        // FIX: Added explicit boolean for UI visibility toggling
-        [ObservableProperty] private bool _hasVolumeData;
-
-        [ObservableProperty] private string _muscleGroupColor = ColorHelper.GetDefaultColor();
+        private static readonly string[] ChartColors =
+        [
+            "#1F77F0", "#4CAF50", "#FF9800", "#FF6B6B",
+                    "#9C27B0", "#00BCD4", "#FF5722", "#607D8B"
+        ];
 
         public List<TimePeriodPillViewModel> TimePeriodPills { get; } =
         [
@@ -50,9 +45,13 @@ namespace WorkoutTrackerV2.ViewModels
             new() { Label = "60d", Days = 60 },
             new() { Label = "90d", Days = 90 },
         ];
-        #endregion
 
-        #region "PARTIAL METHODS"
+        // ==============================================================================================================
+        //
+        //      PARTIAL METHODS
+        //
+        // ==============================================================================================================
+
         partial void OnMuscleGroupChanged(string value)
         {
             if (string.IsNullOrEmpty(value))
@@ -73,24 +72,49 @@ namespace WorkoutTrackerV2.ViewModels
 
             _ = LoadDataAsync();
         }
-        #endregion
 
-        #region "SET TIME PERIOD"
+        // ==============================================================================================================
+        //
+        //      PRIVATE RELAY COMMANDS
+        //
+        // ==============================================================================================================
+
         [RelayCommand]
         private void SetTimePeriod(string days)
         {
             if (int.TryParse(days, out int result))
+            {
                 SelectedDays = result;
+            }             
         }
-        #endregion
 
-        #region "LOAD DATA"
+        [RelayCommand]
+        private static async Task SelectExercise(ExerciseProgress exercise)
+        {
+            await Shell.Current.GoToAsync(Routes.ExerciseProgress, new Dictionary<string, object>
+            {
+                { "Exercise", exercise }
+            });
+        }
+
+        [RelayCommand]
+        private static Task GoBack() => Shell.Current.GoToAsync(Routes.Back);
+
         [RelayCommand]
         private async Task LoadData() => await LoadDataAsync();
 
+        // ==============================================================================================================
+        //
+        //      PRIVATE METHODS
+        //
+        // ==============================================================================================================
+
         private async Task LoadDataAsync()
         {
-            if (IsLoading) return;
+            if (IsLoading)
+            {
+                return;
+            }
             try
             {
                 IsLoading = true;
@@ -98,7 +122,6 @@ namespace WorkoutTrackerV2.ViewModels
 
                 var progress = await analyticsService.GetProgressForMuscleGroupAsync(MuscleGroup, SelectedDays);
 
-                // 1. Process Improvements and Colors
                 for (int i = 0; i < progress.Count; i++)
                 {
                     progress[i].ChartColor = ChartColors[i % ChartColors.Length];
@@ -115,7 +138,6 @@ namespace WorkoutTrackerV2.ViewModels
 
                 Exercises = new ObservableCollection<ExerciseProgress>(progress);
 
-                // 2. Calculate Aggregates
                 int sets = 0, reps = 0;
                 double maxWeight = 0;
                 foreach (var e in progress)
@@ -129,15 +151,14 @@ namespace WorkoutTrackerV2.ViewModels
                 TotalReps = reps;
                 MaxWeight = maxWeight;
 
-                // 3. Calculate Volume Distribution (The Fix is here)
                 if (TotalSets > 0 && progress.Count > 0)
                 {
                     var groupedVolume = progress
                         .GroupBy(e => {
-                            // Check the exercise model directly if the progress model is empty
                             if (!string.IsNullOrWhiteSpace(e.SubMuscleGroup) && e.SubMuscleGroup != "General")
+                            {
                                 return e.SubMuscleGroup;
-
+                            }                             
                             return "General";
                         })
                         .Select((g, index) => new VolumeDistributionItem
@@ -184,40 +205,29 @@ namespace WorkoutTrackerV2.ViewModels
                 IsLoading = false;
             }
         }
-        #endregion
 
-        #region "SELECT EXERCISE"
-        [RelayCommand]
-        private static async Task SelectExercise(ExerciseProgress exercise)
-        {
-            await Shell.Current.GoToAsync(Routes.ExerciseProgress, new Dictionary<string, object>
-            {
-                { "Exercise", exercise }
-            });
-        }
-        #endregion
-
-        #region "GO BACK"
-        [RelayCommand]
-        private static Task GoBack() => Shell.Current.GoToAsync(Routes.Back);
-        #endregion
-
-        #region "BUILD COMBINED CHART"
         private void BuildCombinedChart(ExerciseProgress? topExercise)
         {
-            if (topExercise?.Points.Count == 0 || topExercise is null) return;
+            if (topExercise?.Points.Count == 0 || topExercise is null)
+            {
+                return;
+            }
             CombinedChart = ChartHelper.BuildProgressChart(topExercise.Points);
         }
-        #endregion
     }
 
-    // Helper Class for the Breakdown List
+    // ==============================================================================================================
+    //
+    //      PUBLIC CLASSES
+    //
+    // ==============================================================================================================
+
     public class VolumeDistributionItem
     {
+        public string ColorHex { get; set; } = "#1F77F0";
+        public string DisplayPercentage => $"{Percentage:P0}";
         public string Name { get; set; } = string.Empty;
         public int Sets { get; set; }
-        public double Percentage { get; set; }
-        public string DisplayPercentage => $"{Percentage:P0}";
-        public string ColorHex { get; set; } = "#1F77F0";
+        public double Percentage { get; set; }       
     }
 }
