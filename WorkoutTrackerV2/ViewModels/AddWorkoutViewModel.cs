@@ -140,8 +140,13 @@ namespace WorkoutTrackerV2.ViewModels
         }
 
         [RelayCommand]
-        private void RemoveExercise(ExerciseGroup group)
+        private async Task RemoveExercise(ExerciseGroup group)
         {
+            bool confirmed = await Shell.Current.DisplayAlertAsync("Remove Exercise", $"Are you sure you want to remove this exercise?", "Yes", "No");
+            if (!confirmed)
+            {
+                return;
+            }
             ExerciseGroups.Remove(group);
             UpdateTotals();
         }
