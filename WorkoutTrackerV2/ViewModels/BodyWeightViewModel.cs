@@ -18,34 +18,30 @@ namespace WorkoutTrackerV2.ViewModels
         private static readonly SKPaint PaintText = new() { Color = ColorGrey, TextSize = 24 };
         private static readonly SKPaint PaintGrid = new() { Color = ColorGrid, StrokeWidth = 1 };
 
-        #region "OBSERVABLE PROPERTIES"
-        [ObservableProperty] private ObservableCollection<BodyWeightEntry> _entries = [];
-        [ObservableProperty] private LineChart? _chart;
         [ObservableProperty] private int _selectedDays = 90;
-        [ObservableProperty] private string _weightUnitLabel = "lbs";
 
-        // Add entry fields
-        [ObservableProperty] private string _newWeight = string.Empty;
-        [ObservableProperty] private string _newNotes = string.Empty;
-        [ObservableProperty] private DateTime _newDate = DateTime.Today;
-        [ObservableProperty] private bool _isAddingEntry;
-
-        // True only when there are >= 2 entries so the chart section shows/hides correctly.
-        [ObservableProperty] private bool _hasChart;
-
-        // Stats
-        [ObservableProperty] private string _currentWeightLabel = "--";
-        [ObservableProperty] private string _startingWeightLabel = "--";
-        [ObservableProperty] private string _changeLabel = "--";
-        [ObservableProperty] private string _changeColor = "#999999";
-        [ObservableProperty] private string _weeklyAverageLabel = "--";
-        [ObservableProperty] private string _personalLowLabel = "--";
-        [ObservableProperty] private string _personalHighLabel = "--";
         [ObservableProperty] private string _bmiLabel = "--";
         [ObservableProperty] private string _bmiCategory = string.Empty;
+        [ObservableProperty] private string _currentWeightLabel = "--";
+        [ObservableProperty] private string _changeLabel = "--";
+        [ObservableProperty] private string _changeColor = "#999999";
+        [ObservableProperty] private string _newWeight = string.Empty;
+        [ObservableProperty] private string _newNotes = string.Empty;
+        [ObservableProperty] private string _personalLowLabel = "--";
+        [ObservableProperty] private string _personalHighLabel = "--";
+        [ObservableProperty] private string _startingWeightLabel = "--";
+        [ObservableProperty] private string _weeklyAverageLabel = "--";
+        [ObservableProperty] private string _weightUnitLabel = "lbs";
+
+        [ObservableProperty] private bool _isAddingEntry;
         [ObservableProperty] private bool _hasBmi;
+        [ObservableProperty] private bool _hasChart;
         [ObservableProperty] private bool _hasData;
 
+        [ObservableProperty] private ObservableCollection<BodyWeightEntry> _entries = [];
+        [ObservableProperty] private LineChart? _chart;
+        [ObservableProperty] private DateTime _newDate = DateTime.Today;
+        
         public List<TimePeriodPillViewModel> TimePeriodPills { get; } =
         [
             new() { Label = "30d",  Days = 30  },
@@ -54,46 +50,31 @@ namespace WorkoutTrackerV2.ViewModels
             new() { Label = "1yr",  Days = 365 },
             new() { Label = "All",  Days = 0   },
         ];
-        #endregion
 
-        #region "PARTIAL METHODS"
+        // ==============================================================================================================
+        //
+        //      PARTIAL METHODS
+        //
+        // ==============================================================================================================
+
         partial void OnSelectedDaysChanged(int value)
         {
             foreach (var pill in TimePeriodPills)
+            {
                 pill.IsSelected = pill.Days == value;
+            }               
             _ = LoadDataAsync();
         }
-        #endregion
 
-        #region "LOAD DATA"
+        // ==============================================================================================================
+        //
+        //      PRIVATE RELAY COMMANDS
+        //
+        // ==============================================================================================================
+
         [RelayCommand]
         private async Task LoadData() => await LoadDataAsync();
 
-        private async Task LoadDataAsync()
-        {
-            if (IsLoading) return;
-            try
-            {
-                IsLoading = true;
-                WeightUnitLabel = settingsService.WeightUnit;
-
-                // Single DB fetch — stats recomputed in memory from same list.
-                var entries = await bodyWeightService.GetEntriesAsync(SelectedDays);
-                Entries = new ObservableCollection<BodyWeightEntry>(entries);
-                RefreshUI(entries);
-            }
-            catch (Exception ex)
-            {
-                ErrorMessage = ex.Message;
-            }
-            finally
-            {
-                IsLoading = false;
-            }
-        }
-        #endregion
-
-        #region "ADD ENTRY"
         [RelayCommand]
         private void ShowAddEntry() => IsAddingEntry = true;
 
@@ -111,8 +92,7 @@ namespace WorkoutTrackerV2.ViewModels
         {
             if (!double.TryParse(NewWeight, out double weight) || weight <= 0)
             {
-                await Shell.Current.DisplayAlertAsync(
-                    "Invalid Weight", "Please enter a valid weight.", "OK");
+                await Shell.Current.DisplayAlertAsync("Invalid Weight", "Please enter a valid weight.", "OK");
                 return;
             }
 
@@ -126,21 +106,16 @@ namespace WorkoutTrackerV2.ViewModels
                     Notes = NewNotes.Trim()
                 };
 
-                // Save to DB first so entry gets its auto-increment Id.
                 await bodyWeightService.SaveEntryAsync(entry);
 
-                // Reset form immediately so the UI feels responsive.
                 IsAddingEntry = false;
                 NewWeight = string.Empty;
                 NewNotes = string.Empty;
                 NewDate = DateTime.Today;
 
-                // Insert into the in-memory collection at the correct position
-                // (entries are ordered descending by date) — no DB reload needed.
                 var insertAt = Entries.TakeWhile(e => e.Date > entry.Date).Count();
                 Entries.Insert(insertAt, entry);
 
-                // Recompute stats and chart from the updated in-memory list.
                 RefreshUI(Entries.ToList());
             }
             catch (Exception ex)
@@ -148,9 +123,7 @@ namespace WorkoutTrackerV2.ViewModels
                 await Shell.Current.DisplayAlertAsync("Error", ex.Message, "OK");
             }
         }
-        #endregion
 
-        #region "DELETE ENTRY"
         [RelayCommand]
         private async Task DeleteEntry(BodyWeightEntry entry)
         {
@@ -158,13 +131,15 @@ namespace WorkoutTrackerV2.ViewModels
                 "Delete Entry",
                 $"Delete {entry.Weight:F1} {entry.Unit} on {entry.Date:MMM d}?",
                 "Delete", "Cancel");
-            if (!confirmed) return;
+            if (!confirmed)
+            {
+                return;
+            }
 
             try
             {
                 await bodyWeightService.DeleteEntryAsync(entry);
 
-                // Remove from in-memory collection and recompute — no DB reload.
                 Entries.Remove(entry);
                 RefreshUI(Entries.ToList());
             }
@@ -173,29 +148,28 @@ namespace WorkoutTrackerV2.ViewModels
                 await Shell.Current.DisplayAlertAsync("Error", ex.Message, "OK");
             }
         }
-        #endregion
 
-        #region "SET TIME PERIOD"
         [RelayCommand]
         private void SetTimePeriod(string days)
         {
             if (int.TryParse(days, out int result))
+            {
                 SelectedDays = result;
+            }          
         }
-        #endregion
 
-        #region "GO BACK"
         [RelayCommand]
         private static Task GoBack() => Shell.Current.GoToAsync(Routes.Back);
-        #endregion
 
-        #region "PRIVATE HELPERS"
+        // ==============================================================================================================
+        //
+        //      PRIVATE METHODS
+        //
+        // ==============================================================================================================
+
         private static TimeSpan TimeOfDay() =>
-            new TimeSpan(DateTime.Now.Hour, DateTime.Now.Minute, 0);
+            new(DateTime.Now.Hour, DateTime.Now.Minute, 0);
 
-        // RefreshUI: computes all stats and rebuilds the chart entirely in memory
-        // from the provided list. Called after load, save, and delete so none of
-        // those paths need a second DB round-trip.
         private void RefreshUI(List<BodyWeightEntry> entries)
         {
             HasData = entries.Count > 0;
@@ -210,7 +184,6 @@ namespace WorkoutTrackerV2.ViewModels
             var unit = WeightUnitLabel;
             var ordered = entries.OrderBy(e => e.Date).ToList();
 
-            // Convert all weights to the display unit in a single pass.
             var weights = ordered.Select(e =>
                 e.Unit == unit ? e.Weight
                 : e.Unit == "lbs" ? e.Weight * 0.453592
@@ -300,8 +273,6 @@ namespace WorkoutTrackerV2.ViewModels
             }
         }
 
-        // Accepts pre-ordered entries and pre-converted weights from RefreshUI
-        // so this method does zero sorting, zero unit conversion, zero SKColor.Parse.
         private void BuildChart(List<BodyWeightEntry> ordered, List<double> weights)
         {
             if (ordered.Count < 2)
@@ -311,7 +282,7 @@ namespace WorkoutTrackerV2.ViewModels
                 return;
             }
 
-            double best = weights.Min();  // lowest weight = personal best marker
+            double best = weights.Min(); 
 
             var chartEntries = ordered.Select((e, i) =>
             {
@@ -347,6 +318,30 @@ namespace WorkoutTrackerV2.ViewModels
                 LineAreaAlpha = 20
             };
         }
-        #endregion
+
+        private async Task LoadDataAsync()
+        {
+            if (IsLoading)
+            {
+                return;
+            }
+            try
+            {
+                IsLoading = true;
+                WeightUnitLabel = settingsService.WeightUnit;
+
+                var entries = await bodyWeightService.GetEntriesAsync(SelectedDays);
+                Entries = new ObservableCollection<BodyWeightEntry>(entries);
+                RefreshUI(entries);
+            }
+            catch (Exception ex)
+            {
+                ErrorMessage = ex.Message;
+            }
+            finally
+            {
+                IsLoading = false;
+            }
+        }
     }
 }
