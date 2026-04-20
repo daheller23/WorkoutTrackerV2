@@ -2,11 +2,9 @@
 {
     public class WorkoutSessionDetail
     {
-        public WorkoutSession Session { get; set; } = new();
         public int SetCount { get; set; } = 0;
         public int TotalReps { get; set; } = 0;
         public double TotalWeight { get; set; } = 0;
-        public List<WorkoutSet> Sets { get; set; } = [];
         public string MuscleGroup { get; set; } = string.Empty;
         public string MuscleGroupColor => MuscleGroup switch
         {
@@ -18,5 +16,8 @@
             "Core" => "#5DADE2",
             _ => "#1F77F0"
         };
+        public WorkoutSession Session { get; set; } = new();    
+        public List<WorkoutSet> Sets { get; set; } = [];
+
     }
 }

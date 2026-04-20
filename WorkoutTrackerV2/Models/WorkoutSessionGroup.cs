@@ -2,16 +2,10 @@
 
 namespace WorkoutTrackerV2.Models
 {
-    public class WorkoutSessionGroup : ObservableCollection<WorkoutSessionDetail>
+    public class WorkoutSessionGroup(string title, string subtitle, IEnumerable<WorkoutSessionDetail> items) : ObservableCollection<WorkoutSessionDetail>(items)
     {
-        public string Title { get; set; } = string.Empty;
-        public string Subtitle { get; set; } = string.Empty;
+        public string Subtitle { get; set; } = subtitle;
+        public string Title { get; set; } = title;   
         public bool IsExpanded { get; set; } = true;
-
-        public WorkoutSessionGroup(string title, string subtitle, IEnumerable<WorkoutSessionDetail> items) : base(items)
-        {
-            Title = title;
-            Subtitle = subtitle;
-        }
     }
 }

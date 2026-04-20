@@ -6,11 +6,12 @@ namespace WorkoutTrackerV2.Models
     {
         [PrimaryKey, AutoIncrement]
         public int Id { get; set; } = 0;
+        public bool IsCustom { get; set; } = false;
         public string Name { get; set; } = string.Empty;
         public string MuscleGroup { get; set; } = string.Empty;
         public string SubMuscleGroup { get; set; } = "General";
         public DateTime CreatedDate { get; set; } = DateTime.Now;
-        public bool IsCustom { get; set; } = false;
+        
         public Color MuscleGroupColor => MuscleGroup switch
         {
             "Chest" => Color.FromArgb("#4A90D9"),

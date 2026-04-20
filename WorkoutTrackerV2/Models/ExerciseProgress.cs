@@ -3,27 +3,33 @@
     public class ExerciseProgress
     {
         public int ExerciseId { get; set; }
-        public string ExerciseName { get; set; } = string.Empty;
-        public string MuscleGroup { get; set; } = string.Empty;
-        public string SubMuscleGroup { get; set; } = string.Empty;
-        public List<WorkoutSet> Sets { get; set; } = [];
-        public double MaxWeight { get; set; }
         public int RepsAtMaxWeight { get; set; }
-        public double AverageWeight { get; set; }
         public int TotalReps { get; set; }
-        public List<ProgressPoint> Points { get; set; } = [];
+        public double AverageWeight { get; set; }
         public double EarliestMaxWeight { get; set; }
         public double LatestMaxWeight { get; set; }
-        public bool IsTrending => LatestMaxWeight >= EarliestMaxWeight;
+        public double MaxWeight { get; set; }
         public string ChartColor { get; set; } = "#1F77F0";
+        public string ExerciseName { get; set; } = string.Empty;
         public string ImprovementColor { get; set; } = "#4CAF50";
         public string ImprovementLabel { get; set; } = string.Empty;
+        public string MuscleGroup { get; set; } = string.Empty;
+        public string SubMuscleGroup { get; set; } = string.Empty;
         public bool HasImprovement { get; set; }
+        public bool IsTrending => LatestMaxWeight >= EarliestMaxWeight;
+        public List<WorkoutSet> Sets { get; set; } = [];      
+        public List<ProgressPoint> Points { get; set; } = [];      
     }
+
+    // ==============================================================================================================
+    //
+    //      PUBLIC CLASSES
+    //
+    // ==============================================================================================================
 
     public class ProgressPoint
     {
-        public DateTime Date { get; set; }
         public double MaxWeight { get; set; }
+        public DateTime Date { get; set; }   
     }
 }
