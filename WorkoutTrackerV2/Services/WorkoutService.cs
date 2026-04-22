@@ -13,9 +13,11 @@ namespace WorkoutTrackerV2.Services
         private bool _initialized;
         private List<Exercise>? _exerciseCache;
 
-        public WorkoutService()
+        public WorkoutService(string? dbPath = null)
         {
-            _dbPath = Path.Combine(FileSystem.AppDataDirectory, DbFileName);
+            _dbPath = string.IsNullOrEmpty(dbPath)
+                    ? Path.Combine(FileSystem.AppDataDirectory, DbFileName)
+                    : dbPath;
         }
 
         // ==============================================================================================================
@@ -26,12 +28,18 @@ namespace WorkoutTrackerV2.Services
 
         public async Task InitializeAsync()
         {
-            if (_initialized) return;
+            if (_initialized)
+            {
+                return;
+            }
 
             await _initLock.WaitAsync();
             try
             {
-                if (_initialized) return;
+                if (_initialized)
+                {
+                    return;
+                }
 
                 _database = new SQLiteAsyncConnection(_dbPath);
                 await _database.CreateTableAsync<Exercise>();
@@ -43,8 +51,10 @@ namespace WorkoutTrackerV2.Services
                 await ExerciseMigrationHelper.RunSubMuscleMigrationAsync(_database);
 
                 if (await _database.Table<Exercise>().CountAsync() == 0)
+                {
                     await SeedDefaultExercises();
-
+                }
+                    
                 _initialized = true;
             }
             finally
