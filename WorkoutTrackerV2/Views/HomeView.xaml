@@ -215,25 +215,6 @@
 
                                 <Grid ColumnDefinitions="Auto,*,Auto" Padding="16,14">
                                     <Grid.GestureRecognizers>
-                                        <TapGestureRecognizer Command="{Binding ViewBodyWeightCommand}"/>
-                                    </Grid.GestureRecognizers>
-                                    <Border Grid.Column="0" BackgroundColor="#F3E5F5" StrokeThickness="0" WidthRequest="40" HeightRequest="40" Margin="0,0,16,0">
-                                        <Border.StrokeShape>
-                                            <RoundRectangle CornerRadius="10"/>
-                                        </Border.StrokeShape>
-                                        <Label Text="&#x2696;&#xFE0F;" FontSize="20" HorizontalOptions="Center" VerticalOptions="Center"/>
-                                    </Border>
-                                    <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
-                                        <Label Text="Body Weight" FontSize="15" FontAttributes="Bold" TextColor="#1A1A1A"/>
-                                        <Label Text="Log and track your weight over time" FontSize="13" TextColor="#737373"/>
-                                    </VerticalStackLayout>
-                                    <Label Grid.Column="2" Text="›" FontSize="24" TextColor="#D1D1D1" VerticalOptions="Center"/>
-                                </Grid>
-
-                                <BoxView HeightRequest="1" Color="#F4F4F4" Margin="72,0,0,0"/>
-
-                                <Grid ColumnDefinitions="Auto,*,Auto" Padding="16,14">
-                                    <Grid.GestureRecognizers>
                                         <TapGestureRecognizer Command="{Binding ViewPlateCalculatorCommand}"/>
                                     </Grid.GestureRecognizers>
                                     <Border Grid.Column="0" BackgroundColor="#EEF4FF" StrokeThickness="0" WidthRequest="40" HeightRequest="40" Margin="0,0,16,0">

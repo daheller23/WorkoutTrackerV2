@@ -71,9 +71,6 @@
 		<MauiXaml Update="Views\AnalyticsView.xaml">
 			<Generator>MSBuild:Compile</Generator>
 		</MauiXaml>
-		<MauiXaml Update="Views\BodyWeightView.xaml">
-		  <Generator>MSBuild:Compile</Generator>
-		</MauiXaml>
 		<MauiXaml Update="Views\CreateExerciseView.xaml">
 		  <Generator>MSBuild:Compile</Generator>
 		</MauiXaml>
