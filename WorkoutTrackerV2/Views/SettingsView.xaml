@@ -232,7 +232,7 @@
                             <BoxView HeightRequest="1" Color="#F4F5F7"/>
 
                             <VerticalStackLayout Padding="20,16" Spacing="12">
-                                <Label Text="Height (for BMI tracking)" FontSize="15" FontAttributes="Bold" TextColor="#1A1A1A"/>
+                                <Label Text="Height" FontSize="15" FontAttributes="Bold" TextColor="#1A1A1A"/>
                                 <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="12">
                                     <Border Grid.Column="0" BackgroundColor="#F4F5F7" StrokeThickness="0" HeightRequest="44">
                                         <Border.StrokeShape>

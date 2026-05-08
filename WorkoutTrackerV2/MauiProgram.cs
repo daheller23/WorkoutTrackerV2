@@ -1,10 +1,10 @@
 ﻿using Microcharts.Maui;
-using Microsoft.Extensions.Logging;
 using Plugin.LocalNotification;
 using SkiaSharp.Views.Maui.Controls.Hosting;
 using WorkoutTrackerV2.Services;
 using WorkoutTrackerV2.ViewModels;
 using WorkoutTrackerV2.Views;
+using CommunityToolkit.Maui;
 
 namespace WorkoutTrackerV2
 {
@@ -17,6 +17,7 @@ namespace WorkoutTrackerV2
             builder
                 .UseMauiApp<App>()
                 .UseSkiaSharp()
+                .UseMauiCommunityToolkit()
                 .UseMicrocharts()
                 .UseLocalNotification(config =>
                 {
