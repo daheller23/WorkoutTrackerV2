@@ -6,21 +6,16 @@
     /// </summary>
     public class SettingsService : ISettingsService
     {
-        private const string KeyWeightUnit = "weight_unit";
+        private const string KeyBodyWeight = "body_weight";
         private const string KeyDarkMode = "dark_mode";
         private const string KeyHeightCm = "height_cm";
         private const string KeyRmFormula = "rm_formula";
+        private const string KeyWeightUnit = "weight_unit";
 
-        public string WeightUnit
+        public double BodyWeight
         {
-            get => Preferences.Get(KeyWeightUnit, "lbs");
-            set => Preferences.Set(KeyWeightUnit, value);
-        }
-
-        public bool IsDarkMode
-        {
-            get => Preferences.Get(KeyDarkMode, false);
-            set => Preferences.Set(KeyDarkMode, value);
+            get => Preferences.Get(KeyBodyWeight, 0.0);
+            set => Preferences.Set(KeyBodyWeight, value);
         }
 
         public double HeightCm
@@ -29,10 +24,22 @@
             set => Preferences.Set(KeyHeightCm, value);
         }
 
+        public bool IsDarkMode
+        {
+            get => Preferences.Get(KeyDarkMode, false);
+            set => Preferences.Set(KeyDarkMode, value);
+        }
+
         public string RmFormula
         {
             get => Preferences.Get(KeyRmFormula, "Epley");
             set => Preferences.Set(KeyRmFormula, value);
+        }
+
+        public string WeightUnit
+        {
+            get => Preferences.Get(KeyWeightUnit, "lbs");
+            set => Preferences.Set(KeyWeightUnit, value);
         }
     }
 }

@@ -6,9 +6,9 @@ namespace WorkoutTrackerV2.ViewModels
 {
     public partial class SettingsViewModel(ISettingsService settingsService, IWorkoutService workoutService) : BaseViewModel
     {
-        [ObservableProperty] private bool _isDarkMode;
-
+        [ObservableProperty] private string _bodyWeight = string.Empty;
         [ObservableProperty] private string _heightCm = string.Empty;
+        [ObservableProperty] private bool _isDarkMode;
 
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(IsEpleySelected))]
@@ -58,12 +58,15 @@ namespace WorkoutTrackerV2.ViewModels
         [RelayCommand]
         private void LoadSettings()
         {
-            WeightUnit = settingsService.WeightUnit;
-            IsDarkMode = settingsService.IsDarkMode;
-            RmFormula = settingsService.RmFormula;
+            BodyWeight = settingsService.BodyWeight > 0
+                ? settingsService.BodyWeight.ToString("F1") // F1 allows for decimals (e.g., 185.5)
+                : string.Empty;
             HeightCm = settingsService.HeightCm > 0
                 ? settingsService.HeightCm.ToString("F0")
                 : string.Empty;
+            IsDarkMode = settingsService.IsDarkMode;          
+            RmFormula = settingsService.RmFormula;
+            WeightUnit = settingsService.WeightUnit;
         }
 
         [RelayCommand]
@@ -79,6 +82,15 @@ namespace WorkoutTrackerV2.ViewModels
             {
                 settingsService.HeightCm = cm;
             }           
+        }
+
+        [RelayCommand]
+        private void SaveBodyWeight()
+        {
+            if (double.TryParse(BodyWeight, out double weight) && weight > 0)
+            {
+                settingsService.BodyWeight = weight;
+            }
         }
 
         [RelayCommand]

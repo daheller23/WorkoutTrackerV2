@@ -125,8 +125,16 @@ namespace WorkoutTrackerV2.ViewModels
 
         private void CalculateStrengthRank(double oneRepMax)
         {
-            double bodyWeight = 80;
-            double ratio = oneRepMax / bodyWeight;
+            if (settingsService.BodyWeight <= 0)
+            {
+                CurrentRatioText = "Set bodyweight in settings";
+                StrengthLevel = "Unknown";
+                StrengthPercentage = 0;
+                WeightToNextLevel = "N/A";
+                return;
+            }
+
+            double ratio = oneRepMax / settingsService.BodyWeight;
             CurrentRatioText = $"{ratio:F2}x BW";
 
             if (ratio < 0.75)
@@ -157,8 +165,9 @@ namespace WorkoutTrackerV2.ViewModels
 
             double[] goals = { 0.75, 1.25, 1.75, 2.5 };
             double nextGoal = goals.FirstOrDefault(g => g > ratio);
+
             WeightToNextLevel = nextGoal > 0
-                ? $"+{Math.Round((nextGoal * bodyWeight) - oneRepMax, 1)} {WeightUnitLabel} to level up"
+                ? $"+{Math.Round((nextGoal * settingsService.BodyWeight) - oneRepMax, 1)} {WeightUnitLabel} to level up"
                 : "Ultimate Rank Achieved!";
         }
 

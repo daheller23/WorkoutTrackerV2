@@ -239,17 +239,39 @@
                                             <RoundRectangle CornerRadius="10"/>
                                         </Border.StrokeShape>
                                         <Entry Text="{Binding HeightCm}"
-                                               Placeholder="e.g. 178" Keyboard="Numeric"
-                                               BackgroundColor="Transparent" TextColor="#1A1A1A"
-                                               FontSize="15" FontAttributes="Bold"
-                                               HorizontalTextAlignment="Center" Margin="8,0"/>
+                                            Placeholder="e.g. 178" Keyboard="Numeric"
+                                            BackgroundColor="Transparent" TextColor="#1A1A1A"
+                                            FontSize="15" FontAttributes="Bold"
+                                            HorizontalTextAlignment="Center" Margin="8,0"/>
                                     </Border>
                                     <Label Grid.Column="1" Text="cm" FontSize="15" FontAttributes="Bold" TextColor="#A3A3A3" VerticalOptions="Center"/>
                                     <Button Grid.Column="2" Text="Save"
-                                            Command="{Binding SaveHeightCommand}"
-                                            BackgroundColor="#1F77F0" TextColor="#FFFFFF"
-                                            FontAttributes="Bold" FontSize="13" WidthRequest="70"
-                                            Padding="0" CornerRadius="10" BorderWidth="0"/>
+                                        Command="{Binding SaveHeightCommand}"
+                                        BackgroundColor="#1F77F0" TextColor="#FFFFFF"
+                                        FontAttributes="Bold" FontSize="13" WidthRequest="70"
+                                        Padding="0" CornerRadius="10" BorderWidth="0"/>
+                                </Grid>
+                            </VerticalStackLayout>
+
+                            <VerticalStackLayout Padding="20,16" Spacing="12">
+                                <Label Text="Bodyweight" FontSize="15" FontAttributes="Bold" TextColor="#1A1A1A"/>
+                                <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="12">
+                                    <Border Grid.Column="0" BackgroundColor="#F4F5F7" StrokeThickness="0" HeightRequest="44">
+                                        <Border.StrokeShape>
+                                            <RoundRectangle CornerRadius="10"/>
+                                        </Border.StrokeShape>
+                                        <Entry Text="{Binding BodyWeight}"
+                                           Placeholder="e.g. 185" Keyboard="Numeric"
+                                           BackgroundColor="Transparent" TextColor="#1A1A1A"
+                                           FontSize="15" FontAttributes="Bold"
+                                           HorizontalTextAlignment="Center" Margin="8,0"/>
+                                    </Border>
+                                    <Label Grid.Column="1" Text="{Binding WeightUnit}" FontSize="15" FontAttributes="Bold" TextColor="#A3A3A3" VerticalOptions="Center"/>
+                                    <Button Grid.Column="2" Text="Save"
+                                        Command="{Binding SaveBodyWeightCommand}"
+                                        BackgroundColor="#1F77F0" TextColor="#FFFFFF"
+                                        FontAttributes="Bold" FontSize="13" WidthRequest="70"
+                                        Padding="0" CornerRadius="10" BorderWidth="0"/>
                                 </Grid>
                             </VerticalStackLayout>
 
