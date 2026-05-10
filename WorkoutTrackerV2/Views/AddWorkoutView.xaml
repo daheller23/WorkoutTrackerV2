@@ -412,10 +412,10 @@
                         </Grid>
 
                         <HorizontalStackLayout Spacing="6" HorizontalOptions="Center">
-                            <Button Text="1m" Command="{Binding TimerViewModel.StartPresetCommand}" CommandParameter="{x:Int32 60}" BackgroundColor="#FFFFFF" TextColor="#1F77F0" FontAttributes="Bold" FontSize="11" Padding="10,4" CornerRadius="8" BorderWidth="0"/>
-                            <Button Text="90s" Command="{Binding TimerViewModel.StartPresetCommand}" CommandParameter="{x:Int32 90}" BackgroundColor="#FFFFFF" TextColor="#1F77F0" FontAttributes="Bold" FontSize="11" Padding="10,4" CornerRadius="8" BorderWidth="0"/>
-                            <Button Text="2m" Command="{Binding TimerViewModel.StartPresetCommand}" CommandParameter="{x:Int32 120}" BackgroundColor="#FFFFFF" TextColor="#1F77F0" FontAttributes="Bold" FontSize="11" Padding="10,4" CornerRadius="8" BorderWidth="0"/>
-                            <Button Text="3m" Command="{Binding TimerViewModel.StartPresetCommand}" CommandParameter="{x:Int32 180}" BackgroundColor="#FFFFFF" TextColor="#1F77F0" FontAttributes="Bold" FontSize="11" Padding="10,4" CornerRadius="8" BorderWidth="0"/>
+                            <Button Text="1m" Command="{Binding TimerViewModel.StartPresetCommand}" CommandParameter="60" BackgroundColor="#FFFFFF" TextColor="#1F77F0" FontAttributes="Bold" FontSize="11" Padding="10,4" CornerRadius="8" BorderWidth="0"/>
+                            <Button Text="90s" Command="{Binding TimerViewModel.StartPresetCommand}" CommandParameter="90" BackgroundColor="#FFFFFF" TextColor="#1F77F0" FontAttributes="Bold" FontSize="11" Padding="10,4" CornerRadius="8" BorderWidth="0"/>
+                            <Button Text="2m" Command="{Binding TimerViewModel.StartPresetCommand}" CommandParameter="120" BackgroundColor="#FFFFFF" TextColor="#1F77F0" FontAttributes="Bold" FontSize="11" Padding="10,4" CornerRadius="8" BorderWidth="0"/>
+                            <Button Text="3m" Command="{Binding TimerViewModel.StartPresetCommand}" CommandParameter="180" BackgroundColor="#FFFFFF" TextColor="#1F77F0" FontAttributes="Bold" FontSize="11" Padding="10,4" CornerRadius="8" BorderWidth="0"/>
                         </HorizontalStackLayout>
                     </VerticalStackLayout>
 

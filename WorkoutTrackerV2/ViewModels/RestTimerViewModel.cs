@@ -59,11 +59,12 @@ namespace WorkoutTrackerV2.ViewModels
         // ==============================================================================================================
 
         [RelayCommand]
-        private void StartPreset(int seconds)
+        private void StartPreset(string seconds)
         {
-            if (seconds > 0)
+            int secondsInt = Int32.Parse(seconds.Trim());  
+            if (secondsInt > 0)
             {
-                _timer.Start(seconds);
+                _timer.Start(secondsInt);
             }
         }
 
