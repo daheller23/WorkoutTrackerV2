@@ -1,27 +1,19 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <Shell
-    x:Class="WorkoutTrackerV2.AppShell"
+x:Class="WorkoutTrackerV2.AppShell"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
     xmlns:views="clr-namespace:WorkoutTrackerV2.Views"
     Title="Workout Tracker"
-    Shell.BackgroundColor="#FFFFFF"
-    Shell.ForegroundColor="#1F77F0"
-    Shell.TitleColor="#1F77F0"
-    Shell.TabBarBackgroundColor="#FFFFFF"
-    Shell.TabBarForegroundColor="#1F77F0"
-    Shell.TabBarTitleColor="#1F77F0"
-    Shell.TabBarUnselectedColor="#999999">
+    Shell.BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark={StaticResource OffBlack}}"
+    Shell.ForegroundColor="{AppThemeBinding Light=#1F77F0, Dark=#5B9CFF}"
+    Shell.TitleColor="{AppThemeBinding Light=#1F77F0, Dark=#5B9CFF}"
+    Shell.TabBarBackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark={StaticResource Gray950}}"
+    Shell.TabBarForegroundColor="{AppThemeBinding Light=#1F77F0, Dark=#5B9CFF}"
+    Shell.TabBarTitleColor="{AppThemeBinding Light=#1F77F0, Dark=#5B9CFF}"
+    Shell.TabBarUnselectedColor="{AppThemeBinding Light=#999999, Dark={StaticResource Gray500}}">
 
-    <!--
-        ContentTemplate uses DataTemplate for lazy instantiation — each tab page
-        is constructed only on first visit, not at app startup. Do not change to
-        direct Content= references or all four pages would be built at launch.
-
-        Routes declared here (Home, Workout, History, Analytics) are registered
-        by Shell automatically — they must NOT also be registered in AppShell.xaml.cs
-        or a duplicate route conflict occurs.
-    -->
     <TabBar>
         <ShellContent
             Title="🏠 Home"
