@@ -7,70 +7,64 @@
              xmlns:models="clr-namespace:WorkoutTrackerV2.Models"
              xmlns:controls="clr-namespace:WorkoutTrackerV2.Controls"
              x:DataType="vm:AnalyticsViewModel"
-             BackgroundColor="#F4F5F7">
+             BackgroundColor="{AppThemeBinding Light=#F4F5F7, Dark=#1F1F1F}">
 
     <ContentPage.Resources>
         <converters:BoolToTrendConverter x:Key="BoolToTrendConverter"/>
         <converters:IsNotEmptyConverter x:Key="IsNotEmptyConverter"/>
+        <converters:InverseBoolConverter x:Key="InverseBoolConverter"/>
     </ContentPage.Resources>
 
     <Shell.NavBarIsVisible>False</Shell.NavBarIsVisible>
 
     <Grid RowDefinitions="Auto,*" RowSpacing="0">
 
-        <Border Grid.Row="0" BackgroundColor="#FFFFFF" StrokeThickness="0" ZIndex="1">
+        <Border Grid.Row="0" BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#212121}" StrokeThickness="0" ZIndex="1">
             <Border.Shadow>
-                <Shadow Brush="#000000" Offset="0,4" Radius="12" Opacity="0.04" />
+                <Shadow Brush="#000000" Offset="0,4" Radius="12" Opacity="0.15" />
             </Border.Shadow>
             <VerticalStackLayout Padding="24,16,24,20" Spacing="24">
 
                 <VerticalStackLayout Spacing="2">
                     <Label Text="Analytics"
                            FontSize="32" FontAttributes="Bold"
-                           TextColor="#1A1A1A" CharacterSpacing="0.5"/>
-                    <Label Text="Track your progress over time" FontSize="14" TextColor="#737373"/>
+                           TextColor="{AppThemeBinding Light=#1A1A1A, Dark=#FFFFFF}" CharacterSpacing="0.5"/>
+                    <Label Text="Track your progress over time" FontSize="14" TextColor="{AppThemeBinding Light=#737373, Dark=#CCCCCC}"/>
                 </VerticalStackLayout>
 
                 <VerticalStackLayout Spacing="8">
-                    <Label Text="TIME PERIOD" FontSize="11" FontAttributes="Bold" TextColor="#A3A3A3" CharacterSpacing="1"/>
-                    <Border BackgroundColor="#F4F5F7" StrokeThickness="0" Padding="2">
+                    <Label Text="TIME PERIOD" FontSize="11" FontAttributes="Bold" TextColor="{AppThemeBinding Light=#A3A3A3, Dark=#999999}" CharacterSpacing="1"/>
+                    <Border BackgroundColor="{AppThemeBinding Light=#F4F5F7, Dark=#121212}" StrokeThickness="0" Padding="2">
                         <Border.StrokeShape>
                             <RoundRectangle CornerRadius="10"/>
                         </Border.StrokeShape>
                         <FlexLayout Direction="Row" JustifyContent="SpaceBetween" AlignItems="Center" BindableLayout.ItemsSource="{Binding TimePeriodPills}">
                             <BindableLayout.ItemTemplate>
                                 <DataTemplate x:DataType="vm:TimePeriodPillViewModel">
-                                    <Border StrokeThickness="0" Padding="0" FlexLayout.Grow="1" Margin="2">
-                                        <Border.StrokeShape>
-                                            <RoundRectangle CornerRadius="8"/>
-                                        </Border.StrokeShape>
-                                        <Border.Triggers>
-                                            <DataTrigger TargetType="Border" Binding="{Binding IsSelected}" Value="True">
-                                                <Setter Property="BackgroundColor" Value="#FFFFFF"/>
-                                                <Setter Property="Shadow">
-                                                    <Setter.Value>
-                                                        <Shadow Brush="#000000" Offset="0,2" Radius="4" Opacity="0.05"/>
-                                                    </Setter.Value>
-                                                </Setter>
-                                            </DataTrigger>
-                                            <DataTrigger TargetType="Border" Binding="{Binding IsSelected}" Value="False">
-                                                <Setter Property="BackgroundColor" Value="Transparent"/>
-                                            </DataTrigger>
-                                        </Border.Triggers>
-                                        <Border.GestureRecognizers>
+
+                                    <Grid FlexLayout.Grow="1" Margin="2">
+                                        <Grid.GestureRecognizers>
                                             <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type vm:AnalyticsViewModel}}, Path=SetTimePeriodCommand}" CommandParameter="{Binding DaysString}"/>
-                                        </Border.GestureRecognizers>
-                                        <Label Text="{Binding Label}" FontSize="13" FontAttributes="Bold" HorizontalOptions="Center" Padding="0,10">
-                                            <Label.Triggers>
-                                                <DataTrigger TargetType="Label" Binding="{Binding IsSelected}" Value="True">
-                                                    <Setter Property="TextColor" Value="#1A1A1A"/>
-                                                </DataTrigger>
-                                                <DataTrigger TargetType="Label" Binding="{Binding IsSelected}" Value="False">
-                                                    <Setter Property="TextColor" Value="#A3A3A3"/>
-                                                </DataTrigger>
-                                            </Label.Triggers>
-                                        </Label>
-                                    </Border>
+                                        </Grid.GestureRecognizers>
+
+                                        <Border BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#333333}" StrokeThickness="0" Padding="0" IsVisible="{Binding IsSelected}">
+                                            <Border.StrokeShape>
+                                                <RoundRectangle CornerRadius="8"/>
+                                            </Border.StrokeShape>
+                                            <Border.Shadow>
+                                                <Shadow Brush="#000000" Offset="0,2" Radius="4" Opacity="0.15"/>
+                                            </Border.Shadow>
+                                            <Label Text="{Binding Label}" FontSize="13" FontAttributes="Bold" HorizontalOptions="Center" Padding="0,10" TextColor="{AppThemeBinding Light=#1A1A1A, Dark=#FFFFFF}"/>
+                                        </Border>
+
+                                        <Border BackgroundColor="Transparent" StrokeThickness="0" Padding="0" IsVisible="{Binding IsSelected, Converter={StaticResource InverseBoolConverter}}">
+                                            <Border.StrokeShape>
+                                                <RoundRectangle CornerRadius="8"/>
+                                            </Border.StrokeShape>
+                                            <Label Text="{Binding Label}" FontSize="13" FontAttributes="Bold" HorizontalOptions="Center" Padding="0,10" TextColor="{AppThemeBinding Light=#A3A3A3, Dark=#999999}"/>
+                                        </Border>
+                                    </Grid>
+
                                 </DataTemplate>
                             </BindableLayout.ItemTemplate>
                         </FlexLayout>
@@ -83,7 +77,7 @@
             <VerticalStackLayout Padding="20,24,20,40" Spacing="24">
 
                 <VerticalStackLayout Spacing="10">
-                    <Label Text="OVERVIEW" FontSize="12" FontAttributes="Bold" TextColor="#A3A3A3" CharacterSpacing="1" Margin="4,0,0,0"/>
+                    <Label Text="OVERVIEW" FontSize="12" FontAttributes="Bold" TextColor="{AppThemeBinding Light=#A3A3A3, Dark=#999999}" CharacterSpacing="1" Margin="4,0,0,0"/>
                     <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto" ColumnSpacing="12" RowSpacing="12">
 
                         <Border Grid.Row="0" Grid.Column="0" BackgroundColor="#1F77F0" StrokeThickness="0">
@@ -137,57 +131,57 @@
                     </Grid>
                 </VerticalStackLayout>
 
-                <Border BackgroundColor="#FFFFFF" StrokeThickness="0">
+                <Border BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#212121}" StrokeThickness="0">
                     <Border.StrokeShape>
                         <RoundRectangle CornerRadius="14"/>
                     </Border.StrokeShape>
                     <Border.Shadow>
-                        <Shadow Brush="#000000" Offset="0,2" Radius="8" Opacity="0.04" />
+                        <Shadow Brush="#000000" Offset="0,2" Radius="8" Opacity="0.15" />
                     </Border.Shadow>
                     <Grid ColumnDefinitions="Auto,*" Padding="16" ColumnSpacing="16">
-                        <Border Grid.Column="0" BackgroundColor="#F0F7FF" StrokeThickness="0" WidthRequest="44" HeightRequest="44" VerticalOptions="Start">
+                        <Border Grid.Column="0" BackgroundColor="{AppThemeBinding Light=#F0F7FF, Dark=#0F243B}" StrokeThickness="0" WidthRequest="44" HeightRequest="44" VerticalOptions="Start">
                             <Border.StrokeShape>
                                 <RoundRectangle CornerRadius="12"/>
                             </Border.StrokeShape>
                             <Label Text="⭐" FontSize="20" HorizontalOptions="Center" VerticalOptions="Center"/>
                         </Border>
                         <VerticalStackLayout Grid.Column="1" Spacing="4" VerticalOptions="Center">
-                            <Label Text="BEST WEEK" FontSize="11" FontAttributes="Bold" TextColor="#A3A3A3" CharacterSpacing="1"/>
-                            <Label Text="{Binding BestWeekLabel}" FontSize="15" FontAttributes="Bold" TextColor="#1F77F0"/>
+                            <Label Text="BEST WEEK" FontSize="11" FontAttributes="Bold" TextColor="{AppThemeBinding Light=#A3A3A3, Dark=#999999}" CharacterSpacing="1"/>
+                            <Label Text="{Binding BestWeekLabel}" FontSize="15" FontAttributes="Bold" TextColor="{AppThemeBinding Light=#1F77F0, Dark=#5B9CFF}"/>
                             <HorizontalStackLayout Spacing="4">
-                                <Label Text="{Binding BestWeekVolume, StringFormat='{0:F0}'}" FontSize="13" TextColor="#737373" FontAttributes="Bold"/>
-                                <Label Text="{Binding WeightUnitLabel, StringFormat='total {0} volume'}" FontSize="13" TextColor="#737373"/>
+                                <Label Text="{Binding BestWeekVolume, StringFormat='{0:F0}'}" FontSize="13" TextColor="{AppThemeBinding Light=#737373, Dark=#CCCCCC}" FontAttributes="Bold"/>
+                                <Label Text="{Binding WeightUnitLabel, StringFormat='total {0} volume'}" FontSize="13" TextColor="{AppThemeBinding Light=#737373, Dark=#CCCCCC}"/>
                             </HorizontalStackLayout>
-                            <Label Text="{Binding BestWeekMuscleGroups}" FontSize="12" TextColor="#A3A3A3" IsVisible="{Binding BestWeekMuscleGroups, Converter={StaticResource IsNotEmptyConverter}}"/>
+                            <Label Text="{Binding BestWeekMuscleGroups}" FontSize="12" TextColor="{AppThemeBinding Light=#A3A3A3, Dark=#999999}" IsVisible="{Binding BestWeekMuscleGroups, Converter={StaticResource IsNotEmptyConverter}}"/>
                         </VerticalStackLayout>
                     </Grid>
                 </Border>
 
-                <Border BackgroundColor="#FFFFFF" StrokeThickness="0">
+                <Border BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#212121}" StrokeThickness="0">
                     <Border.StrokeShape>
                         <RoundRectangle CornerRadius="14"/>
                     </Border.StrokeShape>
                     <Border.Shadow>
-                        <Shadow Brush="#000000" Offset="0,2" Radius="8" Opacity="0.04" />
+                        <Shadow Brush="#000000" Offset="0,2" Radius="8" Opacity="0.15" />
                     </Border.Shadow>
                     <Grid ColumnDefinitions="Auto,*" Padding="16" ColumnSpacing="16">
                         <Label Grid.Column="0" Text="{Binding InsightEmoji}" FontSize="36" VerticalOptions="Center"/>
                         <VerticalStackLayout Grid.Column="1" Spacing="4" VerticalOptions="Center">
-                            <Label Text="INSIGHT" FontSize="11" FontAttributes="Bold" TextColor="#A3A3A3" CharacterSpacing="1"/>
-                            <Label Text="{Binding InsightMessage}" FontSize="14" TextColor="#1A1A1A" LineBreakMode="WordWrap"/>
+                            <Label Text="INSIGHT" FontSize="11" FontAttributes="Bold" TextColor="{AppThemeBinding Light=#A3A3A3, Dark=#999999}" CharacterSpacing="1"/>
+                            <Label Text="{Binding InsightMessage}" FontSize="14" TextColor="{AppThemeBinding Light=#1A1A1A, Dark=#FFFFFF}" LineBreakMode="WordWrap"/>
                         </VerticalStackLayout>
                     </Grid>
                 </Border>
 
                 <VerticalStackLayout Spacing="10">
-                    <Label Text="TOP EXERCISES" FontSize="12" FontAttributes="Bold" TextColor="#A3A3A3" CharacterSpacing="1" Margin="4,0,0,0"/>
+                    <Label Text="TOP EXERCISES" FontSize="12" FontAttributes="Bold" TextColor="{AppThemeBinding Light=#A3A3A3, Dark=#999999}" CharacterSpacing="1" Margin="4,0,0,0"/>
 
-                    <Border BackgroundColor="#FFFFFF" StrokeThickness="0">
+                    <Border BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#212121}" StrokeThickness="0">
                         <Border.StrokeShape>
                             <RoundRectangle CornerRadius="14"/>
                         </Border.StrokeShape>
                         <Border.Shadow>
-                            <Shadow Brush="#000000" Offset="0,2" Radius="8" Opacity="0.04" />
+                            <Shadow Brush="#000000" Offset="0,2" Radius="8" Opacity="0.15" />
                         </Border.Shadow>
 
                         <VerticalStackLayout BindableLayout.ItemsSource="{Binding TopExercises}" Spacing="0">
@@ -195,8 +189,8 @@
                             <BindableLayout.EmptyView>
                                 <VerticalStackLayout Padding="20,40" Spacing="12" HorizontalOptions="Center">
                                     <Label Text="📊" FontSize="48" HorizontalOptions="Center"/>
-                                    <Label Text="No exercise data yet" FontSize="15" FontAttributes="Bold" TextColor="#1A1A1A" HorizontalOptions="Center"/>
-                                    <Label Text="Log more sets to see your top movements" FontSize="13" TextColor="#A3A3A3" HorizontalOptions="Center"/>
+                                    <Label Text="No exercise data yet" FontSize="15" FontAttributes="Bold" TextColor="{AppThemeBinding Light=#1A1A1A, Dark=#FFFFFF}" HorizontalOptions="Center"/>
+                                    <Label Text="Log more sets to see your top movements" FontSize="13" TextColor="{AppThemeBinding Light=#A3A3A3, Dark=#999999}" HorizontalOptions="Center"/>
                                 </VerticalStackLayout>
                             </BindableLayout.EmptyView>
 
@@ -204,27 +198,27 @@
                                 <DataTemplate x:DataType="models:ExerciseProgress">
                                     <VerticalStackLayout>
                                         <Grid ColumnDefinitions="*,Auto,Auto,Auto" ColumnSpacing="16" Padding="16">
-                                            <Label Grid.Column="0" Text="{Binding ExerciseName}" FontSize="14" FontAttributes="Bold" TextColor="#1A1A1A" VerticalOptions="Center"/>
+                                            <Label Grid.Column="0" Text="{Binding ExerciseName}" FontSize="14" FontAttributes="Bold" TextColor="{AppThemeBinding Light=#1A1A1A, Dark=#FFFFFF}" VerticalOptions="Center"/>
 
                                             <VerticalStackLayout Grid.Column="1" Spacing="2" HorizontalOptions="Center">
-                                                <Label Text="MAX" FontSize="10" FontAttributes="Bold" TextColor="#A3A3A3" HorizontalOptions="Center"/>
+                                                <Label Text="MAX" FontSize="10" FontAttributes="Bold" TextColor="{AppThemeBinding Light=#A3A3A3, Dark=#999999}" HorizontalOptions="Center"/>
                                                 <HorizontalStackLayout Spacing="4" HorizontalOptions="Center">
-                                                    <Label Text="{Binding MaxWeight, StringFormat='{0:F0}'}" FontSize="14" FontAttributes="Bold" TextColor="#388E3C" VerticalOptions="Center"/>
+                                                    <Label Text="{Binding MaxWeight, StringFormat='{0:F0}'}" FontSize="14" FontAttributes="Bold" TextColor="{AppThemeBinding Light=#388E3C, Dark=#81C784}" VerticalOptions="Center"/>
                                                     <Label Text="{Binding IsTrending, Converter={StaticResource BoolToTrendConverter}}" FontSize="12" VerticalOptions="Center"/>
                                                 </HorizontalStackLayout>
                                             </VerticalStackLayout>
 
                                             <VerticalStackLayout Grid.Column="2" Spacing="2" HorizontalOptions="Center">
-                                                <Label Text="AVG" FontSize="10" FontAttributes="Bold" TextColor="#A3A3A3" HorizontalOptions="Center"/>
-                                                <Label Text="{Binding AverageWeight, StringFormat='{0:F0}'}" FontSize="14" FontAttributes="Bold" TextColor="#F57C00" HorizontalOptions="Center"/>
+                                                <Label Text="AVG" FontSize="10" FontAttributes="Bold" TextColor="{AppThemeBinding Light=#A3A3A3, Dark=#999999}" HorizontalOptions="Center"/>
+                                                <Label Text="{Binding AverageWeight, StringFormat='{0:F0}'}" FontSize="14" FontAttributes="Bold" TextColor="{AppThemeBinding Light=#F57C00, Dark=#FFB74D}" HorizontalOptions="Center"/>
                                             </VerticalStackLayout>
 
                                             <VerticalStackLayout Grid.Column="3" Spacing="2" HorizontalOptions="Center" WidthRequest="40">
-                                                <Label Text="REPS" FontSize="10" FontAttributes="Bold" TextColor="#A3A3A3" HorizontalOptions="Center"/>
-                                                <Label Text="{Binding TotalReps}" FontSize="14" FontAttributes="Bold" TextColor="#1F77F0" HorizontalOptions="Center"/>
+                                                <Label Text="REPS" FontSize="10" FontAttributes="Bold" TextColor="{AppThemeBinding Light=#A3A3A3, Dark=#999999}" HorizontalOptions="Center"/>
+                                                <Label Text="{Binding TotalReps}" FontSize="14" FontAttributes="Bold" TextColor="{AppThemeBinding Light=#1F77F0, Dark=#5B9CFF}" HorizontalOptions="Center"/>
                                             </VerticalStackLayout>
                                         </Grid>
-                                        <BoxView HeightRequest="1" Color="#F4F5F7" Margin="16,0"/>
+                                        <BoxView HeightRequest="1" Color="{AppThemeBinding Light=#F4F5F7, Dark=#333333}" Margin="16,0"/>
                                     </VerticalStackLayout>
                                 </DataTemplate>
                             </BindableLayout.ItemTemplate>
@@ -233,14 +227,14 @@
                 </VerticalStackLayout>
 
                 <VerticalStackLayout Spacing="10">
-                    <Label Text="STRENGTH PROGRESS" FontSize="12" FontAttributes="Bold" TextColor="#A3A3A3" CharacterSpacing="1" Margin="4,0,0,0"/>
+                    <Label Text="STRENGTH PROGRESS" FontSize="12" FontAttributes="Bold" TextColor="{AppThemeBinding Light=#A3A3A3, Dark=#999999}" CharacterSpacing="1" Margin="4,0,0,0"/>
 
-                    <Border BackgroundColor="#FFFFFF" StrokeThickness="0">
+                    <Border BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#212121}" StrokeThickness="0">
                         <Border.StrokeShape>
                             <RoundRectangle CornerRadius="14"/>
                         </Border.StrokeShape>
                         <Border.Shadow>
-                            <Shadow Brush="#000000" Offset="0,2" Radius="8" Opacity="0.04" />
+                            <Shadow Brush="#000000" Offset="0,2" Radius="8" Opacity="0.15" />
                         </Border.Shadow>
 
                         <VerticalStackLayout BindableLayout.ItemsSource="{Binding MuscleGroupProgress}" Spacing="0">
@@ -248,8 +242,8 @@
                             <BindableLayout.EmptyView>
                                 <VerticalStackLayout Padding="20,40" Spacing="12" HorizontalOptions="Center">
                                     <Label Text="📈" FontSize="48" HorizontalOptions="Center"/>
-                                    <Label Text="No progress data yet" FontSize="15" FontAttributes="Bold" TextColor="#1A1A1A" HorizontalOptions="Center"/>
-                                    <Label Text="Complete workouts to track strength trends" FontSize="13" TextColor="#A3A3A3" HorizontalOptions="Center"/>
+                                    <Label Text="No progress data yet" FontSize="15" FontAttributes="Bold" TextColor="{AppThemeBinding Light=#1A1A1A, Dark=#FFFFFF}" HorizontalOptions="Center"/>
+                                    <Label Text="Complete workouts to track strength trends" FontSize="13" TextColor="{AppThemeBinding Light=#A3A3A3, Dark=#999999}" HorizontalOptions="Center"/>
                                 </VerticalStackLayout>
                             </BindableLayout.EmptyView>
 
@@ -261,7 +255,7 @@
                                                 <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type vm:AnalyticsViewModel}}, Path=SelectMuscleGroupProgressCommand}" CommandParameter="{Binding .}"/>
                                             </Grid.GestureRecognizers>
 
-                                            <Border Grid.Column="0" BackgroundColor="#F4F5F7" StrokeThickness="0" WidthRequest="40" HeightRequest="40" VerticalOptions="Center">
+                                            <Border Grid.Column="0" BackgroundColor="{AppThemeBinding Light=#F4F5F7, Dark=#121212}" StrokeThickness="0" WidthRequest="40" HeightRequest="40" VerticalOptions="Center">
                                                 <Border.StrokeShape>
                                                     <RoundRectangle CornerRadius="10"/>
                                                 </Border.StrokeShape>
@@ -269,8 +263,8 @@
                                             </Border>
 
                                             <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
-                                                <Label Text="{Binding MuscleGroup}" FontSize="15" FontAttributes="Bold" TextColor="#1A1A1A"/>
-                                                <Label FontSize="13" TextColor="#737373">
+                                                <Label Text="{Binding MuscleGroup}" FontSize="15" FontAttributes="Bold" TextColor="{AppThemeBinding Light=#1A1A1A, Dark=#FFFFFF}"/>
+                                                <Label FontSize="13" TextColor="{AppThemeBinding Light=#737373, Dark=#CCCCCC}">
                                                     <Label.Text>
                                                         <MultiBinding StringFormat="{}{0} exercises · Max {1:F0} {2}">
                                                             <Binding Path="Exercises.Count"/>
@@ -281,9 +275,9 @@
                                                 </Label>
                                             </VerticalStackLayout>
 
-                                            <Label Grid.Column="2" Text="›" FontSize="24" TextColor="#D1D1D1" VerticalOptions="Center"/>
+                                            <Label Grid.Column="2" Text="›" FontSize="24" TextColor="{AppThemeBinding Light=#D1D1D1, Dark=#666666}" VerticalOptions="Center"/>
                                         </Grid>
-                                        <BoxView HeightRequest="1" Color="#F4F5F7" Margin="16,0"/>
+                                        <BoxView HeightRequest="1" Color="{AppThemeBinding Light=#F4F5F7, Dark=#333333}" Margin="16,0"/>
                                     </VerticalStackLayout>
                                 </DataTemplate>
                             </BindableLayout.ItemTemplate>
@@ -291,28 +285,28 @@
                     </Border>
                 </VerticalStackLayout>
 
-                <Border BackgroundColor="#FFF8E1" StrokeThickness="0" Margin="0,0,0,16">
+                <Border BackgroundColor="{AppThemeBinding Light=#FFF8E1, Dark=#332400}" StrokeThickness="0" Margin="0,0,0,16">
                     <Border.StrokeShape>
                         <RoundRectangle CornerRadius="14"/>
                     </Border.StrokeShape>
                     <Border.Shadow>
-                        <Shadow Brush="#000000" Offset="0,2" Radius="8" Opacity="0.04" />
+                        <Shadow Brush="#000000" Offset="0,2" Radius="8" Opacity="0.15" />
                     </Border.Shadow>
                     <Border.GestureRecognizers>
                         <TapGestureRecognizer Command="{Binding ViewPersonalRecordsCommand}"/>
                     </Border.GestureRecognizers>
                     <Grid ColumnDefinitions="Auto,*,Auto" Padding="16">
-                        <Border Grid.Column="0" BackgroundColor="#FFFFFF" StrokeThickness="0" WidthRequest="44" HeightRequest="44" VerticalOptions="Center" Margin="0,0,16,0">
+                        <Border Grid.Column="0" BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#4A3400}" StrokeThickness="0" WidthRequest="44" HeightRequest="44" VerticalOptions="Center" Margin="0,0,16,0">
                             <Border.StrokeShape>
                                 <RoundRectangle CornerRadius="12"/>
                             </Border.StrokeShape>
                             <Label Text="🏆" FontSize="20" HorizontalOptions="Center" VerticalOptions="Center"/>
                         </Border>
                         <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
-                            <Label Text="Personal Records" FontSize="15" FontAttributes="Bold" TextColor="#F57C00"/>
-                            <Label Text="View your all time best lifts" FontSize="13" TextColor="#D98A0D"/>
+                            <Label Text="Personal Records" FontSize="15" FontAttributes="Bold" TextColor="{AppThemeBinding Light=#F57C00, Dark=#FFB74D}"/>
+                            <Label Text="View your all time best lifts" FontSize="13" TextColor="{AppThemeBinding Light=#D98A0D, Dark=#FFA726}"/>
                         </VerticalStackLayout>
-                        <Label Grid.Column="2" Text="›" FontSize="24" TextColor="#FFB74D" VerticalOptions="Center"/>
+                        <Label Grid.Column="2" Text="›" FontSize="24" TextColor="{AppThemeBinding Light=#FFB74D, Dark=#FFB74D}" VerticalOptions="Center"/>
                     </Grid>
                 </Border>
 
