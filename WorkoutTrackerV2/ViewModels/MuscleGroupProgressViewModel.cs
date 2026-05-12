@@ -1,6 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microcharts;
+using SkiaSharp;
 using System.Collections.ObjectModel;
 using WorkoutTrackerV2.Helpers;
 using WorkoutTrackerV2.Models;
@@ -11,7 +12,7 @@ namespace WorkoutTrackerV2.ViewModels
     [QueryProperty(nameof(MuscleGroup), "MuscleGroup")]
     public partial class MuscleGroupProgressViewModel(IAnalyticsService analyticsService, ISettingsService settingsService) : BaseViewModel
     {
-        [ObservableProperty] private int _selectedDays = 30;     
+        [ObservableProperty] private int _selectedDays = 30;
         [ObservableProperty] private int _totalReps;
         [ObservableProperty] private int _totalSets;
 
@@ -24,16 +25,15 @@ namespace WorkoutTrackerV2.ViewModels
         [ObservableProperty] private string _topExerciseName = string.Empty;
         [ObservableProperty] private string _weightUnitLabel = "lbs";
 
-
-        [ObservableProperty] private LineChart? _combinedChart;
-        [ObservableProperty] private ObservableCollection<ExerciseProgress> _exercises = [];    
+        [ObservableProperty] private Chart? _combinedChart;
+        [ObservableProperty] private ObservableCollection<ExerciseProgress> _exercises = [];
         [ObservableProperty] private DonutChart? _volumeChart;
         [ObservableProperty] private ObservableCollection<VolumeDistributionItem> _volumeDistribution = [];
 
         private static readonly string[] ChartColors =
         [
             "#1F77F0", "#4CAF50", "#FF9800", "#FF6B6B",
-                    "#9C27B0", "#00BCD4", "#FF5722", "#607D8B"
+            "#9C27B0", "#00BCD4", "#FF5722", "#607D8B"
         ];
 
         public List<TimePeriodPillViewModel> TimePeriodPills { get; } =
@@ -85,7 +85,7 @@ namespace WorkoutTrackerV2.ViewModels
             if (int.TryParse(days, out int result))
             {
                 SelectedDays = result;
-            }             
+            }
         }
 
         [RelayCommand]
@@ -151,6 +151,9 @@ namespace WorkoutTrackerV2.ViewModels
                 TotalReps = reps;
                 MaxWeight = maxWeight;
 
+                bool isDark = Application.Current?.RequestedTheme == AppTheme.Dark;
+                SKColor chartBgColor = isDark ? SKColor.Parse("#212121") : SKColors.White;
+
                 if (TotalSets > 0 && progress.Count > 0)
                 {
                     var groupedVolume = progress
@@ -158,7 +161,7 @@ namespace WorkoutTrackerV2.ViewModels
                             if (!string.IsNullOrWhiteSpace(e.SubMuscleGroup) && e.SubMuscleGroup != "General")
                             {
                                 return e.SubMuscleGroup;
-                            }                             
+                            }
                             return "General";
                         })
                         .Select((g, index) => new VolumeDistributionItem
@@ -173,14 +176,15 @@ namespace WorkoutTrackerV2.ViewModels
 
                     var chartEntries = groupedVolume.Select(item => new ChartEntry(item.Sets)
                     {
-                        Color = SkiaSharp.SKColor.Parse(item.ColorHex)
+                        Color = SKColor.Parse(item.ColorHex)
                     }).ToList();
 
                     VolumeDistribution = new ObservableCollection<VolumeDistributionItem>(groupedVolume);
+
                     VolumeChart = new DonutChart
                     {
                         Entries = chartEntries,
-                        BackgroundColor = SkiaSharp.SKColors.Transparent,
+                        BackgroundColor = chartBgColor,
                         HoleRadius = 0.65f,
                         LabelTextSize = 0
                     };
@@ -212,7 +216,14 @@ namespace WorkoutTrackerV2.ViewModels
             {
                 return;
             }
-            CombinedChart = ChartHelper.BuildProgressChart(topExercise.Points);
+
+            var chart = ChartHelper.BuildProgressChart(topExercise.Points);
+
+            bool isDark = Application.Current?.RequestedTheme == AppTheme.Dark;
+            chart.BackgroundColor = isDark ? SKColor.Parse("#212121") : SKColors.White;
+            chart.LabelColor = isDark ? SKColor.Parse("#A3A3A3") : SKColor.Parse("#737373");
+
+            CombinedChart = chart;
         }
     }
 
@@ -228,6 +239,6 @@ namespace WorkoutTrackerV2.ViewModels
         public string DisplayPercentage => $"{Percentage:P0}";
         public string Name { get; set; } = string.Empty;
         public int Sets { get; set; }
-        public double Percentage { get; set; }       
+        public double Percentage { get; set; }
     }
 }
