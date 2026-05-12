@@ -1,7 +1,11 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microcharts;
+using SkiaSharp; // Added so we can explicitly set Dark/Light mode colors
 using System.Collections.ObjectModel;
+using System.Linq;
+using System.Threading.Tasks;
+using System;
 using WorkoutTrackerV2.Helpers;
 using WorkoutTrackerV2.Models;
 using WorkoutTrackerV2.Services;
@@ -54,9 +58,17 @@ namespace WorkoutTrackerV2.ViewModels
 
             if (value.Points?.Count > 0)
             {
-                Chart = ChartHelper.BuildProgressChart(value.Points);
+                // Generate the chart from your helper
+                var progressChart = ChartHelper.BuildProgressChart(value.Points);
+
+                // OVERRIDE FOR DARK MODE: Check current theme and apply native SKColors
+                bool isDark = Application.Current?.RequestedTheme == AppTheme.Dark;
+                progressChart.BackgroundColor = isDark ? SKColor.Parse("#212121") : SKColors.White;
+                progressChart.LabelColor = isDark ? SKColor.Parse("#A3A3A3") : SKColor.Parse("#737373");
+
+                Chart = progressChart;
             }
-                
+
             TotalVolume = value.Sets.Sum(s => s.Weight * s.Reps);
 
             double highestPotential = 0;
