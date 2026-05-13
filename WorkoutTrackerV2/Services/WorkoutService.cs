@@ -54,7 +54,7 @@ namespace WorkoutTrackerV2.Services
                 {
                     await SeedDefaultExercises();
                 }
-                    
+
                 _initialized = true;
             }
             finally
@@ -75,7 +75,7 @@ namespace WorkoutTrackerV2.Services
                 .FirstOrDefaultAsync();
         }
 
-        public async Task<Dictionary<int, double>> GetPersonalRecordsAsync(List<int> exerciseIds) 
+        public async Task<Dictionary<int, double>> GetPersonalRecordsAsync(List<int> exerciseIds)
         {
             await EnsureInitializedAsync();
 
@@ -265,6 +265,13 @@ namespace WorkoutTrackerV2.Services
             }
             await _database.UpdateAsync(template);
             return template.Id;
+        }
+
+        // Added this method to support moving templates to new folders
+        public async Task UpdateTemplateAsync(WorkoutTemplate template)
+        {
+            await EnsureInitializedAsync();
+            await _database.UpdateAsync(template);
         }
 
         public async Task<List<WorkoutTemplateSet>> GetTemplateSetsAsync(int templateId)

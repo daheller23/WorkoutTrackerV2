@@ -40,6 +40,7 @@ namespace WorkoutTrackerV2.Services
         Task<int> SaveTemplateSetAsync(WorkoutTemplateSet set);
         Task SaveAllTemplateSetsAsync(List<WorkoutTemplateSet> sets);
         Task DeleteTemplateAsync(int templateId);
+        Task UpdateTemplateAsync(WorkoutTemplate template);
 
         // Admin
         Task ClearAllDataAsync();
