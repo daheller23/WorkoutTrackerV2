@@ -12,20 +12,32 @@ namespace WorkoutTrackerV2.ViewModels
 {
     public partial class TemplatePickerViewModel(IWorkoutService workoutService, ITemplateService templateService) : BaseViewModel
     {
-        // Holds our folder groups
         [ObservableProperty] private ObservableCollection<TemplateFolderGroup> _groupedTemplates = [];
+
+        // Search Properties
+        [ObservableProperty] private string _searchText = string.Empty;
+        [ObservableProperty] private bool _hasSearchText;
+
+        // Cache the raw database list so we can filter instantly in memory
+        private List<WorkoutTemplate> _allTemplates = [];
+
+        // ==============================================================================================================
+        //
+        //      PARTIAL METHODS
+        //
+        // ==============================================================================================================
+
+        partial void OnSearchTextChanged(string value)
+        {
+            HasSearchText = !string.IsNullOrWhiteSpace(value);
+            ApplyFilter();
+        }
 
         // ==============================================================================================================
         //
         //      PRIVATE RELAY COMMANDS
         //
         // ==============================================================================================================
-
-        [RelayCommand]
-        private void ToggleFolder(TemplateFolderGroup folder)
-        {
-            folder?.ToggleExpanded();
-        }
 
         [RelayCommand]
         private async Task LoadTemplates()
@@ -39,18 +51,11 @@ namespace WorkoutTrackerV2.ViewModels
             {
                 IsLoading = true;
 
-                // Fetch the flat list of templates from the database
-                var templates = await workoutService.GetAllTemplatesAsync();
+                // Fetch the flat list of templates from the database into our memory cache
+                _allTemplates = await workoutService.GetAllTemplatesAsync();
 
-                // Group them by their FolderName safely
-                var groupedData = templates
-                    .GroupBy(t => string.IsNullOrWhiteSpace(t.FolderName) ? "Uncategorized" : t.FolderName)
-                    .Select(g => new TemplateFolderGroup(g.Key, g.ToList()))
-                    .OrderBy(g => g.FolderName == "Uncategorized" ? 1 : 0) // Push 'Uncategorized' to the bottom
-                    .ThenBy(g => g.FolderName) // Alphabetize the rest
-                    .ToList();
-
-                GroupedTemplates = new ObservableCollection<TemplateFolderGroup>(groupedData);
+                // Run the grouping and filtering logic
+                ApplyFilter();
             }
             catch (Exception ex)
             {
@@ -60,6 +65,32 @@ namespace WorkoutTrackerV2.ViewModels
             {
                 IsLoading = false;
             }
+        }
+
+        private void ApplyFilter()
+        {
+            // 1. Filter the cached templates by Name OR FolderName
+            var filtered = string.IsNullOrWhiteSpace(SearchText)
+                ? _allTemplates
+                : _allTemplates.Where(t =>
+                    t.Name.Contains(SearchText, StringComparison.OrdinalIgnoreCase) ||
+                    t.FolderName.Contains(SearchText, StringComparison.OrdinalIgnoreCase));
+
+            // 2. Group the filtered results
+            var groupedData = filtered
+                .GroupBy(t => string.IsNullOrWhiteSpace(t.FolderName) ? "Uncategorized" : t.FolderName)
+                .Select(g => new TemplateFolderGroup(g.Key, g.ToList()))
+                .OrderBy(g => g.FolderName == "Uncategorized" ? 1 : 0) // Push 'Uncategorized' to the bottom
+                .ThenBy(g => g.FolderName) // Alphabetize the rest
+                .ToList();
+
+            GroupedTemplates = new ObservableCollection<TemplateFolderGroup>(groupedData);
+        }
+
+        [RelayCommand]
+        private void ClearSearch()
+        {
+            SearchText = string.Empty; // This automatically triggers OnSearchTextChanged
         }
 
         [RelayCommand]
@@ -74,7 +105,6 @@ namespace WorkoutTrackerV2.ViewModels
         {
             string currentFolder = template.FolderName == "Uncategorized" ? "" : template.FolderName;
 
-            // Ask the user for the new folder name
             string newFolder = await Shell.Current.DisplayPromptAsync(
                 "Move Template",
                 $"Enter a folder name for '{template.Name}':\n(Leave blank to remove from folders)",
@@ -82,7 +112,6 @@ namespace WorkoutTrackerV2.ViewModels
                 accept: "Move",
                 cancel: "Cancel");
 
-            // If they pressed Cancel, the result is null. Abort.
             if (newFolder == null)
             {
                 return;
@@ -90,13 +119,10 @@ namespace WorkoutTrackerV2.ViewModels
 
             try
             {
-                // Update the template's folder property
                 template.FolderName = string.IsNullOrWhiteSpace(newFolder) ? "Uncategorized" : newFolder.Trim();
-
-                // Save it to your database
                 await workoutService.UpdateTemplateAsync(template);
 
-                // Reload the UI to snap the template into its new folder group
+                // Reload keeps the current search filter active!
                 await LoadTemplates();
             }
             catch (Exception ex)
@@ -117,10 +143,7 @@ namespace WorkoutTrackerV2.ViewModels
 
             try
             {
-                // Delete from database
                 await workoutService.DeleteTemplateAsync(template.Id);
-
-                // Reload the templates to rebuild the UI safely without crashing MAUI's group engine
                 await LoadTemplates();
             }
             catch (Exception ex)
