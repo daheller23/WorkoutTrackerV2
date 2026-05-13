@@ -35,8 +35,7 @@ namespace WorkoutTrackerV2.Models
         [Ignore] public string RowBackground => IsCompleted ? "#F1FFF4" : "#FFFFFF";
         [Ignore] public Exercise? Exercise { get; set; }
         [Ignore] public IRelayCommand? DeleteCommand { get; set; }
-        [Ignore] public ExerciseGroup? ParentGroup { get; set; }     
-        [Ignore] public IRelayCommand<string>? ToggleCompletedCommand { get; set; }
+        [Ignore] public ExerciseGroup? ParentGroup { get; set; }
 
         // ==============================================================================================================
         //

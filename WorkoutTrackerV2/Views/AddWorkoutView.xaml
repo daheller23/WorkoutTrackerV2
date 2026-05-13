@@ -6,6 +6,7 @@
              xmlns:models="clr-namespace:WorkoutTrackerV2.Models"
              xmlns:converters="clr-namespace:WorkoutTrackerV2.Converters"
              x:DataType="vm:AddWorkoutViewModel"
+             x:Name="RootPage"
              BackgroundColor="{AppThemeBinding Light=#F4F5F7, Dark=#1F1F1F}">
 
     <ContentPage.Resources>
@@ -263,7 +264,7 @@
                                                                             <RoundRectangle CornerRadius="8"/>
                                                                         </Border.StrokeShape>
                                                                         <Border.GestureRecognizers>
-                                                                            <TapGestureRecognizer Command="{Binding ToggleCompletedCommand}" CommandParameter="{Binding ParentGroup.Exercise.MuscleGroup}"/>
+                                                                            <TapGestureRecognizer Command="{Binding BindingContext.ToggleCompletedCommand, Source={x:Reference RootPage}}" CommandParameter="{Binding .}"/>
                                                                         </Border.GestureRecognizers>
                                                                         <Label Text="{Binding CheckmarkText}" FontSize="16" FontAttributes="Bold" TextColor="#FFFFFF" HorizontalOptions="Center" VerticalOptions="Center"/>
                                                                     </Border>
@@ -272,7 +273,7 @@
                                                                             <RoundRectangle CornerRadius="8"/>
                                                                         </Border.StrokeShape>
                                                                         <Border.GestureRecognizers>
-                                                                            <TapGestureRecognizer Command="{Binding ToggleCompletedCommand}" CommandParameter="{Binding ParentGroup.Exercise.MuscleGroup}"/>
+                                                                            <TapGestureRecognizer Command="{Binding BindingContext.ToggleCompletedCommand, Source={x:Reference RootPage}}" CommandParameter="{Binding .}"/>
                                                                         </Border.GestureRecognizers>
                                                                     </Border>
                                                                 </Grid>

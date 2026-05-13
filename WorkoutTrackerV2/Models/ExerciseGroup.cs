@@ -48,6 +48,14 @@ namespace WorkoutTrackerV2.Models
         //
         // ==============================================================================================================
 
+        public void NotifyCompletionStats()
+        {
+            OnPropertyChanged(nameof(CompletedSets));
+            OnPropertyChanged(nameof(TotalSetCount));
+            OnPropertyChanged(nameof(AllSetsCompleted));
+            OnPropertyChanged(nameof(CompletionProgress));
+        }
+
         public void NotifySetStatsPublic() => NotifySetStats();
 
         public void SetLastSession(List<WorkoutSet> sets, string weightUnit)
@@ -136,19 +144,13 @@ namespace WorkoutTrackerV2.Models
                 onDeleted?.Invoke(set);
             });
 
-            set.ToggleCompletedCommand = new RelayCommand<string>(_ =>
-            {
-                set.IsCompleted = !set.IsCompleted;
-                NotifyCompletionStats();
-            });
-
             Sets.Add(set);
             NotifySetStats();
 
             if (HasLastSession)
             {
                 ApplyPlaceholderToLastSet();
-            }              
+            }
         }
 
         public void RemoveSet(WorkoutSet set)
@@ -233,14 +235,6 @@ namespace WorkoutTrackerV2.Models
             OnPropertyChanged(nameof(SetCountLabel));
             OnPropertyChanged(nameof(HasSets));
             NotifyCompletionStats();
-        }
-
-        private void NotifyCompletionStats()
-        {
-            OnPropertyChanged(nameof(CompletedSets));
-            OnPropertyChanged(nameof(TotalSetCount));
-            OnPropertyChanged(nameof(AllSetsCompleted));
-            OnPropertyChanged(nameof(CompletionProgress));
         }
     }
 }

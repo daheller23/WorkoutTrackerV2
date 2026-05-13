@@ -359,6 +359,17 @@ namespace WorkoutTrackerV2.ViewModels
         [RelayCommand]
         private void PrepareForTemplatePicker() => _ignoreNextExerciseSelection = true;
 
+        [RelayCommand]
+        private void ToggleCompleted(WorkoutSet set)
+        {
+            if (set == null) return;
+
+            set.IsCompleted = !set.IsCompleted;
+
+            // NEW: Tell the Exercise Group to update the green progress bar!
+            // (Note: Make sure NotifyCompletionStats() is marked as 'public' in your ExerciseGroup.cs file)
+            set.ParentGroup?.NotifyCompletionStats();
+        }
 
         // ==============================================================================================================
         //
