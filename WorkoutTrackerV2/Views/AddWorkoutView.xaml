@@ -410,14 +410,13 @@
                         </HorizontalStackLayout>
                     </Grid>
 
-                    <Grid ColumnDefinitions="*,2*" ColumnSpacing="12" Padding="20,12,20,16">
-                        <Button Grid.Column="0" Text="Clear" Command="{Binding ClearCommand}" BackgroundColor="Transparent" TextColor="{AppThemeBinding Light=#FF6B6B, Dark=#FF8A8A}" FontAttributes="Bold" FontSize="14" HeightRequest="48" Padding="0" CornerRadius="12" BorderWidth="1" BorderColor="{AppThemeBinding Light=#FFEAEA, Dark=#4A1A1A}"/>
-                        <Button Grid.Column="1" Text="Finish Workout" Command="{Binding SaveWorkoutCommand}" BackgroundColor="{AppThemeBinding Light=#1F77F0, Dark=#1F77F0}" TextColor="#FFFFFF" FontAttributes="Bold" FontSize="15" HeightRequest="48" Padding="0" CornerRadius="12" BorderWidth="0">
+                    <VerticalStackLayout Padding="20,12,20,16">
+                        <Button Text="Finish Workout" Command="{Binding SaveWorkoutCommand}" BackgroundColor="{AppThemeBinding Light=#1F77F0, Dark=#1F77F0}" TextColor="#FFFFFF" FontAttributes="Bold" FontSize="15" HeightRequest="48" Padding="0" CornerRadius="12" BorderWidth="0">
                             <Button.Shadow>
                                 <Shadow Brush="#1F77F0" Offset="0,4" Radius="10" Opacity="0.15"/>
                             </Button.Shadow>
                         </Button>
-                    </Grid>
+                    </VerticalStackLayout>
 
                 </VerticalStackLayout>
             </Grid>
@@ -468,6 +467,19 @@
                     </Grid.GestureRecognizers>
                     <Label Text="💾 Save as Template"
                            TextColor="{AppThemeBinding Light=#1A1A1A, Dark=#FFFFFF}"
+                           FontAttributes="Bold"
+                           FontSize="14"
+                           VerticalOptions="Center"/>
+                </Grid>
+
+                <BoxView HeightRequest="1" Color="{AppThemeBinding Light=#F4F5F7, Dark=#333333}" Margin="8,0" />
+
+                <Grid Padding="12" BackgroundColor="Transparent">
+                    <Grid.GestureRecognizers>
+                        <TapGestureRecognizer Command="{Binding HandleMenuActionCommand}" CommandParameter="Clear"/>
+                    </Grid.GestureRecognizers>
+                    <Label Text="🗑️ Clear Workout"
+                           TextColor="{AppThemeBinding Light=#FF6B6B, Dark=#FF8A8A}"
                            FontAttributes="Bold"
                            FontSize="14"
                            VerticalOptions="Center"/>

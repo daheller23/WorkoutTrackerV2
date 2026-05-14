@@ -353,6 +353,9 @@ namespace WorkoutTrackerV2.ViewModels
                 case "save":
                     SaveAsTemplateCommand.Execute(null);
                     break;
+                case "clear":
+                    ClearCommand.Execute(null);
+                    break;
             }
         }
 
