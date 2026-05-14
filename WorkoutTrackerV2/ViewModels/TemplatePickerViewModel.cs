@@ -40,6 +40,20 @@ namespace WorkoutTrackerV2.ViewModels
         // ==============================================================================================================
 
         [RelayCommand]
+        private void ToggleFolder(TemplateFolderGroup folder)
+        {
+            if (folder == null) return;
+
+            folder.ToggleExpanded();
+
+            int index = GroupedTemplates.IndexOf(folder);
+            if (index >= 0)
+            {
+                GroupedTemplates[index] = folder;
+            }
+        }
+
+        [RelayCommand]
         private async Task LoadTemplates()
         {
             if (IsLoading)
