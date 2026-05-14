@@ -170,21 +170,21 @@
                                                     <Label Text="{Binding SetCountLabel}" FontSize="12" FontAttributes="Bold" TextColor="{AppThemeBinding Light=#1F77F0, Dark=#5B9CFF}"/>
                                                 </Border>
 
-                                                <Picker Grid.Column="4"
-                                                        SelectedItem="{Binding Sets[0].WeightUnit, FallbackValue='lbs'}"
-                                                        BackgroundColor="Transparent"
-                                                        TextColor="{AppThemeBinding Light=#737373, Dark=#CCCCCC}"
-                                                        FontSize="13"
-                                                        WidthRequest="60"
-                                                        VerticalOptions="Center"
-                                                        Margin="0,16,0,0">
-                                                    <Picker.ItemsSource>
-                                                        <x:Array Type="{x:Type x:String}">
-                                                            <x:String>lbs</x:String>
-                                                            <x:String>kg</x:String>
-                                                        </x:Array>
-                                                    </Picker.ItemsSource>
-                                                </Picker>
+                                                <Button Grid.Column="4"
+                                                    Text="{Binding CurrentWeightUnit}"
+                                                    Command="{Binding BindingContext.ToggleWeightUnitCommand, Source={x:Reference RootPage}}"
+                                                    CommandParameter="{Binding .}"
+                                                    BackgroundColor="{AppThemeBinding Light=#F4F5F7, Dark=#121212}"
+                                                    TextColor="{AppThemeBinding Light=#737373, Dark=#CCCCCC}"
+                                                    FontSize="13"
+                                                    FontAttributes="Bold"
+                                                    WidthRequest="48"
+                                                    HeightRequest="32"
+                                                    Padding="0"
+                                                    CornerRadius="8"
+                                                    BorderWidth="0"
+                                                    VerticalOptions="Center"
+                                                    Margin="0,16,0,0" />
 
                                                 <Button Grid.Column="5" Text="✕"
                                                         Command="{Binding Source={RelativeSource AncestorType={x:Type vm:AddWorkoutViewModel}}, Path=RemoveExerciseCommand}"

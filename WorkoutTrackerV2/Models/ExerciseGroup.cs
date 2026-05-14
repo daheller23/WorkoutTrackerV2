@@ -12,6 +12,7 @@ namespace WorkoutTrackerV2.Models
 
         [ObservableProperty] private double _maxWeight = 0;
 
+        [ObservableProperty] private string _currentWeightUnit = "lbs";
         [ObservableProperty] private string _lastSessionSummary = string.Empty;
         [ObservableProperty] private string _progressionSuggestion = string.Empty;
 

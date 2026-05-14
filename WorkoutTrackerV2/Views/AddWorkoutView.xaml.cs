@@ -46,4 +46,13 @@ public partial class AddWorkoutView : ContentPage
         if (BindingContext is AddWorkoutViewModel vm)
             vm.TimerViewModel.Unsubscribe();
     }
+
+    protected override async void OnNavigatedTo(NavigatedToEventArgs args)
+    {
+        base.OnNavigatedTo(args);
+        if (BindingContext is AddWorkoutViewModel viewModel)
+        {
+            await viewModel.OnNavigatedToAsync();
+        }
+    }
 }
