@@ -455,7 +455,7 @@ namespace WorkoutTrackerV2.ViewModels
             if (!Preferences.Default.ContainsKey("ActiveWorkoutDraft"))
                 return;
 
-            bool restore = await Shell.Current.DisplayAlert(
+            bool restore = await Shell.Current.DisplayAlertAsync(
                 "Draft Found",
                 "You have an unsaved workout in progress. Would you like to restore it?",
                 "Yes, Restore",
