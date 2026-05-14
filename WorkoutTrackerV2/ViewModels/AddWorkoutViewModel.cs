@@ -138,13 +138,15 @@ namespace WorkoutTrackerV2.ViewModels
         }
 
         [RelayCommand]
-        private static Task ViewExercisePicker()
-            => Shell.Current.GoToAsync(Routes.ExercisePicker);
+        private Task ViewExercisePicker()
+        {
+            _ignoreNextExerciseSelection = false;
+            return Shell.Current.GoToAsync(Routes.ExercisePicker);
+        }
 
         [RelayCommand]
         private void AddSet(ExerciseGroup group)
         {
-            // Use the group's current unit, not the global default!
             group.AddSet(group.CurrentWeightUnit);
             UpdateTotals();
         }
