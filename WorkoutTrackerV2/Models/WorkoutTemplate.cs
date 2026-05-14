@@ -1,6 +1,5 @@
 ﻿using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Runtime.CompilerServices;
 using SQLite;
 
 namespace WorkoutTrackerV2.Models
@@ -14,7 +13,7 @@ namespace WorkoutTrackerV2.Models
         public string FolderName { get; set; } = "Uncategorized";
     }
 
-    public class TemplateFolderGroup : ObservableCollection<WorkoutTemplate>, INotifyPropertyChanged
+    public class TemplateFolderGroup : ObservableCollection<WorkoutTemplate>
     {
         private bool _isExpanded = true;
         private readonly List<WorkoutTemplate> _hiddenItems = [];
@@ -29,7 +28,7 @@ namespace WorkoutTrackerV2.Models
                 if (_isExpanded != value)
                 {
                     _isExpanded = value;
-                    OnPropertyChanged();
+                    OnPropertyChanged(new PropertyChangedEventArgs(nameof(IsExpanded)));
                 }
             }
         }
@@ -56,13 +55,6 @@ namespace WorkoutTrackerV2.Models
                 _hiddenItems.AddRange(this);
                 this.Clear();
             }
-        }
-
-        public event PropertyChangedEventHandler? PropertyChanged;
-
-        protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 }
