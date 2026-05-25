@@ -13,6 +13,12 @@ namespace WorkoutTrackerV2.Services
         private bool _initialized;
         private List<Exercise>? _exerciseCache;
 
+        private class PrResult
+        {
+            public int ExerciseId { get; set; }
+            public double MaxWeight { get; set; }
+        }
+
         public WorkoutService(string? dbPath = null)
         {
             _dbPath = string.IsNullOrEmpty(dbPath)
@@ -69,8 +75,8 @@ namespace WorkoutTrackerV2.Services
 
             return await _database.Table<WorkoutSession>()
                 .Where(s => s.Id != currentId
-                         && s.DayName == dayName
-                         && s.Date < currentDate)
+                          && s.DayName == dayName
+                          && s.Date < currentDate)
                 .OrderByDescending(s => s.Date)
                 .FirstOrDefaultAsync();
         }
@@ -79,14 +85,25 @@ namespace WorkoutTrackerV2.Services
         {
             await EnsureInitializedAsync();
 
-            // Fetch only sets for the specific exercises in the current session
-            var sets = await _database.Table<WorkoutSet>()
-                .Where(s => exerciseIds.Contains(s.ExerciseId))
-                .ToListAsync();
+            if (exerciseIds == null || exerciseIds.Count == 0)
+            {
+                return new Dictionary<int, double>();
+            }
 
-            // Group in-memory to find the max weight for each exercise ID
-            return sets.GroupBy(s => s.ExerciseId)
-                       .ToDictionary(g => g.Key, g => g.Max(s => s.Weight));
+            // Create a comma-separated list of placeholders (?,?,?) matching the number of exercises
+            var placeholders = string.Join(",", exerciseIds.Select(_ => "?"));
+
+            // Native SQL query to let SQLite handle the grouping/max logic efficiently
+            var query = $@"
+                SELECT ExerciseId, MAX(Weight) AS MaxWeight 
+                FROM WorkoutSet 
+                WHERE ExerciseId IN ({placeholders}) 
+                GROUP BY ExerciseId";
+
+            // Execute query and cast list to object array
+            var results = await _database.QueryAsync<PrResult>(query, exerciseIds.Cast<object>().ToArray());
+
+            return results.ToDictionary(r => r.ExerciseId, r => r.MaxWeight);
         }
 
         public async Task<List<WorkoutSession>> GetAllSessionsAsync()
@@ -267,7 +284,6 @@ namespace WorkoutTrackerV2.Services
             return template.Id;
         }
 
-        // Added this method to support moving templates to new folders
         public async Task UpdateTemplateAsync(WorkoutTemplate template)
         {
             await EnsureInitializedAsync();
