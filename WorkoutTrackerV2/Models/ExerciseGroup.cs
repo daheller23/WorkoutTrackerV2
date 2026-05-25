@@ -172,46 +172,45 @@ namespace WorkoutTrackerV2.Models
 
         private void ComputeProgressionSuggestion(List<WorkoutSet> lastSets, List<double> lastWeights, string weightUnit)
         {
-            if (lastSets.Count == 0)
+            if (lastSets.Count == 0 || Sets.Count == 0)
             {
                 return;
             }
 
-            bool isCompound = Exercise.MuscleGroup is "Legs" or "Back";
-            double increment = weightUnit == "kg"
-                ? (isCompound ? 2.5 : 1.25)
-                : (isCompound ? 5.0 : 2.5);
+            double maxWeightLastSession = lastWeights.Max();
+            int topSetIndex = lastWeights.IndexOf(maxWeightLastSession);
+            int repsAchievedOnTopSet = lastSets[topSetIndex].Reps;
 
-            int inferredTarget = lastSets
-                .GroupBy(s => s.Reps)
-                .OrderByDescending(g => g.Count())
-                .First().Key;
+            int targetReps = 10;
 
-            double topWeight = lastWeights.Max();
+            double increment = Exercise.WeightIncrement;
 
-            int hitsAtTop = lastSets
-                .Where((s, i) => s.Reps >= inferredTarget && lastWeights[i] >= topWeight)
-                .Count();
-
-            int totalSetsAtTop = lastSets.Count(s => s.Reps > 0);
-
-            if (hitsAtTop >= totalSetsAtTop)
+            if (weightUnit == "kg" && Exercise.WeightIncrement == 5.0)
             {
-                double suggested = topWeight + increment;
+                increment = 2.5;
+            }
+
+            if (repsAchievedOnTopSet >= targetReps)
+            {
+                double suggested = maxWeightLastSession + increment;
                 string unit = weightUnit;
-                ProgressionSuggestion = $"↑ Ready to progress — try {suggested:F1} {unit} today";
+
+                ProgressionSuggestion = $"↑ Top Set Cleared — try {suggested:F1} {unit} on your heavy working sets";
                 HasProgressionSuggestion = true;
                 ProgressionIsIncrease = true;
 
                 var hint = $"→ {suggested:F1} {unit}";
                 foreach (var s in Sets)
                 {
-                    s.SuggestedWeightPlaceholder = hint;
-                }                  
+                    if (s.Weight >= maxWeightLastSession || s.Weight == 0)
+                    {
+                        s.SuggestedWeightPlaceholder = hint;
+                    }
+                }
             }
-            else if (hitsAtTop > 0)
+            else
             {
-                ProgressionSuggestion = $"→ Consolidate at {topWeight:F0} {weightUnit} — match all sets first";
+                ProgressionSuggestion = $"→ Maintain {maxWeightLastSession:F0} {weightUnit} — push for your target reps on your top set";
                 HasProgressionSuggestion = true;
                 ProgressionIsIncrease = false;
             }
