@@ -2,14 +2,12 @@
 using CommunityToolkit.Mvvm.Input;
 using System.Collections.ObjectModel;
 using System.Text.Json;
-using Microsoft.Maui.Storage;
 using WorkoutTrackerV2.Models;
 using WorkoutTrackerV2.Services;
 
 namespace WorkoutTrackerV2.ViewModels
 {
-    [QueryProperty(nameof(SelectedExercise), "SelectedExercise")]
-    public partial class AddWorkoutViewModel(IWorkoutService workoutService, ITemplateService templateService, ISettingsService settingsService, IRestTimerService restTimerService, IAnalyticsService analyticsService) : BaseViewModel, IDisposable
+    public partial class AddWorkoutViewModel(IWorkoutService workoutService, ITemplateService templateService, ISettingsService settingsService, IRestTimerService restTimerService, IAnalyticsService analyticsService) : BaseViewModel, IDisposable, IQueryAttributable
     {
         private bool _isInitialized;
         private bool _ignoreNextExerciseSelection;
@@ -41,6 +39,18 @@ namespace WorkoutTrackerV2.ViewModels
         //
         // ==============================================================================================================
 
+        public void ApplyQueryAttributes(IDictionary<string, object> query)
+        {
+            if (query.TryGetValue("SelectedExercise", out var value) && value is Exercise exercise)
+            {
+                query.Remove("SelectedExercise");
+                MainThread.BeginInvokeOnMainThread(() =>
+                {
+                    HandleExerciseSelection(exercise);
+                });
+            }
+        }
+
         public void Dispose()
         {
             TimerViewModel.Unsubscribe();
@@ -66,39 +76,6 @@ namespace WorkoutTrackerV2.ViewModels
         partial void OnWorkoutNameChanged(string value) => SaveDraft();
         partial void OnStartTimeChanged(TimeSpan value) => SaveDraft();
         partial void OnEndTimeChanged(TimeSpan value) => SaveDraft();
-
-        partial void OnSelectedExerciseChanged(Exercise? value)
-        {
-            if (value is null)
-            {
-                return;
-            }
-            if (ShouldIgnoreSelection())
-            {
-                return;
-            }
-            if (TryHandlePendingTemplate())
-            {
-                return;
-            }
-
-            var existing = ExerciseGroups.FirstOrDefault(g => g.Exercise.Id == value.Id);
-            if (existing is not null)
-            {
-                existing.AddSet(existing.CurrentWeightUnit);
-            }
-            else
-            {
-                var group = new ExerciseGroup(value, settingsService.WeightUnit);
-                group.CurrentWeightUnit = settingsService.WeightUnit; // Initialize the group unit
-                group.AddSet(settingsService.WeightUnit);
-                ExerciseGroups.Add(group);
-                _ = LoadLastSessionAsync(group, value.Id);
-            }
-            SelectedExercise = null;
-            UpdateTotals();
-        }
-
         partial void OnSelectedDateChanged(DateTime value)
         {
             var days = (DateTime.Today - value.Date).Days;
@@ -396,16 +373,13 @@ namespace WorkoutTrackerV2.ViewModels
             SaveDraft();
         }
 
-        // NEW: Instantly flips the unit for the whole group and saves the draft
         [RelayCommand]
         private void ToggleWeightUnit(ExerciseGroup group)
         {
             if (group == null) return;
 
-            // Toggle logic
             group.CurrentWeightUnit = group.CurrentWeightUnit == "lbs" ? "kg" : "lbs";
 
-            // Update all existing sets
             foreach (var set in group.Sets)
             {
                 set.WeightUnit = group.CurrentWeightUnit;
@@ -419,6 +393,38 @@ namespace WorkoutTrackerV2.ViewModels
         //      PRIVATE METHODS
         //
         // ==============================================================================================================
+
+        private void HandleExerciseSelection(Exercise? value)
+        {
+            if (value is null)
+            {
+                return;
+            }
+            if (ShouldIgnoreSelection())
+            {
+                return;
+            }
+            if (TryHandlePendingTemplate())
+            {
+                return;
+            }
+
+            var existing = ExerciseGroups.FirstOrDefault(g => g.Exercise.Id == value.Id);
+            if (existing is not null)
+            {
+                existing.AddSet(existing.CurrentWeightUnit);
+            }
+            else
+            {
+                var group = new ExerciseGroup(value, settingsService.WeightUnit);
+                group.CurrentWeightUnit = settingsService.WeightUnit;
+                group.AddSet(settingsService.WeightUnit);
+                ExerciseGroups.Add(group);
+                _ = LoadLastSessionAsync(group, value.Id);
+            }
+
+            UpdateTotals();
+        }
 
         private void SaveDraft()
         {
@@ -494,7 +500,6 @@ namespace WorkoutTrackerV2.ViewModels
 
                         var group = new ExerciseGroup(exercise, settingsService.WeightUnit);
 
-                        // Restore the group's active unit from the first draft set
                         if (draftGroup.Sets.Count > 0)
                         {
                             group.CurrentWeightUnit = draftGroup.Sets[0].WeightUnit;
@@ -531,7 +536,6 @@ namespace WorkoutTrackerV2.ViewModels
                 return false;
             }
             _ignoreNextExerciseSelection = false;
-            SelectedExercise = null;
             return true;
         }
 
@@ -586,7 +590,7 @@ namespace WorkoutTrackerV2.ViewModels
                 else
                 {
                     var group = new ExerciseGroup(exercise, settingsService.WeightUnit);
-                    group.CurrentWeightUnit = set.WeightUnit; // Sync the unit to match the loaded template
+                    group.CurrentWeightUnit = set.WeightUnit;
 
                     var workoutSet = CreateWorkoutSet(exercise, group, 1, set.Reps, set.Weight, set.WeightUnit);
                     group.Sets.Add(workoutSet);
@@ -610,7 +614,7 @@ namespace WorkoutTrackerV2.ViewModels
                 WeightUnit = weightUnit,
                 ParentGroup = group
             };
-            set.DeleteCommand = new CommunityToolkit.Mvvm.Input.RelayCommand(() =>
+            set.DeleteCommand = new RelayCommand(() =>
             {
                 group.RemoveSet(set);
                 if (group.Sets.Count == 0)
@@ -670,7 +674,6 @@ namespace WorkoutTrackerV2.ViewModels
             }
             catch
             {
-                // Non-critical — silently swallow. 
             }
         }
 
