@@ -12,8 +12,10 @@ namespace WorkoutTrackerV2.Converters
                 "Back" => "🟢",
                 "Legs" => "🟠",
                 "Shoulders" => "🟣",
-                "Arms" => "🔴",
-                "Core" => "🩵",
+                "Core" => "⚪",
+                "Biceps" => "🔴",
+                "Triceps" => "🔴", 
+                "Forearms" => "🟡",
                 _ => "⚪"
             } : "⚪";
         }

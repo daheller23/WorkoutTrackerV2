@@ -361,19 +361,23 @@ namespace WorkoutTrackerV2.Services
         {
             var defaultExercises = new List<Exercise>
             {
-                // Arms
-                new() { Name = "Barbell Curls",                  MuscleGroup = "Arms" },
-                new() { Name = "Bench Dip",                      MuscleGroup = "Arms" },
-                new() { Name = "Dumbbell Curls",                 MuscleGroup = "Arms" },
-                new() { Name = "Hammer Curls",                   MuscleGroup = "Arms" },
-                new() { Name = "Preacher Curls",                 MuscleGroup = "Arms" },
-                new() { Name = "Reverse Curls",                  MuscleGroup = "Arms" },
-                new() { Name = "Skull Crushers",                 MuscleGroup = "Arms" },
-                new() { Name = "Tricep Dips",                    MuscleGroup = "Arms" },
-                new() { Name = "Tricep Extensions",              MuscleGroup = "Arms" },
-                new() { Name = "Tricep Pushdowns with Bar",      MuscleGroup = "Arms" },
-                new() { Name = "Tricep Pushdowns with Ropes",    MuscleGroup = "Arms" },
-                new() { Name = "Wrist Curls",                    MuscleGroup = "Arms" },
+                // Biceps
+                new() { Name = "Barbell Curls",                  MuscleGroup = "Biceps" },
+                new() { Name = "Dumbbell Curls",                 MuscleGroup = "Biceps" },
+                new() { Name = "Hammer Curls",                   MuscleGroup = "Biceps" },
+                new() { Name = "Preacher Curls",                 MuscleGroup = "Biceps" },
+                new() { Name = "Reverse Curls",                  MuscleGroup = "Biceps" },
+
+                // Triceps
+                new() { Name = "Bench Dip",                      MuscleGroup = "Triceps" },
+                new() { Name = "Skull Crushers",                 MuscleGroup = "Triceps" },
+                new() { Name = "Tricep Dips",                    MuscleGroup = "Triceps" },
+                new() { Name = "Tricep Extensions",              MuscleGroup = "Triceps" },
+                new() { Name = "Tricep Pushdowns with Bar",      MuscleGroup = "Triceps" },
+                new() { Name = "Tricep Pushdowns with Ropes",    MuscleGroup = "Triceps" },
+
+                // Forearms
+                new() { Name = "Wrist Curls",                    MuscleGroup = "Forearms" },
 
                 // Back
                 new() { Name = "Back Assisted Row",              MuscleGroup = "Back" },

@@ -52,8 +52,10 @@ namespace WorkoutTrackerV2.ViewModels
             "Back" => "🟢",
             "Legs" => "🟠",
             "Shoulders" => "🟣",
-            "Arms" => "🔴",
-            "Core" => "🩵",
+            "Biceps" => "🔴",
+            "Triceps" => "🔴",
+            "Forearms" => "🟡",
+            "Core" => "⚪",
             _ => "⭐"
         };
 
@@ -63,8 +65,10 @@ namespace WorkoutTrackerV2.ViewModels
             new() { Key = "Back",      Label = "🟢 Back",      IsSelected = SelectedMuscleGroup == "Back" },
             new() { Key = "Legs",      Label = "🟠 Legs",      IsSelected = SelectedMuscleGroup == "Legs" },
             new() { Key = "Shoulders", Label = "🟣 Shoulders", IsSelected = SelectedMuscleGroup == "Shoulders" },
-            new() { Key = "Arms",      Label = "🔴 Arms",      IsSelected = SelectedMuscleGroup == "Arms" },
-            new() { Key = "Core",      Label = "🩵 Core",      IsSelected = SelectedMuscleGroup == "Core" },
+            new() { Key = "Biceps",    Label = "🔴 Biceps",    IsSelected = SelectedMuscleGroup == "Biceps" },
+            new() { Key = "Triceps",   Label = "🔴 Triceps",   IsSelected = SelectedMuscleGroup == "Triceps" },
+            new() { Key = "Forearms",  Label = "🟡 Forearms",  IsSelected = SelectedMuscleGroup == "Forearms" },
+            new() { Key = "Core",      Label = "⚪ Core",      IsSelected = SelectedMuscleGroup == "Core" },
         ];
 
         // ==============================================================================================================
@@ -99,7 +103,9 @@ namespace WorkoutTrackerV2.ViewModels
                 "Back" => new[] { "Lats", "Mid Back", "Traps", "Lower Back" },
                 "Legs" => new[] { "Quads", "Hamstrings", "Glutes", "Calves" },
                 "Shoulders" => new[] { "Front Delt", "Side Delt", "Rear Delt" },
-                "Arms" => new[] { "Biceps", "Triceps", "Forearms" },
+                "Biceps" => new[] { "Long Head", "Short Head", "Brachialis" },
+                "Triceps" => new[] { "Long Head", "Lateral Head", "Medial Head" },
+                "Forearms" => new[] { "Flexors", "Extensors" },
                 "Core" => new[] { "Abs", "Obliques" },
                 _ => new[] { "General" }
             };

@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
+using WorkoutTrackerV2.Helpers; // Added this using statement
 
 namespace WorkoutTrackerV2.Models
 {
@@ -10,20 +11,10 @@ namespace WorkoutTrackerV2.Models
         public int ExerciseId { get; set; }
         public double BestWeight { get; set; }
         public string ExerciseName { get; set; } = string.Empty;
-        public string MuscleGroup { get; set; } = string.Empty;    
+        public string MuscleGroup { get; set; } = string.Empty;
         public DateTime BestDate { get; set; }
         public List<PersonalRecordEntry> History { get; set; } = [];
-
-        public string MuscleGroupColor => MuscleGroup switch
-        {
-            "Chest" => "#4A90D9",
-            "Back" => "#27AE60",
-            "Legs" => "#E67E22",
-            "Shoulders" => "#8E44AD",
-            "Arms" => "#E74C3C",
-            "Core" => "#5DADE2",
-            _ => "#1F77F0"
-        };
+        public string MuscleGroupColor => ColorHelper.GetMuscleGroupColor(MuscleGroup);
     }
 
     // ==============================================================================================================
@@ -34,7 +25,7 @@ namespace WorkoutTrackerV2.Models
     public class PersonalRecordEntry
     {
         public int Reps { get; set; }
-        public double Weight { get; set; }      
+        public double Weight { get; set; }
         public DateTime Date { get; set; }
     }
 }

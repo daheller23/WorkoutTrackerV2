@@ -12,8 +12,10 @@ namespace WorkoutTrackerV2.Converters
                 "Back" => Color.FromArgb("#4CAF50"),
                 "Legs" => Color.FromArgb("#FF9800"),
                 "Shoulders" => Color.FromArgb("#9C27B0"),
-                "Arms" => Color.FromArgb("#FF6B6B"),
                 "Core" => Color.FromArgb("#00BCD4"),
+                "Biceps" => Color.FromArgb("#FF6B6B"),
+                "Triceps" => Color.FromArgb("#F43F5E"),
+                "Forearms" => Color.FromArgb("#FB923C"),
                 _ => Color.FromArgb("#1F77F0")
             } : Color.FromArgb("#1F77F0");
         }

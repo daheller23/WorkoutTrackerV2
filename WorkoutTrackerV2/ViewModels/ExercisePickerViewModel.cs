@@ -33,8 +33,10 @@ namespace WorkoutTrackerV2.ViewModels
             new() { Key = "Back",      Label = "🟢 Back" },
             new() { Key = "Legs",      Label = "🟠 Legs" },
             new() { Key = "Shoulders", Label = "🟣 Shoulders" },
-            new() { Key = "Arms",      Label = "🔴 Arms" },
-            new() { Key = "Core",      Label = "🩵 Core" },
+            new() { Key = "Biceps",    Label = "🔴 Biceps" },
+            new() { Key = "Triceps",   Label = "🔴 Triceps" },
+            new() { Key = "Forearms",  Label = "🟡 Forearms" },
+            new() { Key = "Core",      Label = "⚪ Core" },
         ];
 
         [ObservableProperty] private bool _hasSearchText;
